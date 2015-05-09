@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/开发/android%20dev/cikeapp/libactionbar/src/main/res/values/color.xml -->
+    <!-- From: file:/开发/android%20dev/cike%20for%20github/cikeapp/libactionbar/src/main/res/values/color.xml -->
     <eat-comment/>
     <color name="actionbar_title">#000</color>
-    <!-- From: file:/开发/android%20dev/cikeapp/libactionbar/src/main/res/values/strings.xml -->
+    <!-- From: file:/开发/android%20dev/cike%20for%20github/cikeapp/libactionbar/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="app_name">ActionBarLibrary</string>
-    <!-- From: file:/开发/android%20dev/cikeapp/libactionbar/src/main/res/values/styles.xml -->
+    <!-- From: file:/开发/android%20dev/cike%20for%20github/cikeapp/libactionbar/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="android:Theme.Light">
         <!--
