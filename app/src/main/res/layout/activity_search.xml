@@ -4,17 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffd600"
+
     >
 
+
+    <com.yunkairichu.cike.main.RippleView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        />
+
     <Button
-        android:id="@+id/bigbutton_splash"
+        android:id="@+id/bigbutton_search"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:background="@drawable/bigbutton"
+        android:text="@string/searching"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="#ffffff"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="24dp"
         android:layout_centerHorizontal="true"
         >
+
     </Button>
 
 

@@ -41,7 +41,7 @@ public class ActivitySplash extends BindableActivity {
 
     private void start() {
         mHandler.removeCallbacks(mDelayStart);
-        Intent i = new Intent(ActivitySplash.this, ActivityTab.class);
+        Intent i = new Intent(ActivitySplash.this, ActivityBeforeSearch.class);
         startActivity(i);
         finish();
 //        overridePendingTransition(android.R.anim.fade_in,0);
