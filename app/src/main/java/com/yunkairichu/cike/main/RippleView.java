@@ -105,7 +105,7 @@ public class RippleView extends View {
         textPaint.setColor(Color.WHITE);
 //        mDevice = new ToolDevice();
         mRippleBitmap = BitmapFactory.decodeStream(getResources()
-                .openRawResource(R.drawable.search_background));
+                .openRawResource(R.drawable.searchbackground));
 //        mRippleWidth = mDevice.getDw();
 //        mRippleHeight = mDevice.getDh();
         mBitmapWidth = mRippleBitmap.getWidth();
