@@ -58,7 +58,7 @@ public class ActivityWelcome extends Activity{
                 msg.what = SIGN;
                 handler.sendMessage(msg);
             }
-        }, 1000, 500);
+        }, 800, 400);
     }
 
 
