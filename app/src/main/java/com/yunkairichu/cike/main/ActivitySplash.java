@@ -6,6 +6,14 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import com.jaf.jcore.BindableActivity;
+import com.jaf.jcore.Http;
+import com.jaf.jcore.HttpCallBack;
+import com.jaf.jcore.JacksonWrapper;
+import com.yunkairichu.cike.bean.JsonConstant;
+import com.yunkairichu.cike.bean.JsonPack;
+import com.yunkairichu.cike.bean.ResponseUserInfoLoad;
+
+import org.json.JSONObject;
 
 
 /**
@@ -15,6 +23,7 @@ public class ActivitySplash extends BindableActivity {
     private static final long SPLASH_DELAY = 1000;
     private final Handler mHandler = new Handler();
     private Runnable mDelayStart;
+    private ResponseUserInfoLoad responseUserInfoLoad = new ResponseUserInfoLoad();
 
     @Override
     protected int onLoadViewResource() {
@@ -23,7 +32,6 @@ public class ActivitySplash extends BindableActivity {
 
     @Override
     protected void onViewDidLoad(Bundle savedInstanceState) {
-//        registerAlias();
         mDelayStart = new Runnable() {
 
             @Override
@@ -41,9 +49,7 @@ public class ActivitySplash extends BindableActivity {
 
     private void start() {
         mHandler.removeCallbacks(mDelayStart);
-        Intent i = new Intent(ActivitySplash.this, ActivityBeforeSearch.class);
-        startActivity(i);
-        finish();
+        checkRegist();
 //        overridePendingTransition(android.R.anim.fade_in,0);
     }
 
@@ -59,25 +65,36 @@ public class ActivitySplash extends BindableActivity {
 //        JPushInterface.onPause(this);
     }
 
-//    public void registerAlias() {
-//        String alias = Device.getId(this);
-//        //call back not ui thread
-////        JPushInterface.setAliasAndTags(getApplicationContext(), alias, null, new TagAliasCallback() {
-//            @Override
-//            public void gotResult(int i, String s, Set<String> strings) {
-//                switch (i) {
-//                    case 0:
-//                        L.dbg("Set tag and alias success");
-//                        break;
-//
-//                    case 6002:
-//                        L.dbg("Failed to set alias and tags due to timeout. Try again after 60s.");
-//                        break;
-//
-//                    default:
-//                        L.dbg("Failed with errorCode = " + i);
-//                        break;
-//                }
-//            }
-//        });
+    public void setResponseUserInfoLoad(ResponseUserInfoLoad responseUserInfoLoad){this.responseUserInfoLoad = responseUserInfoLoad;}
+
+
+    public void checkRegist() {
+        Http http = new Http();
+        JSONObject jo = JsonPack.buildUserInfoLoad();
+        http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
+            @Override
+            public void onResponse(JSONObject response) {
+                super.onResponse(response);
+                if (response == null) {
+                    ToolLog.dbg("server error");
+                    return;
+                }
+                //ToolLog.dbg("refresh title" + response);
+                setResponseUserInfoLoad(JacksonWrapper.json2Bean(response, ResponseUserInfoLoad.class));
+
+                Intent i;
+                if(responseUserInfoLoad.getStatusCode() == 1){
+                    i = new Intent(ActivitySplash.this, ActivityWelcome.class);
+                }
+                else if(responseUserInfoLoad.getStatusCode() == 0){
+                    i = new Intent(ActivitySplash.this, ActivityBeforeSearch.class);
+                }
+                else{
+                    i = new Intent(ActivitySplash.this, ActivityWelcome.class);    //其他情况暂时也重新注册
+                }
+                startActivity(i);
+                finish();
+            }
+        });
     }
+}

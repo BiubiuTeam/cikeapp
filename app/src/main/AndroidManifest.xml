@@ -57,16 +57,24 @@
             <!--</intent-filter>-->
         </activity>
 
-        <activity android:name=".ActivityBeforeSearch"> </activity>
-        <activity android:name=".ActivityGender"> </activity>
+        <activity android:name=".ActivityTab"> </activity>
+        <activity android:name=".ActivityGender"></activity>
+        <activity android:name=".ActivityBeforeSearch">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <activity android:name=".ActivityRole"> </activity>
-        <activity android:name=".ActivitySearch"> </activity>
-        <activity android:name=".ActivityWelcome"><intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ActivitySearch">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter> </activity>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".ActivityWelcome"></activity>
+        <activity android:name=".ActivityRole"></activity>
     </application>
 
 

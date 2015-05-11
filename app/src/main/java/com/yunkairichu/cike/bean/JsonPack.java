@@ -20,7 +20,7 @@ public class JsonPack implements JsonConstant{
         pr.setUserConfig(userConfig);
         pr.setLatitude(2);
         pr.setLongitude(1);
-        pr.setCity("1");
+        pr.setCity("NONE");
         return JacksonWrapper.bean2Json(pr);
     }
 
@@ -41,7 +41,7 @@ public class JsonPack implements JsonConstant{
         pr.setDvcId(ToolDevice.getId(Application.getInstance().getApplicationContext()));
         pr.setLatitude(2);
         pr.setLongitude(1);
-        pr.setCity("1");
+        pr.setCity("NONE");
         pr.setFilter(filter);
         pr.setMsgTag(msgTag);
         return JacksonWrapper.bean2Json(pr);
@@ -59,7 +59,7 @@ public class JsonPack implements JsonConstant{
         pr.setDvcId(ToolDevice.getId(Application.getInstance().getApplicationContext()));
         pr.setLatitude(2);
         pr.setLongitude(1);
-        pr.setCity("1");
+        pr.setCity("NONE");
         pr.setMsgTag(msgTag);
         pr.setTitleType(titleType);
         pr.setTitleCont(titleCont);
@@ -107,7 +107,7 @@ public class JsonPack implements JsonConstant{
         pr.setDvcId(ToolDevice.getId(Application.getInstance().getApplicationContext()));
         pr.setLatitude(2);
         pr.setLongitude(1);
-        pr.setCity("1");
+        pr.setCity("NONE");
         pr.setTitleId(titleId);
         return JacksonWrapper.bean2Json(pr);
     }
