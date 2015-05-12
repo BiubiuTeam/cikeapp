@@ -7,4 +7,13 @@
     <string name="searching">搜索中</string>
     <string name="welcome">下滑开启</string>
     <string name="cike">此刻</string>
+    <string name="back">返回</string>
+    <string name="report">举报</string>
+    <string name="timeline_text">还有 小时 分钟会话销毁</string>
+    <string name="region">对方在深圳市</string>
+    <string name="student">学生</string>
+    <string name="worker">在职</string>
+    <string name="button_pushtotalk">按住说话</string>
+    <string name="Send_the_following_pictures">Send the following pictures?</string>
+    <string name="button_send">发送</string>
 </resources>

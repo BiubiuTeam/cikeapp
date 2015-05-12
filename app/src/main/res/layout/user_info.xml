@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/user_info"
+    android:layout_marginTop="@dimen/chat_topbar_top_margin"
+    android:gravity="center">
+
+    <ImageView
+        android:id="@+id/status"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="@drawable/bigmeal"
+        android:layout_marginRight="8dp"
+        />
+    <TextView
+        android:id="@+id/role"
+        android:layout_width="30dp"
+        android:layout_height="13dp"
+        android:background="@color/student"
+        android:textSize="9sp"
+        android:text="学生"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:layout_marginRight="8dp"
+        />
+    <TextView
+        android:id="@+id/region"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#ffffff"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:text="@string/region"
+        />
+
+</LinearLayout>

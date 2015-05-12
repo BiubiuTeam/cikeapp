@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="acticity_chat_top_bar">#393832</color>
+    <color name="student">#7ed321</color>
+    <color name="worker">#4a90e2</color>
+    <color name="chat_bottom">#393832</color>
+    <color name="gray_normal">#666667</color>
+</resources>

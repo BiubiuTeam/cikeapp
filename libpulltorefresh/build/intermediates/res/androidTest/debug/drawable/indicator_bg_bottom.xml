@@ -15,4 +15,4 @@
         android:topLeftRadius="@dimen/indicator_corner_radius"
         android:topRightRadius="@dimen/indicator_corner_radius" />
 
-</shape><!-- From: file:/D:/voodoo/cikeapp/libpulltorefresh/src/main/res/drawable/indicator_bg_bottom.xml --><!-- From: file:/D:/voodoo/cikeapp/libpulltorefresh/build/intermediates/bundles/debug/res/drawable/indicator_bg_bottom.xml -->
+</shape><!-- From: file:/开发/android%20dev/cike%20for%20github/cikeapp/libpulltorefresh/src/main/res/drawable/indicator_bg_bottom.xml --><!-- From: file:/开发/android%20dev/cike%20for%20github/cikeapp/libpulltorefresh/build/intermediates/bundles/debug/res/drawable/indicator_bg_bottom.xml -->
