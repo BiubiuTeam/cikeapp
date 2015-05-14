@@ -16,4 +16,5 @@
     <string name="button_pushtotalk">按住说话</string>
     <string name="Send_the_following_pictures">Send the following pictures?</string>
     <string name="button_send">发送</string>
+    <string name="move_up_to_cancel">上滑取消发送</string>
 </resources>

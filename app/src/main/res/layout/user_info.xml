@@ -35,4 +35,7 @@
         android:text="@string/region"
         />
 
+
+
+
 </LinearLayout>

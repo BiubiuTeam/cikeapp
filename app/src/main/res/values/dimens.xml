@@ -13,4 +13,6 @@
     <dimen name="chat_menu">17sp</dimen>
     <dimen name="timeline_height">15dp</dimen>
     <dimen name="chat_bottom">50dp</dimen>
+    <dimen name="margin_chat_activity">5dp</dimen>
+    <dimen name="size_avatar">46.5dp</dimen>
 </resources>
