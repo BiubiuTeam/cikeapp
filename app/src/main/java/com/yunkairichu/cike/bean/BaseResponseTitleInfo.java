@@ -1,9 +1,14 @@
 package com.yunkairichu.cike.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.io.Serializable;
+
 /**
  * Created by vida2009 on 2015/5/7.
  */
-public class BaseResponseTitleInfo {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BaseResponseTitleInfo implements Serializable {
     private long sortId;
     private long titleId;
     private String dvcId;
@@ -15,7 +20,7 @@ public class BaseResponseTitleInfo {
     private double latitude;
     private double longitude;
     private BasePostExtension extension;
-    private int blocklen;
+    private int blockLen;
     private int msgTag;
 
     public long getSortId() {
@@ -106,12 +111,12 @@ public class BaseResponseTitleInfo {
         this.extension = extension;
     }
 
-    public int getBlocklen() {
-        return blocklen;
+    public int getBlockLen() {
+        return blockLen;
     }
 
-    public void setBlocklen(int blocklen) {
-        this.blocklen = blocklen;
+    public void setBlockLen(int blockLen) {
+        this.blockLen = blockLen;
     }
 
     public int getMsgTag() {

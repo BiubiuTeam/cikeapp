@@ -8,14 +8,14 @@ import android.os.Bundle;
  */
 public class ActivitySearch extends Activity {
 
-    RippleView rippleView;
+    ViewRipple viewRipple;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.rippleView = new RippleView(this);
+        this.viewRipple = new ViewRipple(this);
         setContentView(R.layout.activity_search);
-        rippleView.startRipple();
+        viewRipple.startRipple();
 
     }
 }

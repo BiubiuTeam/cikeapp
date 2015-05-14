@@ -90,7 +90,7 @@ public class ActivitySplash extends BindableActivity {
                     i = new Intent(ActivitySplash.this, ActivityBeforeSearch.class);
                 }
                 else{
-                    i = new Intent(ActivitySplash.this, ActivityWelcome.class);    //其他情况暂时也重新注册
+                    i = new Intent(ActivitySplash.this, ActivityWelcome.class);    //鍏朵粬涔熸殏瀹氭槸娉ㄥ唽
                 }
                 startActivity(i);
                 finish();

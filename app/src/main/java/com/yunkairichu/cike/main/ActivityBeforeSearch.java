@@ -3,6 +3,7 @@ package com.yunkairichu.cike.main;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -10,8 +11,10 @@ import android.widget.Button;
 
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
+import com.jaf.jcore.JacksonWrapper;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
+import com.yunkairichu.cike.bean.ResponseSearchTitle;
 
 import org.json.JSONObject;
 
@@ -22,6 +25,7 @@ public class ActivityBeforeSearch extends Activity {
 
     private Button button;
     private View searching;
+    private ResponseSearchTitle responseSearchTitle = new ResponseSearchTitle();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,15 +51,29 @@ public class ActivityBeforeSearch extends Activity {
                             ToolLog.dbg("server error");
                             return;
                         }
-                        Intent i = new Intent(ActivityBeforeSearch.this, ActivityTab.class);
-                        startActivity(i);
-                        finish();
+
+                        setResponseSearchTitle(JacksonWrapper.json2Bean(response, ResponseSearchTitle.class));
+
+                        //ÑÓ³ÙÁ½ÃëÌø×ª
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent i = new Intent(ActivityBeforeSearch.this, ActivitySquare.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
+                                i.putExtras(bundle);
+                                startActivity(i);
+                                finish();
+                            }
+                        }, 2000);
                     }
                 });
             }
         });
     }
 
+    public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
 
+    public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
 }
 

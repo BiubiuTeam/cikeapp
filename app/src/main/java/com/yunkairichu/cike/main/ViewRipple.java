@@ -18,7 +18,7 @@ import android.widget.RelativeLayout;
 /**
  * Created by liuxiaobo on 15/5/9.
  */
-public class RippleView extends View {
+public class ViewRipple extends View {
     private int mScreenWidth;
     private int mScreenHeight;
     private Bitmap mRippleBitmap;
@@ -67,7 +67,7 @@ public class RippleView extends View {
     };
     /**
     *@param context 上下文*/
-    public RippleView(Context context) {
+    public ViewRipple(Context context) {
         super(context);
         // TODO Auto-generated constructor stub
         init();
@@ -77,7 +77,7 @@ public class RippleView extends View {
      * @param context 上下文
      * @param attrs 参数
      */
-    public RippleView(Context context, AttributeSet attrs) {
+    public ViewRipple(Context context, AttributeSet attrs) {
         super(context, attrs);
         // TODO Auto-generated constructor stub
         init();
@@ -87,7 +87,7 @@ public class RippleView extends View {
      * @param attrs 参数
      * @param defStyleAttr 样式参数
      */
-    public RippleView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ViewRipple(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         // TODO Auto-generated constructor stub
         init();

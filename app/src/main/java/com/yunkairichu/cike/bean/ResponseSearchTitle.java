@@ -2,19 +2,20 @@ package com.yunkairichu.cike.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by vida2009 on 2015/5/7.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ResponseSearchTitle {
+public class ResponseSearchTitle implements Serializable {
     private String statusInfo;
     private int statusCode;
     private ReturnData returnData;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ReturnData {
+    public static class ReturnData implements Serializable {
         private String city;
         private int lineLen;
         private int lineNum;
