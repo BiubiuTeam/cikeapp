@@ -78,13 +78,13 @@
     <RelativeLayout
         android:id="@+id/faceLayout"
         android:layout_width="match_parent"
-        android:layout_height="280dip"
+        android:layout_height="1dip"
         android:layout_alignParentBottom="true">
 
         <ViewFlipper
             android:id="@+id/faceFlipper"
             android:layout_width="match_parent"
-            android:layout_height="280dip"
+            android:layout_height="255dip"
             android:background="#393832"
             >
         </ViewFlipper>
@@ -101,7 +101,7 @@
             android:layout_width="match_parent"
             android:layout_height="20dip"
             android:layout_below="@id/faceFlipper"
-            android:background="#787772"
+            android:background="#393832"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -112,10 +112,12 @@
         android:id="@+id/bar_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+
         android:orientation="vertical"
         android:paddingBottom="0dip"
-        android:paddingTop="0dip" >
+        android:paddingTop="0dip"
+        android:layout_above="@id/faceLayout"
+        >
 
 
 
@@ -127,7 +129,8 @@
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingTop="7dp"
-            android:paddingBottom="7dp">
+            android:paddingBottom="7dp"
+           >
 
             <Button
                 android:id="@+id/btn_set_mode_voice"
@@ -255,18 +258,18 @@
 
             <!-- 表情图片 -->
 
-            <LinearLayout
-                android:id="@+id/ll_face_container"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:orientation="vertical"
-                android:visibility="visible" >
+            <!--<LinearLayout-->
+                <!--android:id="@+id/ll_face_container"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="150dp"-->
+                <!--android:orientation="vertical"-->
+                <!--android:visibility="visible" >-->
 
-                <android.support.v4.view.ViewPager
-                    android:id="@+id/vPager"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                <!--<android.support.v4.view.ViewPager-->
+                    <!--android:id="@+id/vPager"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content" />-->
+            <!--</LinearLayout>-->
 
 
             </LinearLayout>

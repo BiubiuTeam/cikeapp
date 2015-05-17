@@ -8,7 +8,19 @@
         android:id="@+id/gridImage"
         android:layout_width="80dip"
         android:layout_height="80dip"
-        android:layout_margin="20dip"/>
+        android:layout_margin="10dip"
+        android:layout_centerHorizontal="true"
+        />
+
+    <TextView
+        android:id="@+id/gridText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/gridImage"
+        android:layout_centerHorizontal="true"
+
+        android:textColor="#ffffff"
+        android:text="dsjflskd"/>
 
 </RelativeLayout>
 
