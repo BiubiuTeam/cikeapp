@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 
+import com.easemob.EMCallBack;
+import com.easemob.chat.EMChatManager;
+import com.jaf.jcore.Application;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
@@ -26,6 +29,7 @@ public class ActivityBeforeSearch extends Activity {
     private Button button;
     private View searching;
     private ResponseSearchTitle responseSearchTitle = new ResponseSearchTitle();
+    private int isLogin=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +41,37 @@ public class ActivityBeforeSearch extends Activity {
 
         button = (Button) findViewById(R.id.bigbutton);
 
+        EMChatManager.getInstance().login(ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase(), "123",new EMCallBack() {//»Øµ÷
+            @Override
+            public void onSuccess() {
+                ToolLog.dbg("begin");
+                isLogin = 1;
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        //EMGroupManager.getInstance().loadAllGroups();
+                        //EMChatManager.getInstance().loadAllConversations();
+                        ToolLog.dbg("login success");
+
+                    }
+                });
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+                ToolLog.dbg("loging");
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                ToolLog.dbg("login fail");
+            }
+        });
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isLogin!=1){return;}
+
                 setContentView(searching);
                 Http http = new Http();
                 JSONObject jo = JsonPack.buildSearchTitle(0, 0);

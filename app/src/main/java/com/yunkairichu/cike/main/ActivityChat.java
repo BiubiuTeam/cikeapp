@@ -274,9 +274,9 @@ public class ActivityChat extends Activity {
                 //btnContainer.setVisibility(View.GONE);
             }
         });
-
+int b=1;
         setUpView();
-
+        int c=1;
         //////////////////////////////////////////////////////////////////////////////////////////////////
 
         faceMap=new HashMap<String,Integer>();
