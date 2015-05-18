@@ -84,7 +84,7 @@
         <ViewFlipper
             android:id="@+id/faceFlipper"
             android:layout_width="match_parent"
-            android:layout_height="255dip"
+            android:layout_height="245dip"
             android:background="#393832"
             >
         </ViewFlipper>

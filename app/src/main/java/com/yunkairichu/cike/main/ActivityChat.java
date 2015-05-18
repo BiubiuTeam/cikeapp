@@ -253,7 +253,7 @@ public class ActivityChat extends Activity {
             GridView gv = (GridView) view.findViewById(R.id.myGridView);
             gv.setNumColumns(3);
             gv.setSelector(new ColorDrawable(Color.TRANSPARENT));
-            MyGridAdapter adapter = new MyGridAdapter(this, listGrid.get(i), R.layout.chat_grid_item, new String[]{"image"}, new int[]{R.id.gridImage});
+            MyGridAdapter adapter = new MyGridAdapter(this, listGrid.get(i), R.layout.chat_grid_item, new String[]{"image"}, new String[]{"faceName"}, new int[]{R.id.gridImage},new int[]{R.id.gridText});
             gv.setAdapter(adapter);
             gv.setOnTouchListener(new MyTouchListener(viewFlipper));
             viewFlipper.addView(view);
@@ -272,6 +272,9 @@ public class ActivityChat extends Activity {
             /**
              * 将image放入pointList，便于修改点的颜色
              */
+
+
+
         }
 
     }
@@ -285,18 +288,22 @@ public class ActivityChat extends Activity {
         ArrayList<HashMap<String, Object>> list;
         int layout;
         String[] from;
+        String[] fromName;
         int[] to;
+        int[] toName;
 
 
         public MyGridAdapter(Context context,
                              ArrayList<HashMap<String, Object>> list, int layout,
-                             String[] from, int[] to) {
+                             String[] from,String[] fromName, int[] to, int[] toName ) {
             super();
             this.context = context;
             this.list = list;
             this.layout = layout;
             this.from = from;
+            this.fromName = fromName;
             this.to = to;
+            this.toName = toName;
         }
 
         @Override
@@ -319,21 +326,25 @@ public class ActivityChat extends Activity {
 
         class ViewHolder {
             ImageView image = null;
+            TextView name = null;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             // TODO Auto-generated method stub
             ViewHolder holder = null;
+
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(layout, null);
                 holder = new ViewHolder();
                 holder.image = (ImageView) convertView.findViewById(to[0]);
+                holder.name = (TextView) convertView.findViewById(toName[0]);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.image.setImageResource((Integer) list.get(position).get(from[0]));
+            holder.name.setText((CharSequence) list.get(position).get(fromName[0]));
             class MyGridImageClickListener implements View.OnClickListener {
 
                 int position;
@@ -359,8 +370,12 @@ public class ActivityChat extends Activity {
             holder.image.setOnClickListener(new MyGridImageClickListener(position));
 
 
-            TextView mGridText =  (TextView) convertView.findViewById(R.id.gridText);
-            mGridText.setText(faceName[position]);
+//            TextView mGridText = (TextView) convertView.findViewById(R.id.gridText);
+//            mGridText.setText(faceName[position]);
+
+
+
+
             return convertView;
         }
 
@@ -389,7 +404,7 @@ public class ActivityChat extends Activity {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (moveable) {
-                        if (event.getX() - startX > 60) {
+                        if (event.getX() - startX > 40) {
                             moveable = false;
                             int childIndex = viewFlipper.getDisplayedChild();
                             /**
@@ -401,7 +416,7 @@ public class ActivityChat extends Activity {
                                 viewFlipper.showPrevious();
                                 setPointEffect(childIndex - 1);
                             }
-                        } else if (event.getX() - startX < -60) {
+                        } else if (event.getX() - startX < -40) {
                             moveable = false;
                             int childIndex = viewFlipper.getDisplayedChild();
                             /**
@@ -458,7 +473,7 @@ public class ActivityChat extends Activity {
 
 
             ViewGroup.LayoutParams params = faceLayout.getLayoutParams();
-            params.height = (int) ToolDevice.dp2px(275);
+            params.height = (int) ToolDevice.dp2px(265);
             faceLayout.setLayoutParams(params);
             chatBottomLook.setBackgroundResource(R.drawable.chatting_setmode_keyboard_btn);
 
