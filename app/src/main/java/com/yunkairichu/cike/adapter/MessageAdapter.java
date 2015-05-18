@@ -97,6 +97,7 @@ public class MessageAdapter extends BaseAdapter {
             messages = (EMMessage[]) conversation.getAllMessages().toArray(new EMMessage[conversation.getAllMessages().size()]);
             for (int i = 0; i < messages.length; i++) {
                 // getMessage will set message as read status
+                ToolLog.dbg("hhhhhh");
                 ToolLog.dbg(conversation.getMessage(i).getBody().toString());
                 conversation.getMessage(i);
             }
