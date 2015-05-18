@@ -1,6 +1,5 @@
 package com.yunkairichu.cike.main;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +48,7 @@ public class ActivitySplash extends BindableActivity {
 
     private void start() {
         mHandler.removeCallbacks(mDelayStart);
+
         checkRegist();
 //        overridePendingTransition(android.R.anim.fade_in,0);
     }

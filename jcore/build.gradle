@@ -27,4 +27,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile project(':libpulltorefresh')
     compile project(':libactionbar')
+    compile files('libs/easemobchat_2.1.8.jar')
 }

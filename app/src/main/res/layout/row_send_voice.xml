@@ -47,15 +47,15 @@
                 android:src="@drawable/voice_send_play_3"
                 android:scaleType="center"
                 />
-            <!--<ImageView-->
-                <!--android:id="@+id/voice_content"-->
-                <!--android:minWidth="20dp"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="50dp"-->
-                <!--android:layout_toLeftOf="@id/voice_play"-->
-                <!--android:background="#ffd600"-->
-                <!--android:scaleType="center"-->
-                <!--/>-->
+            <ImageView
+                android:id="@+id/voice_content"
+                android:minWidth="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_toLeftOf="@id/voice_play"
+                android:background="#ffd600"
+                android:scaleType="center"
+                />
             <TextView
                 android:id="@+id/length"
                 style="@style/chat_text_name_style"
@@ -64,28 +64,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:text="3&apos;&apos;" />
+
+            <!--<ImageView-->
+                <!--android:id="@+id/unread_voice"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginLeft="10dp"-->
+                <!--android:layout_toRightOf="@id/length"/>-->
+            <!--android:src="@drawable/voice_unread" />-->
+
+            <ProgressBar
+                android:id="@+id/pb_sending"
+                android:layout_toRightOf="@id/unread_voice"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="5dp"
+                android:visibility="invisible" />
         </RelativeLayout>
-
-
-
-
-
-        <!--<ImageView-->
-        <!--android:id="@+id/iv_unread_voice"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginLeft="10dp"-->
-        <!--android:layout_toRightOf="@id/tv_length"-->
-        <!--android:src="@drawable/voice_unread" />-->
-
-        <!--<ProgressBar-->
-        <!--android:id="@+id/pb_sending"-->
-        <!--android:layout_toRightOf="@id/iv_unread_voice"-->
-        <!--style="?android:attr/progressBarStyleSmall"-->
-        <!--android:layout_width="30dp"-->
-        <!--android:layout_height="30dp"-->
-        <!--android:layout_marginTop="5dp"-->
-        <!--android:visibility="invisible" />-->
 
         <!--<TextView-->
         <!--android:id="@+id/tv_userid"-->

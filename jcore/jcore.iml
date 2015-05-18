@@ -96,6 +96,7 @@
     <orderEntry type="library" exported="" name="appcompat-v7-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="jpush-sdk-release1.7.3" level="project" />
     <orderEntry type="library" exported="" name="volley" level="project" />
+    <orderEntry type="library" exported="" name="easemobchat_2.1.8" level="project" />
     <orderEntry type="module" module-name="libactionbar" exported="" />
     <orderEntry type="module" module-name="libpulltorefresh" exported="" />
   </component>

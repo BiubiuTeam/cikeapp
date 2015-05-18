@@ -40,6 +40,25 @@
 
     <!-- baidu map end -->
 
+    <!-- huanxin-->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <!-- huanxin end-->
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -47,31 +66,40 @@
         android:theme="@style/AppTheme"
         android:name="com.jaf.jcore.Application">
 
+        <!-- 设置环信应用的appkey -->
+        <meta-data android:name="EASEMOB_APPKEY"  android:value="nuxsoft#sillychat" />
+        <!-- 声明sdk所需的service SDK核心功能-->
+        <service android:name="com.easemob.chat.EMChatService" />
+
         <activity
             android:name=".ActivitySplash"
             android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ActivityTab"> </activity>
+        <activity android:name=".ActivityGender"> </activity>
+        <activity android:name=".ActivityBeforeSearch">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
 
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
         </activity>
-
-        <activity android:name=".ActivityTab"> </activity>
-        <activity android:name=".ActivityGender"> </activity>
-        <activity android:name=".ActivityBeforeSearch">
-
-        </activity>
         <activity android:name=".ActivityWelcome"></activity>
         <activity android:name=".ActivityRole"></activity>
         <activity android:name=".ActivitySquare"></activity>
         <activity android:name=".ActivitySearch"></activity>
         <activity android:name=".ActivityChat">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
     </application>
 

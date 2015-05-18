@@ -35,5 +35,6 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile project(':jcore')
+    compile files('D:/voodoo/cikeapp/jcore/libs/easemobchat_2.1.8.jar')
 }
 

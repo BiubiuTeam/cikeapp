@@ -130,10 +130,10 @@ public class ActivitySquare extends Activity{
         }
     };
 
-    private class ThreadNetWork implements Runnable {
+    private class ThreadGetSquareTitleBitmap implements Runnable {
         private ResponseSearchTitle responseSearchTitle;
 
-        public ThreadNetWork(ResponseSearchTitle responseSearchTitle){
+        public ThreadGetSquareTitleBitmap(ResponseSearchTitle responseSearchTitle){
             this.responseSearchTitle = responseSearchTitle;
         }
 
@@ -206,8 +206,8 @@ public class ActivitySquare extends Activity{
     }
 
     public void getTitleBitmap(){
-        ThreadNetWork threadNetWork  =new ThreadNetWork(responseSearchTitle);
-        new Thread(threadNetWork).start();
+        ThreadGetSquareTitleBitmap threadGetSquareTitleBitmap =new ThreadGetSquareTitleBitmap(responseSearchTitle);
+        new Thread(threadGetSquareTitleBitmap).start();
     }
 
     public void firReFlashSearchTitle(){
@@ -226,6 +226,20 @@ public class ActivitySquare extends Activity{
             linePos[k] += baseResponseTitleInfo.getBlockLen();
             params.setGravity(Gravity.FILL);
             tv.setLayoutParams(params);
+
+            tv.setTag(i);
+            tv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(ActivitySquare.this, ActivityChat.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("titleInfo", responseSearchTitle.getReturnData().getContData().get((int) v.getTag()));
+                    bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
+                    i.putExtras(bundle);
+                    startActivity(i);
+                    finish();
+                }
+            });
             squareGridLayout.addView(tv, i);
         }
     }
@@ -253,6 +267,8 @@ public class ActivitySquare extends Activity{
         if(tmpCnt==bitmapNum){searchFlag = 1;}
         ((ImageView)squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
     }
+
+    public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
 
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
 }
