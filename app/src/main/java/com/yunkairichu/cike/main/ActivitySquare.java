@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
@@ -44,10 +45,10 @@ public class ActivitySquare extends Activity{
     private View view;
     private View selectView;
     private squareOnTouchListener sqListener = new squareOnTouchListener();
-    private Button squareSelectButton;
+    private LinearLayout squareSelectButton;
     private Button squareChainButton;
 
-    private Bitmap[] titleBitmap = new Bitmap[50]; //ÔÝÊ±Éè³É50
+    private Bitmap[] titleBitmap = new Bitmap[50]; //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½50
     private int bitmapNum;
     private int tmpCnt;
     private int searchFlag = 1;
@@ -58,7 +59,8 @@ public class ActivitySquare extends Activity{
         setContentView(R.layout.activity_square);
         squareScrollView = (HorizontalScrollView) findViewById(R.id.squereHScrollView);
         squareGridLayout = (GridLayout) findViewById(R.id.squereGridLayout);
-        squareSelectButton = (Button) findViewById(R.id.squareSelectorButton);
+        squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
+        squareSelectButton.setClickable(true);
         squareChainButton = (Button) findViewById(R.id.squareUserChainButton);
         LayoutInflater inflater = getLayoutInflater();
         selectView = inflater.inflate(R.layout.view_square_selector, null);
@@ -90,7 +92,7 @@ public class ActivitySquare extends Activity{
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    /////////////////////////////////////////¶¯×÷²¶×½/////////////////////////////////////////////////
+    /////////////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×½/////////////////////////////////////////////////
 
     class squareOnTouchListener implements View.OnTouchListener {
         @Override
@@ -99,7 +101,7 @@ public class ActivitySquare extends Activity{
                 case MotionEvent.ACTION_DOWN:
                     break;
                 case MotionEvent.ACTION_UP:
-                    // Èç¹û´¥·¢¼àÌýÊÂ¼þ£¬²¢ÇÒÓÐÄÚÈÝ£¬²¢ÇÒScrollViewÒÑ¾­À­µ½µ×²¿£¬¼ÓÔØÒ»´ÎÊý¾Ý
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½ScrollViewï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
                     if (/*sqListener != null
                             && view != null
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
@@ -116,7 +118,7 @@ public class ActivitySquare extends Activity{
         }
     }
 
-    ///////////////////////////////////////////×ÓÏß³Ì/////////////////////////////////////////////////
+    ///////////////////////////////////////////ï¿½ï¿½ï¿½ß³ï¿½/////////////////////////////////////////////////
 
     private Handler handler=new Handler(){
         public void handleMessage(Message msg){
@@ -184,7 +186,7 @@ public class ActivitySquare extends Activity{
         }
     }
 
-    //////////////////////////////////////////Êý¾ÝÇëÇóÓëÕ¹Ê¾//////////////////////////////////////////////////////
+    //////////////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹Ê¾//////////////////////////////////////////////////////
 
     public void doTitleSearch() {
         Http http = new Http();
@@ -271,4 +273,7 @@ public class ActivitySquare extends Activity{
     public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
 
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
+
+
+
 }

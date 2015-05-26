@@ -15,4 +15,7 @@
     <dimen name="chat_bottom">50dp</dimen>
     <dimen name="margin_chat_activity">5dp</dimen>
     <dimen name="size_avatar">46.5dp</dimen>
+    <dimen name="size_btn_chatlist">53dp</dimen>
+    <dimen name="stdPadding">30dp</dimen>
+    <dimen name="midPadding">32dp</dimen>
 </resources>

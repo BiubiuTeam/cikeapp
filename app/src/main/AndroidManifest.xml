@@ -94,7 +94,9 @@
         </activity>
         <activity android:name=".ActivityWelcome"></activity>
         <activity android:name=".ActivityRole"></activity>
-        <activity android:name=".ActivitySquare"></activity>
+        <activity android:name=".ActivitySquare">
+
+        </activity>
         <activity android:name=".ActivitySearch"></activity>
         <activity android:name=".ActivityChat">
             <!--<intent-filter>-->

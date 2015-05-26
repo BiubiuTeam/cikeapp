@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/status_picker"
+    android:layout_marginTop="25dp"
+    android:layout_marginLeft="18dp"
+    >
+
+    <ImageView
+        android:id="@+id/look_into"
+        android:layout_width="24.5dp"
+        android:layout_height="19.5dp"
+        android:background="@drawable/look_into_black"
+        android:layout_marginRight="8dp"
+        android:layout_gravity="center"
+        />
+    <TextView
+        android:id="@+id/picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="14sp"
+        android:text="深圳.在路上.全部人"
+        android:textColor="#000000"
+        android:layout_marginRight="8dp"
+
+        />
+
+    <ImageView
+        android:id="@+id/picker_arrow"
+        android:layout_width="13dp"
+        android:layout_height="11dp"
+        android:background="@drawable/picker_arrow_black"
+        android:layout_gravity="center"
+        />
+
+</LinearLayout>

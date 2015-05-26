@@ -6,52 +6,45 @@
     android:background="#ffd600">
 
     <Button
-        android:id="@+id/bigbutton2"
-        android:background="@drawable/welcome2"
-        android:layout_width="116dp"
-        android:layout_height="116dp"
-        android:layout_marginBottom="35dp"
-        android:text="@string/cike"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:textColor="#ffffff"
+        android:id="@+id/bigbutton_add"
+        android:background="@drawable/add"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="24dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
     <HorizontalScrollView
+        android:layout_above="@+id/bigbutton_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/squereHScrollView"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="80dp"
-        android:layout_above="@+id/bigbutton2"
-        android:fillViewport="false" >
+        android:layout_marginBottom="70dp"
+        android:fillViewport="false"
+        android:scrollbars="none">
 
         <GridLayout
+            android:id="@+id/squereGridLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/squereGridLayout">
+            >
         </GridLayout>
     </HorizontalScrollView>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="全部.全部.所有人"
-        android:id="@+id/squareSelectorButton"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
+    <include layout="@layout/content_picker"></include>
     <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fri"
         android:id="@+id/squareUserChainButton"
+        android:layout_width="@dimen/size_btn_chatlist"
+        android:layout_height="@dimen/size_btn_chatlist"
+        android:background="@drawable/btn_chatlist_selector"
         android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginRight="18dp"
+         />
 
 </RelativeLayout>

@@ -5,4 +5,5 @@
     <color name="worker">#4a90e2</color>
     <color name="chat_bottom">#393832</color>
     <color name="gray_normal">#666667</color>
+    <color name="tagRed">#d0021b</color>
 </resources>
