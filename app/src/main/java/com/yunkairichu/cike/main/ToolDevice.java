@@ -17,11 +17,11 @@ public class ToolDevice {
     static public int dw;//屏幕宽度
     public static int dh;//屏幕高度
 
-
+    //统一转小写
     public static String getId(Context context) {
         String aid = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
-        return aid;
+        return aid.toLowerCase();
     }
 
     public static float dp2px(float dp) {

@@ -47,9 +47,12 @@
             android:layout_height="@dimen/top_bar_down"
             android:layout_marginTop="@dimen/top_bar_up">
 
-            <ImageView
+            <ProgressBar
                 android:id="@+id/timeline"
+                style="@android:style/Widget.ProgressBar.Horizontal"
                 android:background="@drawable/timeline_border"
+                android:max="100"
+                android:progress="100"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/timeline_height"
                 android:layout_alignParentBottom="true"
@@ -204,7 +207,8 @@
 
 
             </RelativeLayout>
-<LinearLayout
+
+            <LinearLayout
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp">
@@ -330,5 +334,23 @@
                 android:textSize="10sp" />
         </RelativeLayout>
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bar_bottom"
+        android:layout_below="@id/chat_top_bar" >
+        <ImageView
+            android:id="@+id/big_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+    <com.yunkairichu.cike.widget.PhotoView
+        android:id="@+id/image2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 </RelativeLayout>

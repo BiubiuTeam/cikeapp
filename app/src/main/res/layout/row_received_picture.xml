@@ -4,7 +4,10 @@
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingTop="13dp" >
+    android:paddingTop="13dp"
+    android:longClickable="true"
+    android:clickable="false"
+    android:focusable="false">
 
     <TextView
         android:id="@+id/timestamp"
@@ -33,10 +36,16 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/margin_chat_activity"
             android:layout_toRightOf="@id/userhead"
+            android:longClickable="true"
+            android:clickable="false"
+            android:focusable="false"
             >
 
             <ImageView
                 android:background="@drawable/chatfrom_bg"
+                android:longClickable="true"
+                android:clickable="false"
+                android:focusable="false"
                 android:id="@+id/sendPicture"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

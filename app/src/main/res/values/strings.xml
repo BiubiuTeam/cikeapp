@@ -14,9 +14,25 @@
     <string name="student">学生</string>
     <string name="worker">在职</string>
     <string name="button_pushtotalk">按住说话</string>
-    <string name="Send_the_following_pictures">Send the following pictures?</string>
+    <string name="release_to_cancel">松开结束</string>
+    <string name="Is_download_voice_click_later">下载中，请稍后</string>
+    <string name="Send_the_following_pictures">要发送这些照片吗？</string>
     <string name="button_send">发送</string>
     <string name="move_up_to_cancel">上滑取消发送</string>
+    <string name="picture">[图片]</string>
+    <string name="voice">[语音]</string>
+    <string name="voice_call">[语音通话]</string>
+    <string name="Send_voice_need_sdcard_support">缺少SD卡</string>
+    <string name="sd_card_does_not_exist">缺少SD卡</string>
+    <string name="recoding_fail">录音失败，请再试一次</string>
+    <string name="Recording_without_permission">不允许录音</string>
+    <string name="The_recording_time_is_too_short">录音时间太短</string>
+    <string name="send_failure_please">发送失败</string>
+    <string name="send_fail">发送失败</string>
+    <string name="cant_find_pictures">找不到图片</string>
+    <string name="connect_failuer_toast">网络连接失败，请稍后再试</string>
+    <string name="Download_the_pictures_new">下载图片</string>
+    <string name="Download_the_pictures">下载图片中: 0%</string>
     <string name="type_selector">想看到的状态</string>
     <string name="user_selector">想看到的用户</string>
     <string name="politics">含政治敏感信息</string>
@@ -24,4 +40,10 @@
     <string name="attack">收到谩骂或人身攻击</string>
     <string name="cancel">取消</string>
     <string name="pictureTips">发送给对方的照片不会被保存</string>
+
+    <item type="id" name="tag_image"></item>
+    <item type="id" name="tag_txt"></item>
+    <item type="id" name="tag_voice"></item>
+    <item type="id" name="tag_message"></item>
+    <item type="id" name="tag_position"></item>
 </resources>

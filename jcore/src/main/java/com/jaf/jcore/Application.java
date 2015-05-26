@@ -8,79 +8,100 @@ import com.android.volley.toolbox.Volley;
 import com.androidquery.AQuery;
 import com.easemob.chat.EMChat;
 
-;
-
-public class Application extends android.app.Application  {
-
-	private static final String TAG = "TEST";
-	private static Application INSTANCE;
-	private RequestQueue mRequestQueue;
-	private ImageLoader mImageLoader;
+/**
+ * Created by vida2009 on 2015/5/19.
+ */
+public class Application extends android.app.Application {
+    private static final String TAG = "TEST";
+    private static Application INSTANCE;
+    public static DemoHXSDKHelper hxSDKHelper = new DemoHXSDKHelper();
+    private RequestQueue mRequestQueue;
+    private ImageLoader mImageLoader;
     public AppExtraInfo mAppExtraInfo;
-	private static Context context;
+    private static Context context;
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		synchronized (Application.class) {
-			INSTANCE = this;
-		}
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        synchronized (Application.class) {
+            INSTANCE = this;
+        }
         mAppExtraInfo = new AppExtraInfo();
-		mRequestQueue = Volley.newRequestQueue(this);
+        mRequestQueue = Volley.newRequestQueue(this);
 
-		Context applicationContext = getApplicationContext();
+        Context applicationContext = getApplicationContext();
 
 //		int pid = android.os.Process.myPid();
 //		String processAppName =  getAppName(pid);
-//		// å¦‚æœappå¯ç”¨äº†è¿œç¨‹çš„serviceï¼Œæ­¤application:onCreateä¼šè¢«è°ƒç”¨2æ¬¡
-//		// ä¸ºäº†é˜²æ­¢ç¯ä¿¡SDKè¢«åˆå§‹åŒ–2æ¬¡ï¼ŒåŠ æ­¤åˆ¤æ–­ä¼šä¿è¯SDKè¢«åˆå§‹åŒ–1æ¬¡
-//		// é»˜è®¤çš„appä¼šåœ¨ä»¥åŒ…åä¸ºé»˜è®¤çš„process nameä¸‹è¿è¡Œï¼Œå¦‚æœæŸ¥åˆ°çš„process nameä¸æ˜¯appçš„process nameå°±ç«‹å³è¿”å›
+//		// Èç¹ûappÆôÓÃÁËÔ¶³ÌµÄservice£¬´Ëapplication:onCreate»á±»µ÷ÓÃ2´Î
+//		// ÎªÁË·ÀÖ¹»·ĞÅSDK±»³õÊ¼»¯2´Î£¬¼Ó´ËÅĞ¶Ï»á±£Ö¤SDK±»³õÊ¼»¯1´Î
+//		// Ä¬ÈÏµÄapp»áÔÚÒÔ°üÃûÎªÄ¬ÈÏµÄprocess nameÏÂÔËĞĞ£¬Èç¹û²éµ½µÄprocess name²»ÊÇappµÄprocess name¾ÍÁ¢¼´·µ»Ø
 //
 //		if (processAppName == null ||!processAppName.equalsIgnoreCase("com.easemob.chatuidemo")) {
 //			Log.e(TAG, "enter the service process!");
-//			//"com.easemob.chatuidemo"ä¸ºdemoçš„åŒ…åï¼Œæ¢åˆ°è‡ªå·±é¡¹ç›®ä¸­è¦æ”¹æˆè‡ªå·±åŒ…å
+//			//"com.easemob.chatuidemo"ÎªdemoµÄ°üÃû£¬»»µ½×Ô¼ºÏîÄ¿ÖĞÒª¸Ä³É×Ô¼º°üÃû
 //
-//			// åˆ™æ­¤application::onCreate æ˜¯è¢«service è°ƒç”¨çš„ï¼Œç›´æ¥è¿”å›
+//			// Ôò´Ëapplication::onCreate ÊÇ±»service µ÷ÓÃµÄ£¬Ö±½Ó·µ»Ø
 //			return;
 //		}
 
-		EMChat.getInstance().setAutoLogin(true);
-		EMChat.getInstance().init(applicationContext);
+        EMChat.getInstance().setAutoLogin(true);
+        EMChat.getInstance().init(applicationContext);
 
-		/**
-		 * debugMode == true æ—¶ä¸ºæ‰“å¼€ï¼Œsdk ä¼šåœ¨logé‡Œè¾“å…¥è°ƒè¯•ä¿¡æ¯
-		 * @param debugMode
-		 * åœ¨åšä»£ç æ··æ·†çš„æ—¶å€™éœ€è¦è®¾ç½®æˆfalse
-		 */
-		EMChat.getInstance().setDebugMode(true);//åœ¨åšæ‰“åŒ…æ··æ·†æ—¶ï¼Œè¦å…³é—­debugæ¨¡å¼ï¼Œå¦‚æœæœªè¢«å…³é—­ï¼Œåˆ™ä¼šå‡ºç°ç¨‹åºæ— æ³•è¿è¡Œé—®é¢˜
-		//JPushInterface.setDebugMode(Constant.Debug.DEBUG); 	// è®¾ç½®å¼€å¯æ—¥å¿—,å‘å¸ƒæ—¶è¯·å…³é—­æ—¥å¿—
-		//JPushInterface.init(this);
+        /**
+         * debugMode == true Ê±Îª´ò¿ª£¬sdk »áÔÚlogÀïÊäÈëµ÷ÊÔĞÅÏ¢
+         * @param debugMode
+         * ÔÚ×ö´úÂë»ìÏıµÄÊ±ºòĞèÒªÉèÖÃ³Éfalse
+         */
+        EMChat.getInstance().setDebugMode(true);//ÔÚ×ö´ò°ü»ìÏıÊ±£¬Òª¹Ø±ÕdebugÄ£Ê½£¬Èç¹ûÎ´±»¹Ø±Õ£¬Ôò»á³öÏÖ³ÌĞòÎŞ·¨ÔËĞĞÎÊÌâ
+        //JPushInterface.setDebugMode(Constant.Debug.DEBUG); 	// ÉèÖÃ¿ªÆôÈÕÖ¾,·¢²¼Ê±Çë¹Ø±ÕÈÕÖ¾
+        //JPushInterface.init(this);
+
+        hxSDKHelper.onInit(applicationContext);
     }
 
-	public static final Application getInstance() {
-		Application ret;
-		synchronized (Application.class) {
-			ret = INSTANCE;
-		}
-		return ret;
-	}
+    public static final Application getInstance() {
+        Application ret;
+        synchronized (Application.class) {
+            ret = INSTANCE;
+        }
+        return ret;
+    }
 
-	public RequestQueue getRequestQueue() {
-		return mRequestQueue;
-	}
+    /**
+     * ÉèÖÃÓÃ»§Ãû
+     *
+     * @param user
+     */
+    public void setUserName(String username) {
+        hxSDKHelper.setHXId(username);
+    }
 
-	public void cancelRequest(String tag) {
-		mRequestQueue.cancelAll(tag);
-	}
-	
-	public ImageLoader getImageLoader() {
-		getRequestQueue();
-		if (mImageLoader == null) {
-			mImageLoader = new ImageLoader(this.mRequestQueue,
-					Cache.getInstance());
-		}
-		return this.mImageLoader;
-	}
+    /**
+     * »ñÈ¡µ±Ç°µÇÂ½ÓÃ»§Ãû
+     *
+     * @return
+     */
+    public String getUserName() {
+        return hxSDKHelper.getHXId();
+    }
+
+    public RequestQueue getRequestQueue() {
+        return mRequestQueue;
+    }
+
+    public void cancelRequest(String tag) {
+        mRequestQueue.cancelAll(tag);
+    }
+
+    public ImageLoader getImageLoader() {
+        getRequestQueue();
+        if (mImageLoader == null) {
+            mImageLoader = new ImageLoader(this.mRequestQueue,
+                    Cache.getInstance());
+        }
+        return this.mImageLoader;
+    }
 
 
     public static class AppExtraInfo {

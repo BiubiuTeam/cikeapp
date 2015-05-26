@@ -2,14 +2,17 @@ package com.yunkairichu.cike.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.text.Spannable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -25,19 +28,27 @@ import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMMessage;
 import com.easemob.chat.FileMessageBody;
+import com.easemob.chat.ImageMessageBody;
 import com.easemob.chat.TextMessageBody;
+import com.easemob.chat.VoiceMessageBody;
+import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.DateUtils;
 import com.yunkairichu.cike.main.ActivityChat;
 import com.yunkairichu.cike.main.Constant;
 import com.yunkairichu.cike.main.R;
 import com.yunkairichu.cike.main.ToolLog;
+import com.yunkairichu.cike.main.ToolShowBigImage;
+import com.yunkairichu.cike.task.LoadImageTask;
+import com.yunkairichu.cike.utils.ImageCache;
+import com.yunkairichu.cike.utils.ImageUtils;
 import com.yunkairichu.cike.utils.SmileUtils;
-import com.yunkairichu.cike.utils.UserUtils;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by vida2009 on 2015/5/15.
@@ -69,6 +80,8 @@ public class MessageAdapter extends BaseAdapter {
     private String username;
     private LayoutInflater inflater;
     private Activity activity;
+    private View bigImage;
+    private BigImageOnTouchListener bigImageOnTouchListener = new BigImageOnTouchListener();
 
     private static final int HANDLER_MESSAGE_REFRESH_LIST = 0;
     private static final int HANDLER_MESSAGE_SELECT_LAST = 1;
@@ -82,25 +95,40 @@ public class MessageAdapter extends BaseAdapter {
 
     private Map<String, Timer> timers = new Hashtable<String, Timer>();
 
-    public MessageAdapter(Context context, String username, int chatType) {
+    private Long titleId;
+    private int imageHolder;
+    private int txtHolder;
+    private int voiceHolder;
+    private int delHolder;
+    private int holderHeight;
+    private int holderWidth;
+    private ToolShowBigImage toolShowBigImage;
+
+    public MessageAdapter(Context context, String username, int chatType, long titleId) {
         this.username = username;
         this.context = context;
         inflater = LayoutInflater.from(context);
         activity = (Activity) context;
+        toolShowBigImage = new ToolShowBigImage(activity);
         this.conversation = EMChatManager.getInstance().getConversation(username);
+        this.titleId = titleId;
+        this.imageHolder = 0;
+        this.txtHolder = 0;
+        this.voiceHolder = 0;
+        this.delHolder = 0;
+        this.holderHeight = 1;
+        this.holderWidth = 1;
     }
 
     Handler handler = new Handler() {
         private void refreshList() {
-            // UIÏß³Ì²»ÄÜÖ±½ÓÊ¹ÓÃconversation.getAllMessages()
-            // ·ñÔòÔÚUIË¢ÐÂ¹ý³ÌÖÐ£¬Èç¹ûÊÕµ½ÐÂµÄÏûÏ¢£¬»áµ¼ÖÂ²¢·¢ÎÊÌâ
             messages = (EMMessage[]) conversation.getAllMessages().toArray(new EMMessage[conversation.getAllMessages().size()]);
-            for (int i = 0; i < messages.length; i++) {
+            ToolLog.dbg("bfoCnt:"+String.valueOf(conversation.getMsgCount()));
+            for (int i=messages.length-1; i>=0; i--) {
                 // getMessage will set message as read status
-                ToolLog.dbg("hhhhhh");
-                ToolLog.dbg(conversation.getMessage(i).getBody().toString());
                 conversation.getMessage(i);
             }
+            ToolLog.dbg("aftCnt:"+String.valueOf(conversation.getMsgCount()));
             notifyDataSetChanged();
         }
 
@@ -133,14 +161,14 @@ public class MessageAdapter extends BaseAdapter {
 
 
     /**
-     * »ñÈ¡itemÊý
+     * ï¿½ï¿½È¡itemï¿½ï¿½
      */
     public int getCount() {
         return messages == null ? 0 : messages.length;
     }
 
     /**
-     * Ë¢ÐÂÒ³Ãæ
+     * Ë¢ï¿½ï¿½Ò³ï¿½ï¿½
      */
     public void refresh() {
         if (handler.hasMessages(HANDLER_MESSAGE_REFRESH_LIST)) {
@@ -151,7 +179,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * Ë¢ÐÂÒ³Ãæ, Ñ¡Ôñ×îºóÒ»¸ö
+     * Ë¢ï¿½ï¿½Ò³ï¿½ï¿½, Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
      */
     public void refreshSelectLast() {
         handler.sendMessage(handler.obtainMessage(HANDLER_MESSAGE_REFRESH_LIST));
@@ -159,7 +187,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * Ë¢ÐÂÒ³Ãæ, Ñ¡ÔñPosition
+     * Ë¢ï¿½ï¿½Ò³ï¿½ï¿½, Ñ¡ï¿½ï¿½Position
      */
     public void refreshSeekTo(int position) {
         handler.sendMessage(handler.obtainMessage(HANDLER_MESSAGE_REFRESH_LIST));
@@ -180,14 +208,14 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * »ñÈ¡itemÀàÐÍÊý
+     * ï¿½ï¿½È¡itemï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
      */
     public int getViewTypeCount() {
         return 16;
     }
 
     /**
-     * »ñÈ¡itemÀàÐÍ
+     * ï¿½ï¿½È¡itemï¿½ï¿½ï¿½ï¿½
      */
     public int getItemViewType(int position) {
         EMMessage message = getItem(position);
@@ -222,36 +250,40 @@ public class MessageAdapter extends BaseAdapter {
     }
 
 
-    private View createViewByMessage(EMMessage message, int position) {
-        switch (message.getType()) {
+    private View createViewByMessage(EMMessage message, int position, int del) {
+        if(del==0) {
+            switch (message.getType()) {
 //            case LOCATION:
 //                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_location, null) : inflater.inflate(
 //                        R.layout.row_sent_location, null);
-            case IMAGE:
-                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_picture, null) : inflater.inflate(
-                        R.layout.row_send_picture, null);
-            case VOICE:
-                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_voice, null) : inflater.inflate(
-                        R.layout.row_send_voice, null);
+                case IMAGE:
+                    return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_picture, null) : inflater.inflate(
+                            R.layout.row_send_picture, null);
+                case VOICE:
+                    return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_voice, null) : inflater.inflate(
+                            R.layout.row_send_voice, null);
 //            case VIDEO:
 //                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_video, null) : inflater.inflate(
 //                        R.layout.row_sent_video, null);
 //            case FILE:
 //                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_file, null) : inflater.inflate(
 //                        R.layout.row_sent_file, null);
-            default:
-//                // ÓïÒôÍ¨»°
+                default:
+//                // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½
 //                if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false))
 //                    return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_voice_call, null) : inflater
 //                            .inflate(R.layout.row_sent_voice_call, null);
-//                    // ÊÓÆµÍ¨»°
+//                    // ï¿½ï¿½ÆµÍ¨ï¿½ï¿½
 //                else if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false))
 //                    return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_video_call, null) : inflater
 //                            .inflate(R.layout.row_sent_video_call, null);
-//                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_message, null) : inflater.inflate(
-//                        R.layout.row_sent_message, null);
-                return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_picture, null) : inflater.inflate(
-                        R.layout.row_send_picture, null);
+                    return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_msg, null) : inflater.inflate(
+                            R.layout.row_send_msg, null);
+            }
+        }
+        else{
+            return message.direct == EMMessage.Direct.RECEIVE ? inflater.inflate(R.layout.row_received_del, null) : inflater
+                            .inflate(R.layout.row_send_del, null);
         }
     }
 
@@ -259,44 +291,44 @@ public class MessageAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, ViewGroup parent) {
         final EMMessage message = getItem(position);
         EMMessage.ChatType chatType = message.getChatType();
-        final ViewHolder holder;
-        if (convertView == null) {
+        ViewHolder holder;
+        int del = 0;
+
+        if (convertView == null || convertView.findViewById(R.id.userhead)==null) {
             holder = new ViewHolder();
-            convertView = createViewByMessage(message, position);
+            convertView = createViewByMessage(message, position, 0);
             if (message.getType() == EMMessage.Type.IMAGE) {
                 try {
-                    holder.iv = ((ImageView) convertView.findViewById(R.id.sendPicture));    //´«Í¼Æ¬
-                    holder.iv_avatar = (ImageView) convertView.findViewById(R.id.userhead); //Í·Ïñ£¬ÏÂÍ¬
-                    //holder.tv = (TextView) convertView.findViewById(R.id.percentage);  //°Ù·Ö±ÈÏÈ²»Åª£¬ÏÂÍ¬
-                    //holder.pb = (ProgressBar) convertView.findViewById(R.id.progressBar); //½ø¶ÈÌõÒ²²»Åª£¬ÏÂÍ¬
-                    holder.pb = (ProgressBar) convertView.findViewById(R.id.sending); //½ø¶ÈÌõ×ªÈ¦È¦£¬ÏÂÍ¬
-                    holder.staus_iv = (ImageView) convertView.findViewById(R.id.msg_status); //ÖØ´«£¬ÏÂÍ¬
-                    //holder.tv_usernick = (TextView) convertView.findViewById(R.id.tv_userid); //êÇ³Æ²»Òª£¬ÏÂÍ¬
+                    holder.iv = ((ImageView) convertView.findViewById(R.id.sendPicture));    //ï¿½ï¿½Í¼Æ¬
+                    holder.iv_avatar = (ImageView) convertView.findViewById(R.id.userhead); //Í·ï¿½ï¿½ï¿½ï¿½Í¬
+                    //holder.tv = (TextView) convertView.findViewById(R.id.percentage);  //ï¿½Ù·Ö±ï¿½ï¿½È²ï¿½Åªï¿½ï¿½ï¿½ï¿½Í¬
+                    holder.pb = (ProgressBar) convertView.findViewById(R.id.progressBar); //ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½Åªï¿½ï¿½ï¿½ï¿½Í¬
+                    //holder.pb = (ProgressBar) convertView.findViewById(R.id.sending); //ï¿½ï¿½ï¿½ï¿½ï¿½×ªÈ¦È¦ï¿½ï¿½ï¿½ï¿½Í¬
+                    holder.staus_iv = (ImageView) convertView.findViewById(R.id.msg_status); //ï¿½Ø´ï¿½ï¿½ï¿½ï¿½ï¿½Í¬
+                    //holder.tv_usernick = (TextView) convertView.findViewById(R.id.tv_userid); //ï¿½Ç³Æ²ï¿½Òªï¿½ï¿½ï¿½ï¿½Í¬
                 } catch (Exception e) {
+
                 }
-
             } else if (message.getType() == EMMessage.Type.TXT) {
-
                 try {
                     holder.pb = (ProgressBar) convertView.findViewById(R.id.sending);
                     holder.staus_iv = (ImageView) convertView.findViewById(R.id.msg_status);
                     holder.iv_avatar = (ImageView) convertView.findViewById(R.id.userhead);
-                    // ÕâÀïÊÇÎÄ×ÖÄÚÈÝ
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     holder.tv = (TextView) convertView.findViewById(R.id.chatcontent);
                     //holder.tv_usernick = (TextView) convertView.findViewById(R.id.tv_userid);
                 } catch (Exception e) {
                 }
 
-                // ÓïÒôÍ¨»°¼°ÊÓÆµÍ¨»°
+                // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÍ¨ï¿½ï¿½
                 if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false)
                         || message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false)) {
 //                    holder.iv = (ImageView) convertView.findViewById(R.id.iv_call_icon);
 //                    holder.tv = (TextView) convertView.findViewById(R.id.tv_chatcontent);
                 }
-
             } else if (message.getType() == EMMessage.Type.VOICE) {
                 try {
-                    holder.iv = ((ImageView) convertView.findViewById(R.id.voice));
+                    holder.iv = ((ImageView) convertView.findViewById(R.id.voice_play));
                     holder.iv_avatar = (ImageView) convertView.findViewById(R.id.userhead);
                     holder.tv = (TextView) convertView.findViewById(R.id.length);
                     holder.pb = (ProgressBar) convertView.findViewById(R.id.sending);
@@ -338,7 +370,7 @@ public class MessageAdapter extends BaseAdapter {
 //                    holder.staus_iv = (ImageView) convertView.findViewById(R.id.msg_status);
 //                    holder.tv_file_download_state = (TextView) convertView.findViewById(R.id.tv_file_state);
 //                    holder.ll_container = (LinearLayout) convertView.findViewById(R.id.ll_file_container);
-//                    // ÕâÀïÊÇ½ø¶ÈÖµ
+//                    // ï¿½ï¿½ï¿½ï¿½ï¿½Ç½ï¿½ï¿½Öµ
 //                    holder.tv = (TextView) convertView.findViewById(R.id.percentage);
                 } catch (Exception e) {
                 }
@@ -346,22 +378,25 @@ public class MessageAdapter extends BaseAdapter {
 //                    holder.tv_usernick = (TextView) convertView.findViewById(R.id.tv_userid);
                 } catch (Exception e) {
                 }
-
             }
 
             convertView.setTag(holder);
-        } else {
+        } else{
             holder = (ViewHolder) convertView.getTag();
         }
 
-        // ÈºÁÄÊ±£¬ÏÔÊ¾½ÓÊÕµÄÏûÏ¢µÄ·¢ËÍÈËµÄÃû³Æ
-        if (chatType == EMMessage.ChatType.GroupChat && message.direct == EMMessage.Direct.RECEIVE){
-            //demoÀïÊ¹ÓÃusername´úÂënick
+//        if(del!=0){
+//            return convertView;
+//        }
+
+        // ç¾¤èŠæ—¶ï¼Œæ˜¾ç¤ºæŽ¥æ”¶çš„æ¶ˆæ¯çš„å‘é€äººçš„åç§°
+        if (chatType == EMMessage.ChatType.GroupChat && message.direct == EMMessage.Direct.RECEIVE) {
+            //demoé‡Œä½¿ç”¨usernameä»£ç nick
             holder.tv_usernick.setText(message.getFrom());
         }
-        // Èç¹ûÊÇ·¢ËÍµÄÏûÏ¢²¢ÇÒ²»ÊÇÈºÁÄÏûÏ¢£¬ÏÔÊ¾ÒÑ¶Átextview
+        // å¦‚æžœæ˜¯å‘é€çš„æ¶ˆæ¯å¹¶ä¸”ä¸æ˜¯ç¾¤èŠæ¶ˆæ¯ï¼Œæ˜¾ç¤ºå·²è¯»textview
         if (message.direct == EMMessage.Direct.SEND && chatType != EMMessage.ChatType.GroupChat) {
-            //ÕâÁ½¸öÔÝÊ±²»¹Ü
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
             //holder.tv_ack = (TextView) convertView.findViewById(R.id.ack);
             //holder.tv_delivered = (TextView) convertView.findViewById(R.id.tv_delivered);
             if (holder.tv_ack != null) {
@@ -384,13 +419,13 @@ public class MessageAdapter extends BaseAdapter {
                 }
             }
         } else {
-            // Èç¹ûÊÇÎÄ±¾»òÕßµØÍ¼ÏûÏ¢²¢ÇÒ²»ÊÇgroup messgae£¬ÏÔÊ¾µÄÊ±ºò¸ø¶Ô·½·¢ËÍÒÑ¶Á»ØÖ´
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ßµï¿½Í¼ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½group messgaeï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¶ï¿½ï¿½ï¿½Ö´
             if ((message.getType() == EMMessage.Type.TXT || message.getType() == EMMessage.Type.LOCATION) && !message.isAcked && chatType != EMMessage.ChatType.GroupChat) {
-                // ²»ÊÇÓïÒôÍ¨»°¼ÇÂ¼
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Â¼
                 if (!message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false)) {
                     try {
                         EMChatManager.getInstance().ackMessageRead(message.getFrom(), message.getMsgId());
-                        // ·¢ËÍÒÑ¶Á»ØÖ´
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¶ï¿½ï¿½ï¿½Ö´
                         message.isAcked = true;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -399,32 +434,32 @@ public class MessageAdapter extends BaseAdapter {
             }
         }
 
-        //ÉèÖÃÓÃ»§Í·Ïñ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Í·ï¿½ï¿½
         // setUserAvatar(message, holder.iv_avatar);
-
         switch (message.getType()) {
-            // ¸ù¾ÝÏûÏ¢typeÏÔÊ¾item
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢typeï¿½ï¿½Ê¾item
             case IMAGE: // Í¼Æ¬
-                //handleImageMessage(message, holder, position, convertView);
+                ToolLog.dbg("image here");
+                handleImageMessage(message, holder, position, convertView);
                 break;
-            case TXT: // ÎÄ±¾
+            case TXT: // ï¿½Ä±ï¿½
                 if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false)
                         || message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false))
-                    // ÒôÊÓÆµÍ¨»°
+                    // ï¿½ï¿½ï¿½ï¿½ÆµÍ¨ï¿½ï¿½
                     handleCallMessage(message, holder, position);
                 else
                     handleTextMessage(message, holder, position);
                 break;
-//            case LOCATION: // Î»ÖÃ
+//            case LOCATION: // Î»ï¿½ï¿½
 //                handleLocationMessage(message, holder, position, convertView);
 //                break;
-//            case VOICE: // ÓïÒô
-//                handleVoiceMessage(message, holder, position, convertView);
+            case VOICE: // ï¿½ï¿½ï¿½ï¿½
+                handleVoiceMessage(message, holder, position, convertView);
 //                break;
-//            case VIDEO: // ÊÓÆµ
+//            case VIDEO: // ï¿½ï¿½Æµ
 //                handleVideoMessage(message, holder, position, convertView);
 //                break;
-//            case FILE: // Ò»°ãÎÄ¼þ
+//            case FILE: // Ò»ï¿½ï¿½ï¿½Ä¼ï¿½
 //                handleFileMessage(message, holder, position, convertView);
 //                break;
             default:
@@ -433,12 +468,12 @@ public class MessageAdapter extends BaseAdapter {
 
         if (message.direct == EMMessage.Direct.SEND) {
             View statusView = convertView.findViewById(R.id.msg_status);
-            // ÖØ·¢°´Å¥µã»÷ÊÂ¼þ
+            // ï¿½Ø·ï¿½ï¿½ï¿½Å¥ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
 //            statusView.setOnClickListener(new View.OnClickListener() {
 //                @Override
 //                public void onClick(View v) {
 //
-//                    // ÏÔÊ¾ÖØ·¢ÏûÏ¢µÄ×Ô¶¨Òåalertdialog
+//                    // ï¿½ï¿½Ê¾ï¿½Ø·ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½alertdialog
 //                    Intent intent = new Intent(activity, AlertDialog.class);
 //                    intent.putExtra("msg", activity.getString(R.string.confirm_resend));
 //                    intent.putExtra("title", activity.getString(R.string.resend));
@@ -462,7 +497,7 @@ public class MessageAdapter extends BaseAdapter {
 
         } else {
 //            final String st = context.getResources().getString(R.string.Into_the_blacklist);
-//            // ³¤°´Í·Ïñ£¬ÒÆÈëºÚÃûµ¥
+//            // ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //            holder.iv_avatar.setOnLongClickListener(new View.OnLongClickListener() {
 //
 //                @Override
@@ -477,34 +512,65 @@ public class MessageAdapter extends BaseAdapter {
 //            });
         }
 
-        TextView timestamp = (TextView) convertView.findViewById(R.id.timestamp);
+        int iTitleId = 0;
+        ToolLog.dbg(message.getBody().toString());
+        try {
+            iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+        } catch (EaseMobException e) {
+            e.printStackTrace();
+        }
 
-        if (position == 0) {
-            timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
-            timestamp.setVisibility(View.VISIBLE);
-        } else {
-            // Á½ÌõÏûÏ¢Ê±¼äÀëµÃÈç¹ûÉÔ³¤£¬ÏÔÊ¾Ê±¼ä
-            EMMessage prevMessage = getItem(position - 1);
-            if (prevMessage != null && DateUtils.isCloseEnough(message.getMsgTime(), prevMessage.getMsgTime())) {
-                timestamp.setVisibility(View.GONE);
-            } else {
+        ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(titleId));
+        if((long)iTitleId != titleId){
+            convertView = createViewByMessage(message, position, 1);
+            convertView.setVisibility(View.GONE);
+        }else{
+            convertView.setVisibility(View.VISIBLE);
+        }
+
+        if((long)iTitleId == titleId) {
+            TextView timestamp = (TextView) convertView.findViewById(R.id.timestamp);
+            if (position == 0) {
                 timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
                 timestamp.setVisibility(View.VISIBLE);
+            } else {
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô³ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ê±ï¿½ï¿½
+//                EMMessage prevMessage = null;
+//                int iLastTitleId;
+//                int iPos = position;
+//                while (iPos>0) {
+//                    prevMessage = getItem(iPos - 1);
+//                    try {
+//                        iLastTitleId = prevMessage.getIntAttribute("iTitleId");
+//                        if((long)iLastTitleId == titleId) break;
+//                        iPos--;
+//                    } catch (EaseMobException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+                EMMessage prevMessage = getItem(position - 1);
+                if (prevMessage != null && DateUtils.isCloseEnough(message.getMsgTime(), prevMessage.getMsgTime())) {
+                    timestamp.setVisibility(View.GONE);
+                } else {
+                        timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
+                        timestamp.setVisibility(View.VISIBLE);
+                }
             }
         }
+
         return convertView;
     }
 
 
     /**
-     * ÏÔÊ¾ÓÃ»§Í·Ïñ
+     * ï¿½ï¿½Ê¾ï¿½Ã»ï¿½Í·ï¿½ï¿½
      * @param message
      * @param imageView
      */
     private void setUserAvatar(EMMessage message, ImageView imageView){
         if(message.direct == EMMessage.Direct.SEND){
-            //ÏÔÊ¾×Ô¼ºÍ·Ïñ
-            //ÎÒÃÇµÄ³ÌÐòÃ»ÓÐÓÃ»§×Ô¼ºµÄÍ·ÏñÕâ¸ö¸ÅÄî
+            //ï¿½ï¿½Ê¾ï¿½Ô¼ï¿½Í·ï¿½ï¿½
+            //ï¿½ï¿½ï¿½ÇµÄ³ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             //UserUtils.setUserAvatar(context, EMChatManager.getInstance().getCurrentUser(), imageView);
         }else{
             //UserUtils.setUserAvatar(context, message.getFrom(), imageView);
@@ -512,7 +578,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * ÎÄ±¾ÏûÏ¢
+     * ï¿½Ä±ï¿½ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
@@ -521,9 +587,9 @@ public class MessageAdapter extends BaseAdapter {
     private void handleTextMessage(EMMessage message, ViewHolder holder, final int position) {
         TextMessageBody txtBody = (TextMessageBody) message.getBody();
         Spannable span = SmileUtils.getSmiledText(context, txtBody.getMessage());
-        // ÉèÖÃÄÚÈÝ
-//        holder.tv.setText(span, TextView.BufferType.SPANNABLE);
-        // ÉèÖÃ³¤°´ÊÂ¼þ¼àÌý
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        holder.tv.setText(span, TextView.BufferType.SPANNABLE);
+        // ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //        holder.tv.setOnLongClickListener(new View.OnLongClickListener() {
 //            @Override
 //            public boolean onLongClick(View v) {
@@ -533,31 +599,29 @@ public class MessageAdapter extends BaseAdapter {
 //                return true;
 //            }
 //        });
-        ToolLog.dbg("sendTXT");
         if (message.direct == EMMessage.Direct.SEND) {
             switch (message.status) {
-                case SUCCESS: // ·¢ËÍ³É¹¦
-                    //holder.pb.setVisibility(View.GONE);
-                    //holder.staus_iv.setVisibility(View.GONE);
-                    ToolLog.dbg("success");
+                case SUCCESS: // ï¿½ï¿½ï¿½Í³É¹ï¿½
+                    holder.pb.setVisibility(View.GONE);
+                    holder.staus_iv.setVisibility(View.GONE);
                     break;
-                case FAIL: // ·¢ËÍÊ§°Ü
+                case FAIL: // ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
                     holder.pb.setVisibility(View.GONE);
                     holder.staus_iv.setVisibility(View.VISIBLE);
                     break;
-                case INPROGRESS: // ·¢ËÍÖÐ
+                case INPROGRESS: // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     holder.pb.setVisibility(View.VISIBLE);
                     holder.staus_iv.setVisibility(View.GONE);
                     break;
                 default:
-                    // ·¢ËÍÏûÏ¢
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
                     sendMsgInBackground(message, holder);
             }
         }
     }
 
     /**
-     * ÒôÊÓÆµÍ¨»°¼ÇÂ¼
+     * ï¿½ï¿½ï¿½ï¿½ÆµÍ¨ï¿½ï¿½ï¿½ï¿½Â¼
      *
      * @param message
      * @param holder
@@ -570,121 +634,112 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * Í¼Æ¬ÏûÏ¢
+     * Í¼Æ¬ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
      * @param position
      * @param convertView
      */
-//    private void handleImageMessage(final EMMessage message, final ViewHolder holder, final int position, View convertView) {
-//        holder.pb.setTag(position);
-//        holder.iv.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                activity.startActivityForResult(
-//                        (new Intent(activity, ContextMenu.class)).putExtra("position", position).putExtra("type",
-//                                EMMessage.Type.IMAGE.ordinal()), ActivityChat.REQUEST_CODE_CONTEXT_MENU);
-//                return true;
-//            }
-//        });
-//
-//        // ½ÓÊÕ·½ÏòµÄÏûÏ¢
-//        if (message.direct == EMMessage.Direct.RECEIVE) {
-//            // "it is receive msg";
-//            if (message.status == EMMessage.Status.INPROGRESS) {
-//                // "!!!! back receive";
-//                holder.iv.setImageResource(R.drawable.default_image);
-//                showDownloadImageProgress(message, holder);
-//                // downloadImage(message, holder);
-//            } else {
-//                // "!!!! not back receive, show image directly");
-//                holder.pb.setVisibility(View.GONE);
-//                holder.tv.setVisibility(View.GONE);
-//                holder.iv.setImageResource(R.drawable.default_image);
-//                ImageMessageBody imgBody = (ImageMessageBody) message.getBody();
-//                if (imgBody.getLocalUrl() != null) {
-//                    // String filePath = imgBody.getLocalUrl();
-//                    String remotePath = imgBody.getRemoteUrl();
-//                    String filePath = ImageUtils.getImagePath(remotePath);
-//                    String thumbRemoteUrl = imgBody.getThumbnailUrl();
-//                    String thumbnailPath = ImageUtils.getThumbnailImagePath(thumbRemoteUrl);
-//                    showImageView(thumbnailPath, holder.iv, filePath, imgBody.getRemoteUrl(), message);
-//                }
-//            }
-//            return;
-//        }
-//
-//        // ·¢ËÍµÄÏûÏ¢
-//        // process send message
-//        // send pic, show the pic directly
-//        ImageMessageBody imgBody = (ImageMessageBody) message.getBody();
-//        String filePath = imgBody.getLocalUrl();
-//        if (filePath != null && new File(filePath).exists()) {
-//            showImageView(ImageUtils.getThumbnailImagePath(filePath), holder.iv, filePath, null, message);
-//        } else {
-//            showImageView(ImageUtils.getThumbnailImagePath(filePath), holder.iv, filePath, IMAGE_DIR, message);
-//        }
-//
-//        switch (message.status) {
-//            case SUCCESS:
-//                holder.pb.setVisibility(View.GONE);
-//                holder.tv.setVisibility(View.GONE);
-//                holder.staus_iv.setVisibility(View.GONE);
-//                break;
-//            case FAIL:
-//                holder.pb.setVisibility(View.GONE);
-//                holder.tv.setVisibility(View.GONE);
-//                holder.staus_iv.setVisibility(View.VISIBLE);
-//                break;
-//            case INPROGRESS:
-//                holder.staus_iv.setVisibility(View.GONE);
-//                holder.pb.setVisibility(View.VISIBLE);
-//                holder.tv.setVisibility(View.VISIBLE);
-//                if (timers.containsKey(message.getMsgId()))
-//                    return;
-//                // set a timer
-//                final Timer timer = new Timer();
-//                timers.put(message.getMsgId(), timer);
-//                timer.schedule(new TimerTask() {
-//
-//                    @Override
-//                    public void run() {
-//                        activity.runOnUiThread(new Runnable() {
-//                            public void run() {
-//                                holder.pb.setVisibility(View.VISIBLE);
-//                                holder.tv.setVisibility(View.VISIBLE);
-//                                holder.tv.setText(message.progress + "%");
-//                                if (message.status == EMMessage.Status.SUCCESS) {
-//                                    holder.pb.setVisibility(View.GONE);
-//                                    holder.tv.setVisibility(View.GONE);
-//                                    // message.setSendingStatus(Message.SENDING_STATUS_SUCCESS);
-//                                    timer.cancel();
-//                                } else if (message.status == EMMessage.Status.FAIL) {
-//                                    holder.pb.setVisibility(View.GONE);
-//                                    holder.tv.setVisibility(View.GONE);
-//                                    // message.setSendingStatus(Message.SENDING_STATUS_FAIL);
-//                                    // message.setProgress(0);
-//                                    holder.staus_iv.setVisibility(View.VISIBLE);
-//                                    Toast.makeText(activity,
-//                                            activity.getString(R.string.send_fail) + activity.getString(R.string.connect_failuer_toast), 0)
-//                                            .show();
-//                                    timer.cancel();
-//                                }
-//
-//                            }
-//                        });
-//
-//                    }
-//                }, 0, 500);
-//                break;
-//            default:
-//                sendPictureMessage(message, holder);
-//        }
-//    }
+    private void handleImageMessage(final EMMessage message, final ViewHolder holder, final int position, View convertView) {
+        //holder.pb.setTag(position);
+
+        // ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+        if (message.direct == EMMessage.Direct.RECEIVE) {
+            // "it is receive msg";
+            if (message.status == EMMessage.Status.INPROGRESS) {
+                // "!!!! back receive";
+                holder.iv.setImageResource(R.drawable.default_image);
+                showDownloadImageProgress(message, holder);
+                // downloadImage(message, holder);
+            } else {
+                // "!!!! not back receive, show image directly");
+                if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                if(holder.tv!=null)holder.tv.setVisibility(View.GONE);
+                holder.iv.setImageResource(R.drawable.default_image);
+                ImageMessageBody imgBody = (ImageMessageBody) message.getBody();
+                if (imgBody.getLocalUrl() != null) {
+                    // String filePath = imgBody.getLocalUrl();
+                    String remotePath = imgBody.getRemoteUrl();
+                    String filePath = ImageUtils.getImagePath(remotePath);
+                    String thumbRemoteUrl = imgBody.getThumbnailUrl();
+                    String thumbnailPath = ImageUtils.getThumbnailImagePath(thumbRemoteUrl);
+                    showImageView(thumbnailPath, holder.iv, filePath, imgBody.getRemoteUrl(), message, position);
+                }
+            }
+            return;
+        }
+
+        // ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½Ï¢
+        // process send message
+        // send pic, show the pic directly
+        ImageMessageBody imgBody = (ImageMessageBody) message.getBody();
+        String filePath = imgBody.getLocalUrl();
+        if (filePath != null && new File(filePath).exists()) {
+            showImageView(ImageUtils.getThumbnailImagePath(filePath), holder.iv, filePath, null, message, position);
+        } else {
+            showImageView(ImageUtils.getThumbnailImagePath(filePath), holder.iv, filePath, IMAGE_DIR, message, position);
+        }
+
+        switch (message.status) {
+            case SUCCESS:
+                if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                //holder.tv.setVisibility(View.GONE);
+                //holder.staus_iv.setVisibility(View.GONE);
+                break;
+            case FAIL:
+                if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                //holder.tv.setVisibility(View.GONE);
+                //holder.staus_iv.setVisibility(View.VISIBLE);
+                break;
+            case INPROGRESS:
+                //holder.staus_iv.setVisibility(View.GONE);
+                if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
+                //holder.tv.setVisibility(View.VISIBLE);
+                if (timers.containsKey(message.getMsgId()))
+                    return;
+                // set a timer
+                final Timer timer = new Timer();
+                timers.put(message.getMsgId(), timer);
+                timer.schedule(new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
+                                //holder.tv.setVisibility(View.VISIBLE);
+                                //holder.tv.setText(message.progress + "%");
+                                if (message.status == EMMessage.Status.SUCCESS) {
+                                    if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                                    //holder.tv.setVisibility(View.GONE);
+                                    // message.setSendingStatus(Message.SENDING_STATUS_SUCCESS);
+                                    timer.cancel();
+                                } else if (message.status == EMMessage.Status.FAIL) {
+                                    if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                                    //holder.tv.setVisibility(View.GONE);
+                                    // message.setSendingStatus(Message.SENDING_STATUS_FAIL);
+                                    // message.setProgress(0);
+                                    //holder.staus_iv.setVisibility(View.VISIBLE);
+                                    Toast.makeText(activity,
+                                            activity.getString(R.string.send_fail) + activity.getString(R.string.connect_failuer_toast), Toast.LENGTH_SHORT)
+                                            .show();
+                                    timer.cancel();
+                                }
+
+                            }
+                        });
+
+                    }
+                }, 0, 500);
+                break;
+            default:
+                sendPictureMessage(message, holder);
+        }
+    }
 
     /**
-     * ÊÓÆµÏûÏ¢
+     * ï¿½ï¿½Æµï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
@@ -812,117 +867,117 @@ public class MessageAdapter extends BaseAdapter {
 //    }
 
     /**
-     * ÓïÒôÏûÏ¢
+     * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
      * @param position
      * @param convertView
      */
-//    private void handleVoiceMessage(final EMMessage message, final ViewHolder holder, final int position, View convertView) {
-//        VoiceMessageBody voiceBody = (VoiceMessageBody) message.getBody();
-//        holder.tv.setText(voiceBody.getLength() + "\"");
-//        holder.iv.setOnClickListener(new VoicePlayClickListener(message, holder.iv, holder.iv_read_status, this, activity, username));
-//        holder.iv.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                activity.startActivityForResult(
-//                        (new Intent(activity, ContextMenu.class)).putExtra("position", position).putExtra("type",
-//                                EMMessage.Type.VOICE.ordinal()), ActivityChat.REQUEST_CODE_CONTEXT_MENU);
-//                return true;
-//            }
-//        });
-//        if (((ActivityChat)activity).playMsgId != null
-//                && ((ActivityChat)activity).playMsgId.equals(message
-//                .getMsgId())&&VoicePlayClickListener.isPlaying) {
-//            AnimationDrawable voiceAnimation;
-//            if (message.direct == EMMessage.Direct.RECEIVE) {
-//                //holder.iv.setImageResource(R.anim.voice_from_icon);
-//            } else {
-//                //holder.iv.setImageResource(R.anim.voice_to_icon);
-//            }
-//            voiceAnimation = (AnimationDrawable) holder.iv.getDrawable();
-//            voiceAnimation.start();
-//        } else {
-//            if (message.direct == EMMessage.Direct.RECEIVE) {
-//                //holder.iv.setImageResource(R.drawable.chatfrom_voice_playing);
-//            } else {
-//                //holder.iv.setImageResource(R.drawable.chatto_voice_playing);
-//            }
-//        }
-//
-//
-//        if (message.direct == EMMessage.Direct.RECEIVE) {
-//            if (message.isListened()) {
-//                // Òþ²ØÓïÒôÎ´Ìý±êÖ¾
-//                holder.iv_read_status.setVisibility(View.INVISIBLE);
-//            } else {
-//                holder.iv_read_status.setVisibility(View.VISIBLE);
-//            }
-//            System.err.println("it is receive msg");
-//            if (message.status == EMMessage.Status.INPROGRESS) {
-//                holder.pb.setVisibility(View.VISIBLE);
-//                System.err.println("!!!! back receive");
-//                ((FileMessageBody) message.getBody()).setDownloadCallback(new EMCallBack() {
-//
-//                    @Override
-//                    public void onSuccess() {
-//                        activity.runOnUiThread(new Runnable() {
-//
-//                            @Override
-//                            public void run() {
-//                                holder.pb.setVisibility(View.INVISIBLE);
-//                                notifyDataSetChanged();
-//                            }
-//                        });
-//
-//                    }
-//
-//                    @Override
-//                    public void onProgress(int progress, String status) {
-//                    }
-//
-//                    @Override
-//                    public void onError(int code, String message) {
-//                        activity.runOnUiThread(new Runnable() {
-//
-//                            @Override
-//                            public void run() {
-//                                holder.pb.setVisibility(View.INVISIBLE);
-//                            }
-//                        });
-//
-//                    }
-//                });
-//
-//            } else {
-//                holder.pb.setVisibility(View.INVISIBLE);
-//
-//            }
-//            return;
-//        }
-//
-//        // until here, deal with send voice msg
-//        switch (message.status) {
-//            case SUCCESS:
+    private void handleVoiceMessage(final EMMessage message, final ViewHolder holder, final int position, View convertView) {
+        VoiceMessageBody voiceBody = (VoiceMessageBody) message.getBody();
+        holder.tv.setText(voiceBody.getLength() + "\"");
+        holder.iv.setOnClickListener(new VoicePlayClickListener(message, holder.iv, holder.iv_read_status, this, activity, username));
+        holder.iv.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                activity.startActivityForResult(
+                        (new Intent(activity, ContextMenu.class)).putExtra("position", position).putExtra("type",
+                                EMMessage.Type.VOICE.ordinal()), ActivityChat.REQUEST_CODE_CONTEXT_MENU);
+                return true;
+            }
+        });
+        if (((ActivityChat)activity).playMsgId != null
+                && ((ActivityChat)activity).playMsgId.equals(message
+                .getMsgId())&&VoicePlayClickListener.isPlaying) {
+            AnimationDrawable voiceAnimation;
+            if (message.direct == EMMessage.Direct.RECEIVE) {
+                holder.iv.setImageResource(R.anim.voice_from_icon);
+            } else {
+                holder.iv.setImageResource(R.anim.voice_to_icon);
+            }
+            voiceAnimation = (AnimationDrawable) holder.iv.getDrawable();
+            voiceAnimation.start();
+        } else {
+            if (message.direct == EMMessage.Direct.RECEIVE) {
+                holder.iv.setImageResource(R.drawable.voice_received_play_3);
+            } else {
+                holder.iv.setImageResource(R.drawable.voice_send_play_3);
+            }
+        }
+
+
+        if (message.direct == EMMessage.Direct.RECEIVE) {
+            if (message.isListened()) {
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½Ö¾
+                holder.iv_read_status.setVisibility(View.INVISIBLE);
+            } else {
+                holder.iv_read_status.setVisibility(View.VISIBLE);
+            }
+            System.err.println("it is receive msg");
+            if (message.status == EMMessage.Status.INPROGRESS) {
+                if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
+                System.err.println("!!!! back receive");
+                ((FileMessageBody) message.getBody()).setDownloadCallback(new EMCallBack() {
+
+                    @Override
+                    public void onSuccess() {
+                        activity.runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if(holder.pb!=null)holder.pb.setVisibility(View.INVISIBLE);
+                                notifyDataSetChanged();
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onProgress(int progress, String status) {
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        activity.runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if(holder.pb!=null)holder.pb.setVisibility(View.INVISIBLE);
+                            }
+                        });
+
+                    }
+                });
+
+            } else {
+                if(holder.pb!=null)holder.pb.setVisibility(View.INVISIBLE);
+
+            }
+            return;
+        }
+
+        // until here, deal with send voice msg
+        switch (message.status) {
+            case SUCCESS:
 //                holder.pb.setVisibility(View.GONE);
 //                holder.staus_iv.setVisibility(View.GONE);
-//                break;
-//            case FAIL:
-//                holder.pb.setVisibility(View.GONE);
-//                holder.staus_iv.setVisibility(View.VISIBLE);
-//                break;
-//            case INPROGRESS:
-//                holder.pb.setVisibility(View.VISIBLE);
-//                holder.staus_iv.setVisibility(View.GONE);
-//                break;
-//            default:
-//                sendMsgInBackground(message, holder);
-//        }
-//    }
+                break;
+            case FAIL:
+                if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                holder.staus_iv.setVisibility(View.VISIBLE);
+                break;
+            case INPROGRESS:
+                if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
+                holder.staus_iv.setVisibility(View.GONE);
+                break;
+            default:
+                sendMsgInBackground(message, holder);
+        }
+    }
 
     /**
-     * ÎÄ¼þÏûÏ¢
+     * ï¿½Ä¼ï¿½ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
@@ -940,10 +995,10 @@ public class MessageAdapter extends BaseAdapter {
 //            public void onClick(View view) {
 //                File file = new File(filePath);
 //                if (file != null && file.exists()) {
-//                    // ÎÄ¼þ´æÔÚ£¬Ö±½Ó´ò¿ª
+//                    // ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Ú£ï¿½Ö±ï¿½Ó´ï¿½
 //                    FileUtils.openFile(file, (Activity) context);
 //                } else {
-//                    // ÏÂÔØ
+//                    // ï¿½ï¿½ï¿½ï¿½
 //                    context.startActivity(new Intent(context, ShowNormalFileActivity.class).putExtra("msgbody", fileMessageBody));
 //                }
 //                if (message.direct == EMMessage.Direct.RECEIVE && !message.isAcked) {
@@ -959,7 +1014,7 @@ public class MessageAdapter extends BaseAdapter {
 //        });
 //        String st1 = context.getResources().getString(R.string.Have_downloaded);
 //        String st2 = context.getResources().getString(R.string.Did_not_download);
-//        if (message.direct == EMMessage.Direct.RECEIVE) { // ½ÓÊÕµÄÏûÏ¢
+//        if (message.direct == EMMessage.Direct.RECEIVE) { // ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½Ï¢
 //            System.err.println("it is receive msg");
 //            File file = new File(filePath);
 //            if (file != null && file.exists()) {
@@ -1020,14 +1075,14 @@ public class MessageAdapter extends BaseAdapter {
 //                }, 0, 500);
 //                break;
 //            default:
-//                // ·¢ËÍÏûÏ¢
+//                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //                sendMsgInBackground(message, holder);
 //        }
 //
 //    }
 
     /**
-     * ´¦ÀíÎ»ÖÃÏûÏ¢
+     * ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
@@ -1072,7 +1127,7 @@ public class MessageAdapter extends BaseAdapter {
 //    }
 
     /**
-     * ·¢ËÍÏûÏ¢
+     * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
      *
      * @param message
      * @param holder
@@ -1083,7 +1138,7 @@ public class MessageAdapter extends BaseAdapter {
         //holder.pb.setVisibility(View.VISIBLE);
 
         final long start = System.currentTimeMillis();
-        // µ÷ÓÃsdk·¢ËÍÒì²½·¢ËÍ·½·¨
+        // ï¿½ï¿½ï¿½ï¿½sdkï¿½ï¿½ï¿½ï¿½ï¿½ì²½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½
         EMChatManager.getInstance().sendMessage(message, new EMCallBack() {
 
             @Override
@@ -1167,10 +1222,10 @@ public class MessageAdapter extends BaseAdapter {
             String to = message.getTo();
 
             // before send, update ui
-            holder.staus_iv.setVisibility(View.GONE);
+            //holder.staus_iv.setVisibility(View.GONE);
             holder.pb.setVisibility(View.VISIBLE);
-            holder.tv.setVisibility(View.VISIBLE);
-            holder.tv.setText("0%");
+            //holder.tv.setVisibility(View.VISIBLE);
+            //holder.tv.setText("0%");
 
             final long start = System.currentTimeMillis();
             // if (chatType == ChatActivity.CHATTYPE_SINGLE) {
@@ -1183,7 +1238,7 @@ public class MessageAdapter extends BaseAdapter {
                         public void run() {
                             // send success
                             holder.pb.setVisibility(View.GONE);
-                            holder.tv.setVisibility(View.GONE);
+                            //holder.tv.setVisibility(View.GONE);
                         }
                     });
                 }
@@ -1194,9 +1249,9 @@ public class MessageAdapter extends BaseAdapter {
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
                             holder.pb.setVisibility(View.GONE);
-                            holder.tv.setVisibility(View.GONE);
+                            //holder.tv.setVisibility(View.GONE);
                             // message.setSendingStatus(Message.SENDING_STATUS_FAIL);
-                            holder.staus_iv.setVisibility(View.VISIBLE);
+                            //holder.staus_iv.setVisibility(View.VISIBLE);
                             Toast.makeText(activity,
                                     "fail1", Toast.LENGTH_SHORT).show();
                         }
@@ -1207,7 +1262,7 @@ public class MessageAdapter extends BaseAdapter {
                 public void onProgress(final int progress, String status) {
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
-                            holder.tv.setText(progress + "%");
+                            //holder.tv.setText(progress + "%");
                         }
                     });
                 }
@@ -1219,7 +1274,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * ¸üÐÂuiÉÏÏûÏ¢·¢ËÍ×´Ì¬
+     * ï¿½ï¿½ï¿½ï¿½uiï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½×´Ì¬
      *
      * @param message
      * @param holder
@@ -1266,69 +1321,82 @@ public class MessageAdapter extends BaseAdapter {
      * @param position
      * @return the image exists or not
      */
-//    private boolean showImageView(final String thumbernailPath, final ImageView iv, final String localFullSizePath, String remoteDir,
-//                                  final EMMessage message) {
-//        // String imagename =
-//        // localFullSizePath.substring(localFullSizePath.lastIndexOf("/") + 1,
-//        // localFullSizePath.length());
-//        // final String remote = remoteDir != null ? remoteDir+imagename :
-//        // imagename;
-//        final String remote = remoteDir;
-//        EMLog.d("###", "local = " + localFullSizePath + " remote: " + remote);
-//        // first check if the thumbnail image already loaded into cache
-//        Bitmap bitmap = ImageCache.getInstance().get(thumbernailPath);
-//        if (bitmap != null) {
-//            // thumbnail image is already loaded, reuse the drawable
-//            iv.setImageBitmap(bitmap);
-//            iv.setClickable(true);
-//            iv.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    System.err.println("image view on click");
-//                    Intent intent = new Intent(activity, ShowBigImage.class);
-//                    File file = new File(localFullSizePath);
-//                    if (file.exists()) {
-//                        Uri uri = Uri.fromFile(file);
-//                        intent.putExtra("uri", uri);
-//                        System.err.println("here need to check why download everytime");
-//                    } else {
-//                        // The local full size pic does not exist yet.
-//                        // ShowBigImage needs to download it from the server
-//                        // first
-//                        // intent.putExtra("", message.get);
-//                        ImageMessageBody body = (ImageMessageBody) message.getBody();
-//                        intent.putExtra("secret", body.getSecret());
-//                        intent.putExtra("remotepath", remote);
-//                    }
-//                    if (message != null && message.direct == EMMessage.Direct.RECEIVE && !message.isAcked
-//                            && message.getChatType() != EMMessage.ChatType.GroupChat) {
-//                        try {
-//                            EMChatManager.getInstance().ackMessageRead(message.getFrom(), message.getMsgId());
-//                            message.isAcked = true;
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    activity.startActivity(intent);
-//                }
-//            });
-//            return true;
-//        } else {
-//
-//            new LoadImageTask().execute(thumbernailPath, localFullSizePath, remote, message.getChatType(), iv, activity, message);
-//            return true;
-//        }
-//
-//    }
+    private boolean showImageView(final String thumbernailPath, final ImageView iv, final String localFullSizePath, String remoteDir,
+                                  final EMMessage message, final int position) {
+        // String imagename =
+        // localFullSizePath.substring(localFullSizePath.lastIndexOf("/") + 1,
+        // localFullSizePath.length());
+        // final String remote = remoteDir != null ? remoteDir+imagename :
+        // imagename;
+        LayoutInflater inflater = activity.getLayoutInflater();
+        bigImage = inflater.inflate(R.layout.view_photo, null);
+        final String remote = remoteDir;
+        ToolLog.dbg("local = " + localFullSizePath + " remote: " + remote);
+        // first check if the thumbnail image already loaded into cache
+        Bitmap bitmap = ImageCache.getInstance().get(thumbernailPath);
+        if (bitmap != null) {
+            // thumbnail image is already loaded, reuse the drawable
+            iv.setImageBitmap(bitmap);
+            //Bitmap coverBitmap = BitmapFactory.decodeResource();
+            iv.setImageResource(R.drawable.default_image);
+            iv.setClickable(true);
+            iv.setTag(R.id.tag_message, message);
+            iv.setTag(R.id.tag_position,position);
+            iv.setOnTouchListener(bigImageOnTouchListener);
+            iv.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    System.err.println("image view on click");
+                    //Intent intent = new Intent(activity, ActivityShowBigImage.class);
+                    File file = new File(localFullSizePath);
+                    Uri uri = null;
+                    String bodySecret = "";
+                    if (file.exists()) {
+                        uri = Uri.fromFile(file);
+                        //intent.putExtra("uri", uri);
+                        System.err.println("here need to check why download everytime");
+                    } else {
+                        // The local full size pic does not exist yet.
+                        // ShowBigImage needs to download it from the server
+                        // first
+                        // intent.putExtra("", message.get);
+                        ImageMessageBody body = (ImageMessageBody) message.getBody();
+                        bodySecret = body.getSecret();
+                        //intent.putExtra("secret", body.getSecret());
+                        //intent.putExtra("remotepath", remote);
+                    }
+                    if (message != null && message.direct == EMMessage.Direct.RECEIVE && !message.isAcked
+                            && message.getChatType() != EMMessage.ChatType.GroupChat) {
+                        try {
+                            EMChatManager.getInstance().ackMessageRead(message.getFrom(), message.getMsgId());
+                            message.isAcked = true;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    //activity.startActivity(intent);
+
+                    toolShowBigImage.start_show_photo(uri, remote, "");
+                    return false;
+                }
+            });
+            return true;
+        } else {
+            new LoadImageTask().execute(thumbernailPath, localFullSizePath, remote, message.getChatType(), iv, activity, message, conversation, position);
+            notifyDataSetChanged();
+            return true;
+        }
+
+    }
 
     /**
-     * Õ¹Ê¾ÊÓÆµËõÂÔÍ¼
+     * Õ¹Ê¾ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½Í¼
      *
      * @param localThumb
-     *            ±¾µØËõÂÔÍ¼Â·¾¶
+     *            ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼Â·ï¿½ï¿½
      * @param iv
      * @param thumbnailUrl
-     *            Ô¶³ÌËõÂÔÍ¼Â·¾¶
+     *            Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼Â·ï¿½ï¿½
      * @param message
      */
 //    private void showVideoThumbView(String localThumb, ImageView iv, String thumbnailUrl, final EMMessage message) {
@@ -1381,9 +1449,9 @@ public class MessageAdapter extends BaseAdapter {
         LinearLayout container_status_btn;
         LinearLayout ll_container;
         ImageView iv_read_status;
-        // ÏÔÊ¾ÒÑ¶Á»ØÖ´×´Ì¬
+        // ï¿½ï¿½Ê¾ï¿½Ñ¶ï¿½ï¿½ï¿½Ö´×´Ì¬
         TextView tv_ack;
-        // ÏÔÊ¾ËÍ´ï»ØÖ´×´Ì¬
+        // ï¿½ï¿½Ê¾ï¿½Í´ï¿½ï¿½Ö´×´Ì¬
         TextView tv_delivered;
 
         TextView tv_file_name;
@@ -1392,7 +1460,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /*
-     * µã»÷µØÍ¼ÏûÏ¢listener
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ï¢listener
      */
 //    class MapClickListener implements View.OnClickListener {
 //
@@ -1416,4 +1484,29 @@ public class MessageAdapter extends BaseAdapter {
 //        }
 //
 //    }
+
+    protected void postLoadBigImage(EMMessage message, int position){
+        toolShowBigImage.gonePhotoView();
+        conversation.removeMessage(message.getMsgId());
+        ListView listView = ((ActivityChat)activity).getListView();
+        listView.getChildAt(position).setVisibility(View.GONE);
+        notifyDataSetChanged();
+        refresh();
+    }
+
+    class BigImageOnTouchListener implements View.OnTouchListener {
+        @Override
+        public boolean onTouch(View view, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_UP:
+                    ToolLog.dbg("hello up");
+                    postLoadBigImage((EMMessage)view.getTag(R.id.tag_message), (int)view.getTag(R.id.tag_position));
+                    break;
+                default:
+                    ToolLog.dbg("hello oth");
+                    break;
+            }
+            return false;
+        }
+    }
 }

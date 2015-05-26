@@ -27,6 +27,7 @@ import com.yunkairichu.cike.bean.ResponseSearchTitle;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -47,8 +48,9 @@ public class ActivitySquare extends Activity{
     private squareOnTouchListener sqListener = new squareOnTouchListener();
     private LinearLayout squareSelectButton;
     private Button squareChainButton;
+    private Button squarePubTiButton;
 
-    private Bitmap[] titleBitmap = new Bitmap[50]; //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½50
+    private Bitmap[] titleBitmap = new Bitmap[50]; //??????50
     private int bitmapNum;
     private int tmpCnt;
     private int searchFlag = 1;
@@ -62,6 +64,7 @@ public class ActivitySquare extends Activity{
         squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
         squareSelectButton.setClickable(true);
         squareChainButton = (Button) findViewById(R.id.squareUserChainButton);
+        squarePubTiButton = (Button) findViewById(R.id.bigbutton_add);
         LayoutInflater inflater = getLayoutInflater();
         selectView = inflater.inflate(R.layout.view_square_selector, null);
         view = squareGridLayout.getChildAt(0);
@@ -86,13 +89,26 @@ public class ActivitySquare extends Activity{
               }
          });
 
+        squarePubTiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                if (popupWindow != null&& popupWindow.isShowing()) {
+//                    popupWindow.dismiss();
+//                    return;
+//                } else {
+//                    initmPopupWindowView();
+//                    popupWindow.showAsDropDown(v, 0, 5);
+//                }
+            }
+        });
+
         firReFlashSearchTitle();
         getTitleBitmap();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    /////////////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×½/////////////////////////////////////////////////
+    /////////////////////////////////////////¶¯×÷²¶×½/////////////////////////////////////////////////
 
     class squareOnTouchListener implements View.OnTouchListener {
         @Override
@@ -101,7 +117,7 @@ public class ActivitySquare extends Activity{
                 case MotionEvent.ACTION_DOWN:
                     break;
                 case MotionEvent.ACTION_UP:
-                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½ScrollViewï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
+                    // Èç¹û´¥·¢¼àÌýÊÂ¼þ£¬²¢ÇÒÓÐÄÚÈÝ£¬²¢ÇÒScrollViewÒÑ¾­À­µ½µ×²¿£¬¼ÓÔØÒ»´ÎÊý¾Ý
                     if (/*sqListener != null
                             && view != null
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
@@ -118,7 +134,7 @@ public class ActivitySquare extends Activity{
         }
     }
 
-    ///////////////////////////////////////////ï¿½ï¿½ï¿½ß³ï¿½/////////////////////////////////////////////////
+    ///////////////////////////////////////////×ÓÏß³Ì/////////////////////////////////////////////////
 
     private Handler handler=new Handler(){
         public void handleMessage(Message msg){
@@ -127,6 +143,8 @@ public class ActivitySquare extends Activity{
             Bundle data = msg.getData();
             Bitmap bitmap = (Bitmap)data.getParcelable("bitmap");
             int index = data.getInt("index");
+            ToolLog.dbg("OrigCnt"+String.valueOf(bitmap.getByteCount()));
+            //titleBitmap[index] = compressImage(bitmap);
             titleBitmap[index] = bitmap;
             secReFlashSearchTitle(index);
         }
@@ -186,7 +204,7 @@ public class ActivitySquare extends Activity{
         }
     }
 
-    //////////////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹Ê¾//////////////////////////////////////////////////////
+    //////////////////////////////////////////Êý¾ÝÇëÇóÓëÕ¹Ê¾//////////////////////////////////////////////////////
 
     public void doTitleSearch() {
         Http http = new Http();
@@ -237,6 +255,10 @@ public class ActivitySquare extends Activity{
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("titleInfo", responseSearchTitle.getReturnData().getContData().get((int) v.getTag()));
                     bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
+                    int iTag = (int) v.getTag();
+                    ToolLog.dbg("byteCnt:" + String.valueOf(titleBitmap[iTag].getByteCount()));
+                    ByteArrayOutputStream baos = compressImage(titleBitmap[iTag]);
+                    i.putExtra("bitmap", baos.toByteArray());
                     i.putExtras(bundle);
                     startActivity(i);
                     finish();
@@ -268,11 +290,30 @@ public class ActivitySquare extends Activity{
         //ToolLog.dbg("bitmapNum:"+String.valueOf(bitmapNum)+"tmpCnt:" + String.valueOf(tmpCnt));
         if(tmpCnt==bitmapNum){searchFlag = 1;}
         ((ImageView)squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
+
     }
 
     public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
 
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
+
+    //Í¼Æ¬Ñ¹Ëõº¯Êý
+    private /*Bitmap*/ ByteArrayOutputStream compressImage(Bitmap image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 50, baos);//ÖÊÁ¿Ñ¹Ëõ·½·¨£¬ÕâÀï100±íÊ¾²»Ñ¹Ëõ£¬°ÑÑ¹ËõºóµÄÊý¾Ý´æ·Åµ½baosÖÐ
+        ToolLog.dbg("compressCnt:" + String.valueOf(baos.toByteArray().length));
+        int options = 40;
+        while ( baos.toByteArray().length / 1024>35) {  //Ñ­»·ÅÐ¶ÏÈç¹ûÑ¹ËõºóÍ¼Æ¬ÊÇ·ñ´óÓÚ35kb,´óÓÚ¼ÌÐøÑ¹Ëõ
+            baos.reset();//ÖØÖÃbaos¼´Çå¿Õbaos
+            image.compress(Bitmap.CompressFormat.JPEG, options, baos);//ÕâÀïÑ¹Ëõoptions%£¬°ÑÑ¹ËõºóµÄÊý¾Ý´æ·Åµ½baosÖÐ
+            options -= 10;//Ã¿´Î¶¼¼õÉÙ10
+        }
+        //ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//°ÑÑ¹ËõºóµÄÊý¾Ýbaos´æ·Åµ½ByteArrayInputStreamÖÐ
+        //Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//°ÑByteArrayInputStreamÊý¾ÝÉú³ÉÍ¼Æ¬
+        //ToolLog.dbg("fiCompressCnt:" + String.valueOf(bitmap.getByteCount()));
+        //return bitmap;
+        return baos;
+    }
 
 
 

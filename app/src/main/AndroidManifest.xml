@@ -59,6 +59,13 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.HARDWARE_TEST" />
+
     <!-- huanxin end-->
 
     <application
@@ -75,7 +82,8 @@
 
         <activity
             android:name=".ActivitySplash"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -83,30 +91,42 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ActivityTab"> </activity>
-        <activity android:name=".ActivityGender"> </activity>
-        <activity android:name=".ActivityBeforeSearch">
+        <activity android:name=".ActivityTab"
+                   android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".ActivityGender"
+                   android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".ActivityBeforeSearch"
+                   android:screenOrientation="portrait">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
 
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
         </activity>
-        <activity android:name=".ActivityWelcome"></activity>
-        <activity android:name=".ActivityRole"></activity>
-        <activity android:name=".ActivitySquare">
-
+        <activity android:name=".ActivityWelcome"
+                   android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".ActivitySearch"></activity>
-        <activity android:name=".ActivityChat">
+        <activity android:name=".ActivityRole"
+                   android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".ActivitySquare"
+                   android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".ActivitySearch"
+                   android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".ActivityChat"
+                   android:screenOrientation="portrait">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
 
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".ActivityShowBigImage"
+                   android:screenOrientation="portrait">
         </activity>
     </application>
-
-
-
 </manifest>

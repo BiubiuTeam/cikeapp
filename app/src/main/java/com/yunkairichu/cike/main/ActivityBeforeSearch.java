@@ -72,6 +72,7 @@ public class ActivityBeforeSearch extends Activity {
             public void onClick(View v) {
                 if(isLogin!=1){return;}
 
+                Application.getInstance().setUserName(ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase());
                 setContentView(searching);
                 Http http = new Http();
                 JSONObject jo = JsonPack.buildSearchTitle(0, 0);
