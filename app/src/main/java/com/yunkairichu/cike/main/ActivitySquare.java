@@ -53,15 +53,16 @@ import java.util.Map;
 /**
  * Created by vida2009 on 2015/5/11.
  */
+//æµ‹è¯•
 public class ActivitySquare extends Activity{
-    //±¾Àà³£Á¿
+    //ï¿½ï¿½ï¿½à³£ï¿½ï¿½
     public static final int TITLE_TYPE_PICTURE = 3;
 
     public static final int REQUEST_CODE_CAMERA = 18;
 
     public static final int RESULT_CODE_COPY = 1;
 
-    //ui±äÁ¿
+    //uiï¿½ï¿½ï¿½ï¿½
     private HorizontalScrollView squareScrollView;
     private GridLayout squareGridLayout;
     private View view;
@@ -82,7 +83,7 @@ public class ActivitySquare extends Activity{
     private PopupWindow choseStatusPopupWindow;
 
 
-    //Êý¾Ý¼°Âß¼­Àà±äÁ¿
+    //ï¿½ï¿½Ý¼ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     private Bitmap[] titleBitmap = new Bitmap[50]; //??????50
     private int bitmapNum;
     private int tmpCnt;
@@ -94,7 +95,7 @@ public class ActivitySquare extends Activity{
     private SquareOnTouchListener sqListener = new SquareOnTouchListener();
     private SendChoStaOnClickListener sendChoStaOnClickListener = new SendChoStaOnClickListener();
 
-    //////////////////////////////////////////³õÊ¼»¯//////////////////////////////////////////////////
+    //////////////////////////////////////////ï¿½ï¿½Ê¼ï¿½ï¿½//////////////////////////////////////////////////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,16 +148,16 @@ public class ActivitySquare extends Activity{
         getTitleBitmap();
     }
 
-    //³õÊ¼»¯µ¯³ö´°¿Ú
+    //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public void initmPopupWindowView() {
-        // // »ñÈ¡×Ô¶¨Òå²¼¾ÖÎÄ¼þpop.xmlµÄÊÓÍ¼
+        // // ï¿½ï¿½È¡ï¿½Ô¶ï¿½ï¿½å²¼ï¿½ï¿½ï¿½Ä¼ï¿½pop.xmlï¿½ï¿½ï¿½ï¿½Í¼
         View customView = getLayoutInflater().inflate(R.layout.menu_choose_status,
                 null, false);
-        // ´´½¨PopupWindowÊµÀý
+        // ï¿½ï¿½ï¿½ï¿½PopupWindowÊµï¿½ï¿½
         choseStatusPopupWindow = new PopupWindow(customView, 800, 960);
-        // ÉèÖÃ¶¯»­Ð§¹û [R.style.AnimationFade ÊÇ×Ô¼ºÊÂÏÈ¶¨ÒåºÃµÄ]
+        // ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ [R.style.AnimationFade ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½È¶ï¿½ï¿½ï¿½Ãµï¿½]
         //popupWindow.setAnimationStyle(R.style.anim_take_pic);
-        // ×Ô¶¨ÒåviewÌí¼Ó´¥ÃþÊÂ¼þ
+        // ï¿½Ô¶ï¿½ï¿½ï¿½viewï¿½ï¿½Ó´ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
         customView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -170,7 +171,7 @@ public class ActivitySquare extends Activity{
             }
         });
 
-        /** ÔÚÕâÀï¿ÉÒÔÊµÏÖ×Ô¶¨ÒåÊÓÍ¼µÄ¹¦ÄÜ */
+        /** ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½Ä¹ï¿½ï¿½ï¿½ */
         sendChosStaLoveButton = (ImageView) customView.findViewById(R.id.btn_send_status_love);
         sendChosStaBoringButton = (ImageView) customView.findViewById(R.id.btn_send_status_boring);
         sendChosStaThinkLifeButton = (ImageView) customView.findViewById(R.id.btn_send_status_thinklife);
@@ -213,7 +214,7 @@ public class ActivitySquare extends Activity{
         });
     }
 
-/**************************************¶¯×÷²¶×½************************************************/
+/**************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×½************************************************/
 
     class SquareOnTouchListener implements View.OnTouchListener {
         @Override
@@ -222,7 +223,7 @@ public class ActivitySquare extends Activity{
                 case MotionEvent.ACTION_DOWN:
                     break;
                 case MotionEvent.ACTION_UP:
-                    // Èç¹û´¥·¢¼àÌýÊÂ¼þ£¬²¢ÇÒÓÐÄÚÈÝ£¬²¢ÇÒScrollViewÒÑ¾­À­µ½µ×²¿£¬¼ÓÔØÒ»´ÎÊý¾Ý
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½ScrollViewï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
                     if (/*sqListener != null
                             && view != null
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
@@ -257,10 +258,10 @@ public class ActivitySquare extends Activity{
         }
     }
 
-///////////////////////////////////////´óÊÂ¼þÏìÓ¦//////////////////////////////////////
+///////////////////////////////////////ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ó¦//////////////////////////////////////
 
     /**
-     * onActivityResult ×ÛºÏÐÅºÅ´«µÝ
+     * onActivityResult ï¿½Ûºï¿½ï¿½ÅºÅ´ï¿½ï¿½ï¿½
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -271,19 +272,19 @@ public class ActivitySquare extends Activity{
 //        }
 //        if (requestCode == REQUEST_CODE_CONTEXT_MENU) {
 //            switch (resultCode) {
-//                case RESULT_CODE_COPY: // ¸´ÖÆÏûÏ¢
+//                case RESULT_CODE_COPY: // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //                    EMMessage copyMsg = ((EMMessage) adapter.getItem(data.getIntExtra("position", -1)));
 //                    // clipboard.setText(SmileUtils.getSmiledText(ChatActivity.this,
 //                    // ((TextMessageBody) copyMsg.getBody()).getMessage()));
 //                    clipboard.setText(((TextMessageBody) copyMsg.getBody()).getMessage());
 //                    break;
-//                case RESULT_CODE_DELETE: // É¾³ýÏûÏ¢
+//                case RESULT_CODE_DELETE: // É¾ï¿½ï¿½ï¿½ï¿½Ï¢
 //                    EMMessage deleteMsg = (EMMessage) adapter.getItem(data.getIntExtra("position", -1));
 //                    conversation.removeMessage(deleteMsg.getMsgId());
 //                    adapter.refreshSeekTo(data.getIntExtra("position", adapter.getCount()) - 1);
 //                    break;
 //
-////                case RESULT_CODE_FORWARD: // ×ª·¢ÏûÏ¢
+////                case RESULT_CODE_FORWARD: // ×ªï¿½ï¿½ï¿½ï¿½Ï¢
 ////                    EMMessage forwardMsg = (EMMessage) adapter.getItem(data.getIntExtra("position", 0));
 ////                    Intent intent = new Intent(this, ForwardMessageActivity.class);
 ////                    intent.putExtra("forward_msg_id", forwardMsg.getMsgId());
@@ -295,19 +296,19 @@ public class ActivitySquare extends Activity{
 //                    break;
 //            }
 //        }
-        if (resultCode == RESULT_OK) { // Çå¿ÕÏûÏ¢
+        if (resultCode == RESULT_OK) { // ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //            if (requestCode == REQUEST_CODE_EMPTY_HISTORY) {
-//                // Çå¿Õ»á»°
+//                // ï¿½ï¿½Õ»á»°
 //                EMChatManager.getInstance().clearConversation(toChatUsername);
 //                adapter.refresh();
 //            } else
-            if (requestCode == REQUEST_CODE_CAMERA) { // ·¢ËÍÕÕÆ¬
+            if (requestCode == REQUEST_CODE_CAMERA) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬
                 ToolLog.dbg("Take Pic Finish");
                 choseStatusPopupWindow.dismiss();
                 if (cameraFile != null && cameraFile.exists())
                     sendPicRes(cameraFile);
             }
-//            else if (requestCode == REQUEST_CODE_SELECT_VIDEO) { // ·¢ËÍ±¾µØÑ¡ÔñµÄÊÓÆµ
+//            else if (requestCode == REQUEST_CODE_SELECT_VIDEO) { // ï¿½ï¿½ï¿½Í±ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Æµ
 //
 ////                int duration = data.getIntExtra("dur", 0);
 ////                String videoPath = data.getStringExtra("path");
@@ -345,7 +346,7 @@ public class ActivitySquare extends Activity{
 ////
 ////                }
 ////                sendVideo(videoPath, file.getAbsolutePath(), duration / 1000);
-//            } else if (requestCode == REQUEST_CODE_LOCAL) { // ·¢ËÍ±¾µØÍ¼Æ¬
+//            } else if (requestCode == REQUEST_CODE_LOCAL) { // ï¿½ï¿½ï¿½Í±ï¿½ï¿½ï¿½Í¼Æ¬
 //                if (data != null) {
 //                    popupWindow.dismiss();
 //                    Uri selectedImage = data.getData();
@@ -353,14 +354,14 @@ public class ActivitySquare extends Activity{
 //                        sendPicByUri(selectedImage);
 //                    }
 //                }
-//            } else if (requestCode == REQUEST_CODE_SELECT_FILE) { // ·¢ËÍÑ¡ÔñµÄÎÄ¼þ
+//            } else if (requestCode == REQUEST_CODE_SELECT_FILE) { // ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 ////                if (data != null) {
 ////                    Uri uri = data.getData();
 ////                    if (uri != null) {
 ////                        sendFile(uri);
 ////                    }
 ////                }
-//            } else if (requestCode == REQUEST_CODE_MAP) { // µØÍ¼
+//            } else if (requestCode == REQUEST_CODE_MAP) { // ï¿½ï¿½Í¼
 ////                double latitude = data.getDoubleExtra("latitude", 0);
 ////                double longitude = data.getDoubleExtra("longitude", 0);
 ////                String locationAddress = data.getStringExtra("address");
@@ -371,22 +372,22 @@ public class ActivitySquare extends Activity{
 ////                    String st = getResources().getString(R.string.unable_to_get_loaction);
 ////                    Toast.makeText(this, st, 0).show();
 ////                }
-//                // ÖØ·¢ÏûÏ¢
+//                // ï¿½Ø·ï¿½ï¿½ï¿½Ï¢
 //            } else if (requestCode == REQUEST_CODE_TEXT || requestCode == REQUEST_CODE_VOICE
 //                    || requestCode == REQUEST_CODE_PICTURE || requestCode == REQUEST_CODE_LOCATION
 //                    || requestCode == REQUEST_CODE_VIDEO || requestCode == REQUEST_CODE_FILE) {
 ////                resendMessage();
 //            } else if (requestCode == REQUEST_CODE_COPY_AND_PASTE) {
-////                // Õ³Ìù
+////                // Õ³ï¿½ï¿½
 ////                if (!TextUtils.isEmpty(clipboard.getText())) {
 ////                    String pasteText = clipboard.getText().toString();
 ////                    if (pasteText.startsWith(COPY_IMAGE)) {
-////                        // °ÑÍ¼Æ¬Ç°×ºÈ¥µô£¬»¹Ô­³ÉÕý³£µÄpath
+////                        // ï¿½ï¿½Í¼Æ¬Ç°×ºÈ¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½path
 ////                        sendPicture(pasteText.replace(COPY_IMAGE, ""));
 ////                    }
 ////
 ////                }
-//            } else if (requestCode == REQUEST_CODE_ADD_TO_BLACKLIST) { // ÒÆÈëºÚÃûµ¥
+//            } else if (requestCode == REQUEST_CODE_ADD_TO_BLACKLIST) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ////                EMMessage deleteMsg = (EMMessage) adapter.getItem(data.getIntExtra("position", -1));
 ////                addUserToBlacklist(deleteMsg.getFrom());
 //            } else if (conversation.getMsgCount() > 0) {
@@ -398,9 +399,9 @@ public class ActivitySquare extends Activity{
         }
     }
 
-/****************************************¶¯×÷²¶×½  Íê*******************************************/
+/****************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×½  ï¿½ï¿½*******************************************/
 
-///////////////////////////////////////////×ÓÏß³Ì/////////////////////////////////////////////////
+///////////////////////////////////////////ï¿½ï¿½ï¿½ß³ï¿½/////////////////////////////////////////////////
 
     private Handler handler=new Handler(){
         public void handleMessage(Message msg){
@@ -470,9 +471,9 @@ public class ActivitySquare extends Activity{
         }
     }
 
-/****************************************Ö÷Âß¼­********************************************************/
+/****************************************ï¿½ï¿½ï¿½ß¼ï¿½********************************************************/
 
-    /////////////////////////////////////////Ö÷Ò³ÃæÆÙ²¼Á÷////////////////////////////////////////
+    /////////////////////////////////////////ï¿½ï¿½Ò³ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½////////////////////////////////////////
     public void doTitleSearch() {
         Http http = new Http();
         JSONObject jo = JsonPack.buildSearchTitle(0, 0);
@@ -560,7 +561,7 @@ public class ActivitySquare extends Activity{
 
     }
 
-    ////////////////////////////////////////Title·¢ËÍÂß¼­////////////////////////////////////////
+    ////////////////////////////////////////Titleï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½////////////////////////////////////////
     public void sendPicRes(final File mImageFile){
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("file", mImageFile);
@@ -599,7 +600,7 @@ public class ActivitySquare extends Activity{
 
     private void sendTitle(int msgTag, int picSize, String titleCont) {
         Http http = new Http();
-        JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize);//ÀàÐÍÔÝÊ±Ð´ËÀÎª·¢Í¼Æ¬
+        JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ð´ï¿½ï¿½Îªï¿½ï¿½Í¼Æ¬
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -625,38 +626,38 @@ public class ActivitySquare extends Activity{
         });
     }
 
-/****************************************Ö÷Âß¼­  Íê********************************************************/
+/****************************************ï¿½ï¿½ï¿½ß¼ï¿½  ï¿½ï¿½********************************************************/
 
-/****************************************¸¨Öúº¯Êý********************************************************/
+/****************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½********************************************************/
 
-//////////////////////////////////////////get setÀàº¯Êý///////////////////////////////////////////
+//////////////////////////////////////////get setï¿½àº¯ï¿½ï¿½///////////////////////////////////////////
 
     public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
     public ResponsePublishTitle getResponsePublishTitle(){return responsePublishTitle;}
     public void setResponsePublishTitle(ResponsePublishTitle responsePublishTitle){this.responsePublishTitle = responsePublishTitle;}
 
-/////////////////////////////////////////¹¤¾ßÀàº¯Êý///////////////////////////////////////////////
-    //Í¼Æ¬Ñ¹Ëõº¯Êý
+/////////////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½àº¯ï¿½ï¿½///////////////////////////////////////////////
+    //Í¼Æ¬Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     private /*Bitmap*/ ByteArrayOutputStream compressImage(Bitmap image) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 50, baos);//ÖÊÁ¿Ñ¹Ëõ·½·¨£¬ÕâÀï100±íÊ¾²»Ñ¹Ëõ£¬°ÑÑ¹ËõºóµÄÊý¾Ý´æ·Åµ½baosÖÐ
+        image.compress(Bitmap.CompressFormat.JPEG, 50, baos);//ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½100ï¿½ï¿½Ê¾ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½Åµï¿½baosï¿½ï¿½
         ToolLog.dbg("compressCnt:" + String.valueOf(baos.toByteArray().length));
         int options = 40;
-        while ( baos.toByteArray().length / 1024>35) {  //Ñ­»·ÅÐ¶ÏÈç¹ûÑ¹ËõºóÍ¼Æ¬ÊÇ·ñ´óÓÚ35kb,´óÓÚ¼ÌÐøÑ¹Ëõ
-            baos.reset();//ÖØÖÃbaos¼´Çå¿Õbaos
-            image.compress(Bitmap.CompressFormat.JPEG, options, baos);//ÕâÀïÑ¹Ëõoptions%£¬°ÑÑ¹ËõºóµÄÊý¾Ý´æ·Åµ½baosÖÐ
-            options -= 10;//Ã¿´Î¶¼¼õÉÙ10
+        while ( baos.toByteArray().length / 1024>35) {  //Ñ­ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½Ç·ï¿½ï¿½ï¿½ï¿½35kb,ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½
+            baos.reset();//ï¿½ï¿½ï¿½ï¿½baosï¿½ï¿½ï¿½ï¿½ï¿½baos
+            image.compress(Bitmap.CompressFormat.JPEG, options, baos);//ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½options%ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½Åµï¿½baosï¿½ï¿½
+            options -= 10;//Ã¿ï¿½Î¶ï¿½ï¿½ï¿½ï¿½ï¿½10
         }
-        //ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//°ÑÑ¹ËõºóµÄÊý¾Ýbaos´æ·Åµ½ByteArrayInputStreamÖÐ
-        //Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//°ÑByteArrayInputStreamÊý¾ÝÉú³ÉÍ¼Æ¬
+        //ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½baosï¿½ï¿½Åµï¿½ByteArrayInputStreamï¿½ï¿½
+        //Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//ï¿½ï¿½ByteArrayInputStreamï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
         //ToolLog.dbg("fiCompressCnt:" + String.valueOf(bitmap.getByteCount()));
         //return bitmap;
         return baos;
     }
 
     /**
-     * »ñÈ¡Ö¸¶¨ÎÄ¼þ´óÐ¡
+     * ï¿½ï¿½È¡Ö¸ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡
      *
      * @param f
      * @return
@@ -670,11 +671,11 @@ public class ActivitySquare extends Activity{
             size = fis.available();
         } else {
             file.createNewFile();
-            ToolLog.dbg("»ñÈ¡ÎÄ¼þ´óÐ¡", "ÎÄ¼þ²»´æÔÚ!");
+            ToolLog.dbg("ï¿½ï¿½È¡ï¿½Ä¼ï¿½ï¿½ï¿½Ð¡", "ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!");
         }
         return size;
     }
 
-/****************************************¸¨Öúº¯Êý  Íê********************************************************/
+/****************************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½********************************************************/
 
 }

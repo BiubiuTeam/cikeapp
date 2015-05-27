@@ -1,13 +1,9 @@
 package com.yunkairichu.cike.main;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.SurfaceHolder;
-
 /**
  * Created by vida2009 on 2015/5/27.
  */
-public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callback{
+//public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callback{
 //    private ImageView back, position;//返回和切换前后置摄像头
 //    private SurfaceView surface;
 //    private ImageButton shutter;//快门
@@ -16,8 +12,8 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //    private String filepath = "";//照片保存路径
 //    private int cameraPosition = 1;//0代表前置摄像头，1代表后置摄像头
 //
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
 //
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);//没有标题
 //        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
@@ -32,7 +28,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //        //SCREEN_ORIENTATION_UNSPECIFIED： 未指定，此为默认值，由Android系统自己选择适当的方向，选择策略视具体设备的配置情况而定，因此不同的设备会有不同的方向选择
 //        //SCREEN_ORIENTATION_USER： 用户当前的首选方向
 //
-//        setContentView(R.layout.main);
+//        setContentView(R.layout.activity_take_photo);
 //
 //        back = (ImageView) findViewById(R.id.camera_back);
 //        position = (ImageView) findViewById(R.id.camera_position);
@@ -46,7 +42,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //        back.setOnClickListener(listener);
 //        position.setOnClickListener(listener);
 //        shutter.setOnClickListener(listener);
-    }
+//    }
 //
 //    //响应点击事件
 //    View.OnClickListener listener = new View.OnClickListener() {
@@ -132,13 +128,13 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //
 //    //SurfaceHolder.Callback,这是个holder用来显示surfaceView 数据的接口,他必须实现以下3个方法
 //    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+//    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 //        // TODO Auto-generated method stub
 //
-    }
+//    }
 //
 //    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+//    public void surfaceCreated(SurfaceHolder holder) {
 //        // TODO Auto-generated method stub
 //        //当surfaceview创建时开启相机
 //        if(camera == null) {
@@ -151,10 +147,10 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //                e.printStackTrace();
 //            }
 //        }
-    }
+//    }
 //
 //    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+//    public void surfaceDestroyed(SurfaceHolder holder) {
 //        // TODO Auto-generated method stub
 //        //当surfaceview关闭时，关闭预览并释放资源
 //        camera.stopPreview();
@@ -162,7 +158,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //        camera = null;
 //        holder = null;
 //        surface = null;
-    }
+//    }
 //
 //    //创建jpeg图片回调数据对象
 //    Camera.PictureCallback jpeg = new Camera.PictureCallback() {
@@ -187,4 +183,4 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //            }
 //        }
 //    };
-}
+//}
