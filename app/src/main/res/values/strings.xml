@@ -46,4 +46,5 @@
     <item type="id" name="tag_voice"></item>
     <item type="id" name="tag_message"></item>
     <item type="id" name="tag_position"></item>
+    <item type="id" name="tag_msg_tag"></item>
 </resources>

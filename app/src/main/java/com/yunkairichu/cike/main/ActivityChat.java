@@ -79,7 +79,7 @@ import java.util.List;
  * Created by liuxiaobo on 15/5/12.
  */
 public class ActivityChat extends Activity {
-
+    //本类常量
     private static final int REQUEST_CODE_EMPTY_HISTORY = 2;
     public static final int REQUEST_CODE_CONTEXT_MENU = 3;
     private static final int REQUEST_CODE_MAP = 4;

@@ -34,8 +34,4 @@
         android:textStyle="bold"
         android:text="@string/region"
         />
-
-
-
-
 </LinearLayout>

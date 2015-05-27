@@ -10,4 +10,15 @@ public class Constant {
     public static final String MESSAGE_ATTR_IS_VIDEO_CALL = "is_video_call";
     public static final String ACCOUNT_REMOVED = "account_removed";
     public static final String TOCHATUSERNAME = "sillychat-860459f6-fa25-4eca-ac68-0e0b422f8ab2";
+    public static final String UPLOADRESURL = "http://biubiu.co/upload.php";
+
+    public static final int LOVE = 1;
+    public static final int BORING = 2;
+    public static final int THINKLIFE = 3;
+    public static final int SELFSTUDY = 4;
+    public static final int ONTHEWAY = 5;
+    public static final int ONWORK = 6;
+    public static final int BODYBUILDING = 7;
+    public static final int BIGMEAL = 8;
+    public static final int SELFSHOT = 9;
 }
