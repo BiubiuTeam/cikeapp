@@ -1,6 +1,7 @@
 package com.yunkairichu.cike.main;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +32,6 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -58,6 +58,7 @@ import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.yunkairichu.cike.adapter.MessageAdapter;
+import com.yunkairichu.cike.adapter.MyGridAdapter;
 import com.yunkairichu.cike.adapter.VoicePlayClickListener;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
@@ -65,6 +66,7 @@ import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainInsert;
 import com.yunkairichu.cike.utils.CommonUtils;
+import com.yunkairichu.cike.utils.PopupUtil;
 import com.yunkairichu.cike.widget.PasteEditText;
 
 import org.json.JSONObject;
@@ -150,6 +152,7 @@ public class ActivityChat extends Activity {
     private View recordingContainer;     //语音时的屏幕中间的图标
     private View buttonPressToSpeak;     //按住说话
     private TextView backTV;
+    private TextView reportTV;
     private TextView roleTV;
     private TextView regionTV;
     private TextView recordingHint;       //语音取消提示
@@ -228,6 +231,7 @@ public class ActivityChat extends Activity {
         responseSearchTitle = (ResponseSearchTitle)bundle.getSerializable("resSearchTitle");
 
         backTV = (TextView) findViewById(R.id.back);
+        reportTV = (TextView) findViewById(R.id.report);
         roleTV = (TextView) findViewById(R.id.role);
         regionTV = (TextView) findViewById(R.id.region);
         recordingHint = (TextView) findViewById(R.id.recording_hint);
@@ -312,6 +316,18 @@ public class ActivityChat extends Activity {
             }
         });
 
+        reportTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mDialog != null && mDialog.isShowing()) {
+                    mDialog.dismiss();
+                    return;
+                } else {
+                    popupReport();
+                }
+            }
+        });
+
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -323,12 +339,11 @@ public class ActivityChat extends Activity {
         btnPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (popupWindow != null&& popupWindow.isShowing()) {
-                    popupWindow.dismiss();
+                if (mDialog != null&& mDialog.isShowing()) {
+                    mDialog.dismiss();
                     return;
                 } else {
-                    initmPopupWindowView();
-                    popupWindow.showAsDropDown(v, 0, 5);
+                    popupSendpicture();
                 }
             }
         });
@@ -572,79 +587,178 @@ public class ActivityChat extends Activity {
     }
 
     //初始化弹出窗口
-    public void initmPopupWindowView() {
+//    public void initmPopupWindowView() {
+//
+//        // // 获取自定义布局文件pop.xml的视图
+//        View customView = getLayoutInflater().inflate(R.layout.menu_take_picture,
+//                null, false);
+//        // 创建PopupWindow实例,200,150分别是宽度和高度
+//        popupWindow = new PopupWindow(customView,600,350);
+//        // 设置动画效果 [R.style.AnimationFade 是自己事先定义好的]
+//        //popupWindow.setAnimationStyle(R.style.anim_take_pic);
+//        // 自定义view添加触摸事件
+//        customView.setOnTouchListener(new View.OnTouchListener() {
+//
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (popupWindow != null && popupWindow.isShowing()) {
+//                    popupWindow.dismiss();
+//                    popupWindow = null;
+//                }
+//
+//                return false;
+//            }
+//        });
+//
+//        /** 在这里可以实现自定义视图的功能 */
+//        btnPicMenuTakePic = (Button) customView.findViewById(R.id.btn_picmenu_takepic);
+//        btnPicMenuFromloc = (Button) customView.findViewById(R.id.btn_picmenu_fromloc);
+//        btnPicMenuCancel = (Button) customView.findViewById(R.id.btn_picmenu_cancel);
+//
+//        btnPicMenuTakePic.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                if (!CommonUtils.isExitsSdcard()) {
+//                    String st = getResources().getString(R.string.sd_card_does_not_exist);
+//                    Toast.makeText(getApplicationContext(), st, Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+//
+//                cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
+//                        + System.currentTimeMillis() + ".jpg");
+//                cameraFile.getParentFile().mkdirs();
+//                startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
+//                        REQUEST_CODE_CAMERA);
+//            }
+//        });
+//
+//        btnPicMenuFromloc.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent;
+//                if (Build.VERSION.SDK_INT < 19) {
+//                    intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    intent.setType("image/*");
+//
+//                } else {
+//                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                }
+//                startActivityForResult(intent, REQUEST_CODE_LOCAL);
+//            }
+//        });
+//
+//        btnPicMenuCancel.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                if (popupWindow != null&& popupWindow.isShowing()) {
+//                    popupWindow.dismiss();
+//                    return;
+//                }
+//            }
+//        });
+//    }
 
-        // // 获取自定义布局文件pop.xml的视图
-        View customView = getLayoutInflater().inflate(R.layout.menu_take_picture,
-                null, false);
-        // 创建PopupWindow实例,200,150分别是宽度和高度
-        popupWindow = new PopupWindow(customView,600,350);
-        // 设置动画效果 [R.style.AnimationFade 是自己事先定义好的]
-        //popupWindow.setAnimationStyle(R.style.anim_take_pic);
-        // 自定义view添加触摸事件
-        customView.setOnTouchListener(new View.OnTouchListener() {
+    private Dialog mDialog;
 
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (popupWindow != null && popupWindow.isShowing()) {
-                    popupWindow.dismiss();
-                    popupWindow = null;
-                }
 
-                return false;
-            }
-        });
+    private void popupReport() {
+        View v = getLayoutInflater().inflate(R.layout.popup_report,
+                null);
+        //政治敏感类型
+        v.findViewById(R.id.btnPolitics).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-        /** 在这里可以实现自定义视图的功能 */
-        btnPicMenuTakePic = (Button) customView.findViewById(R.id.btn_picmenu_takepic);
-        btnPicMenuFromloc = (Button) customView.findViewById(R.id.btn_picmenu_fromloc);
-        btnPicMenuCancel = (Button) customView.findViewById(R.id.btn_picmenu_cancel);
+                        mDialog.dismiss();
+                    }
+                });
 
-        btnPicMenuTakePic.setOnClickListener(new View.OnClickListener() {
+        //色情信息
+        v.findViewById(R.id.btnPorn).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-            @Override
-            public void onClick(View v) {
-                if (!CommonUtils.isExitsSdcard()) {
-                    String st = getResources().getString(R.string.sd_card_does_not_exist);
-                    Toast.makeText(getApplicationContext(), st, Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                        mDialog.dismiss();
+                    }
+                });
 
-                cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
-                        + System.currentTimeMillis() + ".jpg");
-                cameraFile.getParentFile().mkdirs();
-                startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
-                        REQUEST_CODE_CAMERA);
-            }
-        });
+        //人身攻击
+        v.findViewById(R.id.btnPolitics).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-        btnPicMenuFromloc.setOnClickListener(new View.OnClickListener() {
+                        mDialog.dismiss();
+                    }
+                });
 
-            @Override
-            public void onClick(View v) {
-                Intent intent;
-                if (Build.VERSION.SDK_INT < 19) {
-                    intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
+        v.findViewById(R.id.btnCancel).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                    }
+                });
 
-                } else {
-                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                }
-                startActivityForResult(intent, REQUEST_CODE_LOCAL);
-            }
-        });
-
-        btnPicMenuCancel.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (popupWindow != null&& popupWindow.isShowing()) {
-                    popupWindow.dismiss();
-                    return;
-                }
-            }
-        });
+        mDialog = PopupUtil.makePopup(this, v);
+        mDialog.show();
     }
+
+    private void popupSendpicture() {
+        View v = getLayoutInflater().inflate(R.layout.popup_picture,
+                null);
+        v.findViewById(R.id.btnTake).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!CommonUtils.isExitsSdcard()) {
+                            String st = getResources().getString(R.string.sd_card_does_not_exist);
+                            Toast.makeText(getApplicationContext(), st, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
+                                + System.currentTimeMillis() + ".jpg");
+                        cameraFile.getParentFile().mkdirs();
+                        startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
+                                REQUEST_CODE_CAMERA);
+                    }
+                });
+
+        v.findViewById(R.id.btnChoose).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent;
+                        if (Build.VERSION.SDK_INT < 19) {
+                            intent = new Intent(Intent.ACTION_GET_CONTENT);
+                            intent.setType("image/*");
+
+                        } else {
+                            intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        }
+                        startActivityForResult(intent, REQUEST_CODE_LOCAL);
+                    }
+                });
+
+        v.findViewById(R.id.btnCancel).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                    }
+                });
+
+        mDialog = PopupUtil.makePopup(this, v);
+        mDialog.show();
+    }
+
+
 
 /*************************************主逻辑******************************************/
 
@@ -1325,107 +1439,107 @@ public class ActivityChat extends Activity {
 
     }
 
-    /**
-     为放置表情的GridView设置适配器
-     */
-    class MyGridAdapter extends BaseAdapter {
-
-        Context context;
-        ArrayList<HashMap<String, Object>> list;
-        int layout;
-        String[] from;
-        String[] fromName;
-        int[] to;
-        int[] toName;
-
-
-        public MyGridAdapter(Context context,
-                             ArrayList<HashMap<String, Object>> list, int layout,
-                             String[] from,String[] fromName, int[] to, int[] toName ) {
-            super();
-            this.context = context;
-            this.list = list;
-            this.layout = layout;
-            this.from = from;
-            this.fromName = fromName;
-            this.to = to;
-            this.toName = toName;
-        }
-
-        @Override
-        public int getCount() {
-            // TODO Auto-generated method stub
-            return list.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            // TODO Auto-generated method stub
-            return position;
-        }
-
-        class ViewHolder {
-            ImageView image = null;
-            TextView name = null;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            // TODO Auto-generated method stub
-            ViewHolder holder = null;
-
-            if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(layout, null);
-                holder = new ViewHolder();
-                holder.image = (ImageView) convertView.findViewById(to[0]);
-                holder.name = (TextView) convertView.findViewById(toName[0]);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.image.setImageResource((Integer) list.get(position).get(from[0]));
-            holder.name.setText((CharSequence) list.get(position).get(fromName[0]));
-            class MyGridImageClickListener implements View.OnClickListener {
-
-                int position;
-
-                public MyGridImageClickListener(int position) {
-                    super();
-                    this.position = position;
-                }
-
-
-
-                @Override
-                public void onClick(View v) {
-                    // TODO Auto-generated method stub
-                    /**
-                     * 这里的点击函数要重写，点击后表情从右往左加载
-                     */
-//                    mEditTextContent.append((String)list.get(position).get("faceName"));
-                }
-
-            }
-            //这里创建了一个方法内部类
-            holder.image.setOnClickListener(new MyGridImageClickListener(position));
-
-
-//            TextView mGridText = (TextView) convertView.findViewById(R.id.gridText);
-//            mGridText.setText(faceName[position]);
-
-
-
-
-            return convertView;
-        }
-
-    }
+//    /**
+//     为放置表情的GridView设置适配器
+//     */
+//    class MyGridAdapter extends BaseAdapter {
+//
+//        Context context;
+//        ArrayList<HashMap<String, Object>> list;
+//        int layout;
+//        String[] from;
+//        String[] fromName;
+//        int[] to;
+//        int[] toName;
+//
+//
+//        public MyGridAdapter(Context context,
+//                             ArrayList<HashMap<String, Object>> list, int layout,
+//                             String[] from,String[] fromName, int[] to, int[] toName ) {
+//            super();
+//            this.context = context;
+//            this.list = list;
+//            this.layout = layout;
+//            this.from = from;
+//            this.fromName = fromName;
+//            this.to = to;
+//            this.toName = toName;
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            // TODO Auto-generated method stub
+//            return list.size();
+//        }
+//
+//        @Override
+//        public Object getItem(int position) {
+//            // TODO Auto-generated method stub
+//            return null;
+//        }
+//
+//        @Override
+//        public long getItemId(int position) {
+//            // TODO Auto-generated method stub
+//            return position;
+//        }
+//
+//        class ViewHolder {
+//            ImageView image = null;
+//            TextView name = null;
+//        }
+//
+//        @Override
+//        public View getView(int position, View convertView, ViewGroup parent) {
+//            // TODO Auto-generated method stub
+//            ViewHolder holder = null;
+//
+//            if (convertView == null) {
+//                convertView = LayoutInflater.from(context).inflate(layout, null);
+//                holder = new ViewHolder();
+//                holder.image = (ImageView) convertView.findViewById(to[0]);
+//                holder.name = (TextView) convertView.findViewById(toName[0]);
+//                convertView.setTag(holder);
+//            } else {
+//                holder = (ViewHolder) convertView.getTag();
+//            }
+//            holder.image.setImageResource((Integer) list.get(position).get(from[0]));
+//            holder.name.setText((CharSequence) list.get(position).get(fromName[0]));
+//            class MyGridImageClickListener implements View.OnClickListener {
+//
+//                int position;
+//
+//                public MyGridImageClickListener(int position) {
+//                    super();
+//                    this.position = position;
+//                }
+//
+//
+//
+//                @Override
+//                public void onClick(View v) {
+//                    // TODO Auto-generated method stub
+//                    /**
+//                     * 这里的点击函数要重写，点击后表情从右往左加载
+//                     */
+////                    mEditTextContent.append((String)list.get(position).get("faceName"));
+//                }
+//
+//            }
+//            //这里创建了一个方法内部类
+//            holder.image.setOnClickListener(new MyGridImageClickListener(position));
+//
+//
+////            TextView mGridText = (TextView) convertView.findViewById(R.id.gridText);
+////            mGridText.setText(faceName[position]);
+//
+//
+//
+//
+//            return convertView;
+//        }
+//
+//    }
 
     private boolean moveable = true;
     private float startX = 0;

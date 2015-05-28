@@ -24,7 +24,7 @@
         android:layout_marginRight="@dimen/stdPadding"
         android:layout_marginTop="@dimen/stdPadding"
         android:textSize="15dp"
-        android:text="@string/politics" />
+        android:text="@string/takepicture" />
 
     <Button
         android:id="@+id/btnChoose"
@@ -33,7 +33,7 @@
         android:layout_marginRight="@dimen/stdPadding"
         android:layout_marginTop="@dimen/midPadding"
         android:textSize="15dp"
-        android:text="@string/porn" />
+        android:text="@string/choosepicture" />
 
 
     <Button

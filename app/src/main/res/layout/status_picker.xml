@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+   android:background="#b0ffde32">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="50dp"
+        android:text="@string/whichstatus"/>
+
+
+    <GridView
+        android:id="@+id/myStatusGridView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:numColumns="3"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="45dp"
+        android:columnWidth="90dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="85dp"
+        android:layout_above="@+id/status_cancel">
+    </GridView>
+
+    <ImageButton
+        android:id="@+id/status_cancel"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/status_cancel"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="49dp"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

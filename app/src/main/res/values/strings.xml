@@ -37,9 +37,12 @@
     <string name="user_selector">想看到的用户</string>
     <string name="politics">含政治敏感信息</string>
     <string name="porn">含色情等不良信息</string>
-    <string name="attack">收到谩骂或人身攻击</string>
+    <string name="attack">受到谩骂或人身攻击</string>
     <string name="cancel">取消</string>
     <string name="pictureTips">发送给对方的照片不会被保存</string>
+    <string name="takepicture">拍摄一张照片</string>
+    <string name="choosepicture">从相册中挑选</string>
+    <string name="whichstatus">你此刻的状态是？</string>
 
     <item type="id" name="tag_image"></item>
     <item type="id" name="tag_txt"></item>
