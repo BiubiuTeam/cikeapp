@@ -1,186 +1,480 @@
 package com.yunkairichu.cike.main;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PixelFormat;
+import android.hardware.Camera;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.Gravity;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.androidquery.AQuery;
+import com.androidquery.callback.AjaxCallback;
+import com.androidquery.callback.AjaxStatus;
+import com.easemob.util.PathUtil;
+import com.jaf.jcore.Application;
+import com.jaf.jcore.Http;
+import com.jaf.jcore.HttpCallBack;
+import com.jaf.jcore.JacksonWrapper;
+import com.yunkairichu.cike.bean.JsonConstant;
+import com.yunkairichu.cike.bean.JsonPack;
+import com.yunkairichu.cike.bean.ResponsePublishTitle;
+
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by vida2009 on 2015/5/27.
  */
-//public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callback{
-//    private ImageView back, position;//·µ»ØºÍÇĞ»»Ç°ºóÖÃÉãÏñÍ·
-//    private SurfaceView surface;
-//    private ImageButton shutter;//¿ìÃÅ
-//    private SurfaceHolder holder;
-//    private Camera camera;//ÉùÃ÷Ïà»ú
-//    private String filepath = "";//ÕÕÆ¬±£´æÂ·¾¶
-//    private int cameraPosition = 1;//0´ú±íÇ°ÖÃÉãÏñÍ·£¬1´ú±íºóÖÃÉãÏñÍ·
-//
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);//Ã»ÓĞ±êÌâ
-//        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//ÉèÖÃÈ«ÆÁ
-//        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//ÅÄÕÕ¹ı³ÌÆÁÄ»Ò»Ö±´¦ÓÚ¸ßÁÁ
-//        //ÉèÖÃÊÖ»úÆÁÄ»³¯Ïò£¬Ò»¹²ÓĞ7ÖÖ
-//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-//        //SCREEN_ORIENTATION_BEHIND£º ¼Ì³ĞActivity¶ÑÕ»ÖĞµ±Ç°ActivityÏÂÃæµÄÄÇ¸öActivityµÄ·½Ïò
-//        //SCREEN_ORIENTATION_LANDSCAPE£º ºáÆÁ(·ç¾°ÕÕ) £¬ÏÔÊ¾Ê±¿í¶È´óÓÚ¸ß¶È
-//        //SCREEN_ORIENTATION_PORTRAIT£º ÊúÆÁ (Ğ¤ÏñÕÕ) £¬ ÏÔÊ¾Ê±¸ß¶È´óÓÚ¿í¶È
-//        //SCREEN_ORIENTATION_SENSOR  ÓÉÖØÁ¦¸ĞÓ¦Æ÷À´¾ö¶¨ÆÁÄ»µÄ³¯Ïò,ËüÈ¡¾öÓÚÓÃ»§ÈçºÎ³ÖÓĞÉè±¸,µ±Éè±¸±»Ğı×ªÊ±·½Ïò»áËæÖ®ÔÚºáÆÁÓëÊúÆÁÖ®¼ä±ä»¯
-//        //SCREEN_ORIENTATION_NOSENSOR£º ºöÂÔÎïÀí¸ĞÓ¦Æ÷¡ª¡ª¼´ÏÔÊ¾·½ÏòÓëÎïÀí¸ĞÓ¦Æ÷ÎŞ¹Ø£¬²»¹ÜÓÃ»§ÈçºÎĞı×ªÉè±¸ÏÔÊ¾·½Ïò¶¼²»»áËæ×Å¸Ä±ä("unspecified"ÉèÖÃ³ıÍâ)
-//        //SCREEN_ORIENTATION_UNSPECIFIED£º Î´Ö¸¶¨£¬´ËÎªÄ¬ÈÏÖµ£¬ÓÉAndroidÏµÍ³×Ô¼ºÑ¡ÔñÊÊµ±µÄ·½Ïò£¬Ñ¡Ôñ²ßÂÔÊÓ¾ßÌåÉè±¸µÄÅäÖÃÇé¿ö¶ø¶¨£¬Òò´Ë²»Í¬µÄÉè±¸»áÓĞ²»Í¬µÄ·½ÏòÑ¡Ôñ
-//        //SCREEN_ORIENTATION_USER£º ÓÃ»§µ±Ç°µÄÊ×Ñ¡·½Ïò
-//
-//        setContentView(R.layout.activity_take_photo);
-//
-//        back = (ImageView) findViewById(R.id.camera_back);
-//        position = (ImageView) findViewById(R.id.camera_position);
-//        surface = (SurfaceView) findViewById(R.id.camera_surface);
-//        shutter = (ImageButton) findViewById(R.id.camera_shutter);
-//        holder = surface.getHolder();//»ñµÃ¾ä±ú
-//        holder.addCallback(this);//Ìí¼Ó»Øµ÷
-//        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);//surfaceview²»Î¬»¤×Ô¼ºµÄ»º³åÇø£¬µÈ´ıÆÁÄ»äÖÈ¾ÒıÇæ½«ÄÚÈİÍÆËÍµ½ÓÃ»§ÃæÇ°
-//
-//        //ÉèÖÃ¼àÌı
-//        back.setOnClickListener(listener);
-//        position.setOnClickListener(listener);
-//        shutter.setOnClickListener(listener);
-//    }
-//
-//    //ÏìÓ¦µã»÷ÊÂ¼ş
-//    View.OnClickListener listener = new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            // TODO Auto-generated method stub
-//            switch (v.getId()) {
-//                case R.id.camera_back:
-//                    //·µ»Ø
-//                    MyCameraActivity.this.finish();
-//                    break;
-//
-//                case R.id.camera_position:
-//                    //ÇĞ»»Ç°ºóÉãÏñÍ·
-//                    int cameraCount = 0;
-//                    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-//                    cameraCount = Camera.getNumberOfCameras();//µÃµ½ÉãÏñÍ·µÄ¸öÊı
-//
-//                    for(int i = 0; i < cameraCount; i   ) {
-//                        Camera.getCameraInfo(i, cameraInfo);//µÃµ½Ã¿Ò»¸öÉãÏñÍ·µÄĞÅÏ¢
-//                        if(cameraPosition == 1) {
-//                            //ÏÖÔÚÊÇºóÖÃ£¬±ä¸üÎªÇ°ÖÃ
-//                            if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//´ú±íÉãÏñÍ·µÄ·½Î»£¬CAMERA_FACING_FRONTÇ°ÖÃ      CAMERA_FACING_BACKºóÖÃ
-//                                camera.stopPreview();//Í£µôÔ­À´ÉãÏñÍ·µÄÔ¤ÀÀ
-//                                camera.release();//ÊÍ·Å×ÊÔ´
-//                                camera = null;//È¡ÏûÔ­À´ÉãÏñÍ·
-//                                camera = Camera.open(i);//´ò¿ªµ±Ç°Ñ¡ÖĞµÄÉãÏñÍ·
-//                                try {
-//                                    camera.setPreviewDisplay(holder);//Í¨¹ısurfaceviewÏÔÊ¾È¡¾°»­Ãæ
-//                                } catch (IOException e) {
-//                                    // TODO Auto-generated catch block
-//                                    e.printStackTrace();
-//                                }
-//                                camera.startPreview();//¿ªÊ¼Ô¤ÀÀ
-//                                cameraPosition = 0;
-//                                break;
-//                            }
-//                        } else {
-//                            //ÏÖÔÚÊÇÇ°ÖÃ£¬ ±ä¸üÎªºóÖÃ
-//                            if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_BACK) {//´ú±íÉãÏñÍ·µÄ·½Î»£¬CAMERA_FACING_FRONTÇ°ÖÃ      CAMERA_FACING_BACKºóÖÃ
-//                                camera.stopPreview();//Í£µôÔ­À´ÉãÏñÍ·µÄÔ¤ÀÀ
-//                                camera.release();//ÊÍ·Å×ÊÔ´
-//                                camera = null;//È¡ÏûÔ­À´ÉãÏñÍ·
-//                                camera = Camera.open(i);//´ò¿ªµ±Ç°Ñ¡ÖĞµÄÉãÏñÍ·
-//                                try {
-//                                    camera.setPreviewDisplay(holder);//Í¨¹ısurfaceviewÏÔÊ¾È¡¾°»­Ãæ
-//                                } catch (IOException e) {
-//                                    // TODO Auto-generated catch block
-//                                    e.printStackTrace();
-//                                }
-//                                camera.startPreview();//¿ªÊ¼Ô¤ÀÀ
-//                                cameraPosition = 1;
-//                                break;
-//                            }
-//                        }
-//
-//                    }
-//                    break;
-//
-//                case R.id.camera_shutter:
-//                    //¿ìÃÅ
-//                    camera.autoFocus(new Camera.AutoFocusCallback() {//×Ô¶¯¶Ô½¹
-//                        @Override
-//                        public void onAutoFocus(boolean success, Camera camera) {
-//                            // TODO Auto-generated method stub
-//                            if(success) {
-//                                //ÉèÖÃ²ÎÊı£¬²¢ÅÄÕÕ
-//                                Camera.Parameters params = camera.getParameters();
-//                                params.setPictureFormat(PixelFormat.JPEG);//Í¼Æ¬¸ñÊ½
-//                                params.setPreviewSize(800, 480);//Í¼Æ¬´óĞ¡
-//                                camera.setParameters(params);//½«²ÎÊıÉèÖÃµ½ÎÒµÄcamera
-//                                camera.takePicture(null, null, jpeg);//½«ÅÄÉãµ½µÄÕÕÆ¬¸ø×Ô¶¨ÒåµÄ¶ÔÏó
-//                            }
-//                        }
-//                    });
-//                    break;
-//            }
-//        }
-//    };
-//
-//    /*surfaceHolderËûÊÇÏµÍ³Ìá¹©µÄÒ»¸öÓÃÀ´ÉèÖÃsurfaceViewµÄÒ»¸ö¶ÔÏó£¬¶øËüÍ¨¹ısurfaceView.getHolder()Õâ¸ö·½·¨À´»ñµÃ¡£
-//     CameraÌá¹©Ò»¸ösetPreviewDisplay(SurfaceHolder)µÄ·½·¨À´Á¬½Ó*/
-//
-//    //SurfaceHolder.Callback,ÕâÊÇ¸öholderÓÃÀ´ÏÔÊ¾surfaceView Êı¾İµÄ½Ó¿Ú,Ëû±ØĞëÊµÏÖÒÔÏÂ3¸ö·½·¨
-//    @Override
-//    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-//        // TODO Auto-generated method stub
-//
-//    }
-//
-//    @Override
-//    public void surfaceCreated(SurfaceHolder holder) {
-//        // TODO Auto-generated method stub
-//        //µ±surfaceview´´½¨Ê±¿ªÆôÏà»ú
-//        if(camera == null) {
-//            camera = Camera.open();
-//            try {
-//                camera.setPreviewDisplay(holder);//Í¨¹ısurfaceviewÏÔÊ¾È¡¾°»­Ãæ
-//                camera.startPreview();//¿ªÊ¼Ô¤ÀÀ
-//            } catch (IOException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void surfaceDestroyed(SurfaceHolder holder) {
-//        // TODO Auto-generated method stub
-//        //µ±surfaceview¹Ø±ÕÊ±£¬¹Ø±ÕÔ¤ÀÀ²¢ÊÍ·Å×ÊÔ´
-//        camera.stopPreview();
-//        camera.release();
-//        camera = null;
-//        holder = null;
-//        surface = null;
-//    }
-//
-//    //´´½¨jpegÍ¼Æ¬»Øµ÷Êı¾İ¶ÔÏó
-//    Camera.PictureCallback jpeg = new Camera.PictureCallback() {
-//        @Override
-//        public void onPictureTaken(byte[] data, Camera camera) {
-//            // TODO Auto-generated method stub
-//            try {
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//                //×Ô¶¨ÒåÎÄ¼ş±£´æÂ·¾¶  ÒÔÅÄÉãÊ±¼äÇø·ÖÃüÃû
-//                filepath = "/sdcard/Messages/MyPictures/"   new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())   ".jpg";
-//                File file = new File(filepath);
-//                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);//½«Í¼Æ¬Ñ¹ËõµÄÁ÷ÀïÃæ
-//                bos.flush();// Ë¢ĞÂ´Ë»º³åÇøµÄÊä³öÁ÷
-//                bos.close();// ¹Ø±Õ´ËÊä³öÁ÷²¢ÊÍ·ÅÓë´ËÁ÷ÓĞ¹ØµÄËùÓĞÏµÍ³×ÊÔ´
-//                camera.stopPreview();//¹Ø±ÕÔ¤ÀÀ ´¦ÀíÊı¾İ
-//                camera.startPreview();//Êı¾İ´¦ÀíÍêºó¼ÌĞø¿ªÊ¼Ô¤ÀÀ
-//                bitmap.recycle();//»ØÊÕbitmap¿Õ¼ä
-//            } catch (Exception e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-//        }
-//    };
-//}
+public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callback{
+    //å¸¸é‡
+    public static final int TITLE_TYPE_PICTURE = 3;
+
+    public static final int REQUEST_CODE_LOCAL = 19;
+
+    //å˜é‡
+    private ImageView back, chanCam;//è¿”å›å’Œåˆ‡æ¢å‰åç½®æ‘„åƒå¤´
+    private SurfaceView surface;
+    private ImageView shutter;//å¿«é—¨
+    private SurfaceHolder holder;
+    private EditText picText;
+    private ImageView fromFile;
+    private ImageView photoFromFile;
+    private Camera camera;//å£°æ˜ç›¸æœº
+    private String filepath = "";//ç…§ç‰‡ä¿å­˜è·¯å¾„
+    private int cameraPosition = 1;//0ä»£è¡¨å‰ç½®æ‘„åƒå¤´ï¼Œ1ä»£è¡¨åç½®æ‘„åƒå¤´
+    private int msgTag = -1;
+    private ResponsePublishTitle responsePublishTitle;
+    private String sendPicFromFilePath = "";
+    private int captureOrFromFileFlag = 0;
+    private Bitmap fromFileBitmap = null;
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);//æ²¡æœ‰æ ‡é¢˜
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//è®¾ç½®å…¨å±
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//æ‹ç…§è¿‡ç¨‹å±å¹•ä¸€ç›´å¤„äºé«˜äº®
+        //è®¾ç½®æ‰‹æœºå±å¹•æœå‘ï¼Œä¸€å…±æœ‰7ç§
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        //SCREEN_ORIENTATION_BEHINDï¼š ç»§æ‰¿Activityå †æ ˆä¸­å½“å‰Activityä¸‹é¢çš„é‚£ä¸ªActivityçš„æ–¹å‘
+        //SCREEN_ORIENTATION_LANDSCAPEï¼š æ¨ªå±(é£æ™¯ç…§) ï¼Œæ˜¾ç¤ºæ—¶å®½åº¦å¤§äºé«˜åº¦
+        //SCREEN_ORIENTATION_PORTRAITï¼š ç«–å± (è‚–åƒç…§) ï¼Œ æ˜¾ç¤ºæ—¶é«˜åº¦å¤§äºå®½åº¦
+        //SCREEN_ORIENTATION_SENSOR  ç”±é‡åŠ›æ„Ÿåº”å™¨æ¥å†³å®šå±å¹•çš„æœå‘,å®ƒå–å†³äºç”¨æˆ·å¦‚ä½•æŒæœ‰è®¾å¤‡,å½“è®¾å¤‡è¢«æ—‹è½¬æ—¶æ–¹å‘ä¼šéšä¹‹åœ¨æ¨ªå±ä¸ç«–å±ä¹‹é—´å˜åŒ–
+        //SCREEN_ORIENTATION_NOSENSORï¼š å¿½ç•¥ç‰©ç†æ„Ÿåº”å™¨â€”â€”å³æ˜¾ç¤ºæ–¹å‘ä¸ç‰©ç†æ„Ÿåº”å™¨æ— å…³ï¼Œä¸ç®¡ç”¨æˆ·å¦‚ä½•æ—‹è½¬è®¾å¤‡æ˜¾ç¤ºæ–¹å‘éƒ½ä¸ä¼šéšç€æ”¹å˜("unspecified"è®¾ç½®é™¤å¤–)
+        //SCREEN_ORIENTATION_UNSPECIFIEDï¼š æœªæŒ‡å®šï¼Œæ­¤ä¸ºé»˜è®¤å€¼ï¼Œç”±Androidç³»ç»Ÿè‡ªå·±é€‰æ‹©é€‚å½“çš„æ–¹å‘ï¼Œé€‰æ‹©ç­–ç•¥è§†å…·ä½“è®¾å¤‡çš„é…ç½®æƒ…å†µè€Œå®šï¼Œå› æ­¤ä¸åŒçš„è®¾å¤‡ä¼šæœ‰ä¸åŒçš„æ–¹å‘é€‰æ‹©
+        //SCREEN_ORIENTATION_USERï¼š ç”¨æˆ·å½“å‰çš„é¦–é€‰æ–¹å‘
+
+        setContentView(R.layout.activity_take_photo);
+
+        back = (ImageView) findViewById(R.id.take_photo_cancel_iv);
+        chanCam = (ImageView) findViewById(R.id.take_photo_change_canmera_iv);
+        surface = (SurfaceView) findViewById(R.id.take_photo_sv);
+        shutter = (ImageView) findViewById(R.id.take_photo_iv);
+        picText = (EditText) findViewById(R.id.take_photo_text_tv);
+        fromFile = (ImageView) findViewById(R.id.take_photo_from_file_iv);
+        photoFromFile = (ImageView) findViewById(R.id.take_photo_from_file_show_iv);
+        holder = surface.getHolder();//è·å¾—å¥æŸ„
+        holder.addCallback(this);//æ·»åŠ å›è°ƒ
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);//surfaceviewä¸ç»´æŠ¤è‡ªå·±çš„ç¼“å†²åŒºï¼Œç­‰å¾…å±å¹•æ¸²æŸ“å¼•æ“å°†å†…å®¹æ¨é€åˆ°ç”¨æˆ·é¢å‰
+
+        Bundle bundle = this.getIntent().getExtras();
+        msgTag = bundle.getInt("msgTag", 0);
+
+        //è®¾ç½®ç›‘å¬
+        back.setOnClickListener(listener);
+        chanCam.setOnClickListener(listener);
+        shutter.setOnClickListener(listener);
+        fromFile.setOnClickListener(listener);
+    }
+
+    //å“åº”ç‚¹å‡»äº‹ä»¶
+    View.OnClickListener listener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // TODO Auto-generated method stub
+            switch (v.getId()) {
+                case R.id.take_photo_cancel_iv:
+                    //è¿”å›
+                    ActivityTakePhoto.this.setResult(RESULT_OK);
+                    ActivityTakePhoto.this.finish();
+                    break;
+
+                case R.id.take_photo_change_canmera_iv:
+                    captureOrFromFileFlag = 0;
+                    if(surface != null)surface.setVisibility(View.VISIBLE);
+                    if(photoFromFile != null)photoFromFile.setVisibility(View.GONE);
+                    //åˆ‡æ¢å‰åæ‘„åƒå¤´
+                    int cameraCount = 0;
+                    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                    cameraCount = Camera.getNumberOfCameras();//å¾—åˆ°æ‘„åƒå¤´çš„ä¸ªæ•°
+
+                    for(int i = 0; i < cameraCount; i++) {
+                        Camera.getCameraInfo(i, cameraInfo);//å¾—åˆ°æ¯ä¸€ä¸ªæ‘„åƒå¤´çš„ä¿¡æ¯
+                        if(cameraPosition == 1) {
+                            //ç°åœ¨æ˜¯åç½®ï¼Œå˜æ›´ä¸ºå‰ç½®
+                            if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//ä»£è¡¨æ‘„åƒå¤´çš„æ–¹ä½ï¼ŒCAMERA_FACING_FRONTå‰ç½®      CAMERA_FACING_BACKåç½®
+                                if(camera != null) {
+                                    camera.stopPreview();//åœæ‰åŸæ¥æ‘„åƒå¤´çš„é¢„è§ˆ
+                                    camera.release();//é‡Šæ”¾èµ„æº
+                                    camera = null;//å–æ¶ˆåŸæ¥æ‘„åƒå¤´
+                                }
+                                camera = Camera.open(i);//æ‰“å¼€å½“å‰é€‰ä¸­çš„æ‘„åƒå¤´
+                                try {
+                                    camera.setPreviewDisplay(holder);//é€šè¿‡surfaceviewæ˜¾ç¤ºå–æ™¯ç”»é¢
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                                camera.setDisplayOrientation(90);
+                                camera.startPreview();//å¼€å§‹é¢„è§ˆ
+                                cameraPosition = 0;
+                                break;
+                            }
+                        } else {
+                            //ç°åœ¨æ˜¯å‰ç½®ï¼Œ å˜æ›´ä¸ºåç½®
+                            if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_BACK) {//ä»£è¡¨æ‘„åƒå¤´çš„æ–¹ä½ï¼ŒCAMERA_FACING_FRONTå‰ç½®      CAMERA_FACING_BACKåç½®
+                                if(camera != null) {
+                                    camera.stopPreview();//åœæ‰åŸæ¥æ‘„åƒå¤´çš„é¢„è§ˆ
+                                    camera.release();//é‡Šæ”¾èµ„æº
+                                    camera = null;//å–æ¶ˆåŸæ¥æ‘„åƒå¤´
+                                }
+                                camera = Camera.open(i);//æ‰“å¼€å½“å‰é€‰ä¸­çš„æ‘„åƒå¤´
+                                try {
+                                    camera.setPreviewDisplay(holder);//é€šè¿‡surfaceviewæ˜¾ç¤ºå–æ™¯ç”»é¢
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                                camera.setDisplayOrientation(90);
+                                camera.startPreview();//å¼€å§‹é¢„è§ˆ
+                                cameraPosition = 1;
+                                break;
+                            }
+                        }
+
+                    }
+                    break;
+
+                case R.id.take_photo_iv:
+                    if(captureOrFromFileFlag == 0) {
+                        //å¿«é—¨
+                        camera.autoFocus(new Camera.AutoFocusCallback() {//è‡ªåŠ¨å¯¹ç„¦
+                            @Override
+                            public void onAutoFocus(boolean success, Camera camera) {
+                                // TODO Auto-generated method stub
+                                if (success) {
+                                    //è®¾ç½®å‚æ•°ï¼Œå¹¶æ‹ç…§
+                                    Camera.Parameters params = camera.getParameters();
+                                    params.setPictureFormat(PixelFormat.JPEG);//å›¾ç‰‡æ ¼å¼
+                                    params.setPreviewSize(800, 480);//å›¾ç‰‡å¤§å°
+                                    camera.setParameters(params);//å°†å‚æ•°è®¾ç½®åˆ°æˆ‘çš„camera
+                                    camera.takePicture(null, null, jpeg);//å°†æ‹æ‘„åˆ°çš„ç…§ç‰‡ç»™è‡ªå®šä¹‰çš„å¯¹è±¡
+                                }
+                            }
+                        });
+                    }
+                    else if(captureOrFromFileFlag == 1){
+                        sendPicFromFile();
+                    }
+                    break;
+
+                case R.id.take_photo_from_file_iv:
+                    //è¿”å›
+                    Intent intent;
+                    if (Build.VERSION.SDK_INT < 19) {
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("image/*");
+
+                    } else {
+                        intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    }
+                    startActivityForResult(intent, REQUEST_CODE_LOCAL);
+                    break;
+            }
+        }
+    };
+
+    /**
+     * onActivityResult ACTç»“æœå›ä¼ 
+     */
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) { // ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+            if (requestCode == REQUEST_CODE_LOCAL) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬
+                if (data != null) {
+                    captureOrFromFileFlag = 1;
+                    cameraPosition = 0;//æŠŠæ‘„åƒå¤´è®¾ç½®ä¸ºå‰ç½®ï¼Œæ–¹ä¾¿ä¸€ä¼šè¿˜åŸå›åç½®
+                    if(photoFromFile != null) photoFromFile.setVisibility(View.VISIBLE);
+                    photoFromFile.setBackgroundColor(0xFFFFD600);
+
+                    Uri selectedImage = data.getData();
+                    if (selectedImage != null) {
+                        showPicByUri(selectedImage);
+                    }
+                }
+            }
+        }
+    }
+
+    /*surfaceHolderä»–æ˜¯ç³»ç»Ÿæä¾›çš„ä¸€ä¸ªç”¨æ¥è®¾ç½®surfaceViewçš„ä¸€ä¸ªå¯¹è±¡ï¼Œè€Œå®ƒé€šè¿‡surfaceView.getHolder()è¿™ä¸ªæ–¹æ³•æ¥è·å¾—ã€‚
+     Cameraæä¾›ä¸€ä¸ªsetPreviewDisplay(SurfaceHolder)çš„æ–¹æ³•æ¥è¿æ¥*/
+
+    //SurfaceHolder.Callback,è¿™æ˜¯ä¸ªholderç”¨æ¥æ˜¾ç¤ºsurfaceView æ•°æ®çš„æ¥å£,ä»–å¿…é¡»å®ç°ä»¥ä¸‹3ä¸ªæ–¹æ³•
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        // TODO Auto-generated method stub
+        //å½“surfaceviewåˆ›å»ºæ—¶å¼€å¯ç›¸æœº
+        if(camera == null) {
+            camera = Camera.open();
+            try {
+                camera.setPreviewDisplay(holder);//é€šè¿‡surfaceviewæ˜¾ç¤ºå–æ™¯ç”»é¢
+                camera.setDisplayOrientation(90);
+                camera.startPreview();//å¼€å§‹é¢„è§ˆ
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // TODO Auto-generated method stub
+        //å½“surfaceviewå…³é—­æ—¶ï¼Œå…³é—­é¢„è§ˆå¹¶é‡Šæ”¾èµ„æº
+        if(camera != null) {
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
+        holder = null;
+        if(surface != null) surface = null;
+    }
+
+    //åˆ›å»ºjpegå›¾ç‰‡å›è°ƒæ•°æ®å¯¹è±¡
+    Camera.PictureCallback jpeg = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            // TODO Auto-generated method stub
+            try {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                //è‡ªå®šä¹‰æ–‡ä»¶ä¿å­˜è·¯å¾„  ä»¥æ‹æ‘„æ—¶é—´åŒºåˆ†å‘½å
+                File file = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
+                    + System.currentTimeMillis() + ".jpg");
+                file.getParentFile().mkdirs();
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, bos);//å°†å›¾ç‰‡å‹ç¼©çš„æµé‡Œé¢
+                bos.flush();// åˆ·æ–°æ­¤ç¼“å†²åŒºçš„è¾“å‡ºæµ
+                bos.close();// å…³é—­æ­¤è¾“å‡ºæµå¹¶é‡Šæ”¾ä¸æ­¤æµæœ‰å…³çš„æ‰€æœ‰ç³»ç»Ÿèµ„æº
+                camera.stopPreview();//å…³é—­é¢„è§ˆ å¤„ç†æ•°æ®
+                camera.setDisplayOrientation(90);
+                camera.startPreview();//æ•°æ®å¤„ç†å®Œåç»§ç»­å¼€å§‹é¢„è§ˆ
+                bitmap.recycle();//å›æ”¶bitmapç©ºé—´
+                sendPicRes(file);
+
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    };
+
+///////////////////////////////////////////////ä»æ–‡ä»¶å‘ç…§ç‰‡é€»è¾‘///////////////////////////////////
+    /**
+     * æ ¹æ®å›¾åº“å›¾ç‰‡uriæ˜¾ç¤ºå›¾ç‰‡
+     *
+     * @param selectedImage
+     */
+    private void showPicByUri(Uri selectedImage) {
+        // String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        Bitmap bm = null;
+        ContentResolver resolver = getContentResolver();
+        Cursor cursor = getContentResolver().query(selectedImage, null, null, null, null);
+        try {
+            bm = MediaStore.Images.Media.getBitmap(resolver, selectedImage);        //æ˜¾å¾—åˆ°bitmapå›¾ç‰‡
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(bm != null) {
+            photoFromFile.setVisibility(View.VISIBLE);
+            photoFromFile.setImageBitmap(bm);
+            fromFileBitmap = bm;
+        }
+        String st8 = getResources().getString(R.string.cant_find_pictures);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex("_data");
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+            cursor = null;
+
+            if (picturePath == null || picturePath.equals("null")) {
+                Toast toast = Toast.makeText(this, st8, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                return;
+            }
+
+            sendPicFromFilePath = picturePath;
+        } else {
+            File file = new File(selectedImage.getPath());
+            if (!file.exists()) {
+                Toast toast = Toast.makeText(this, st8, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                return;
+            }
+
+            sendPicFromFilePath = file.getAbsolutePath();
+        }
+
+    }
+
+    /**
+     * æ ¹æ®å›¾åº“å›¾ç‰‡uriå‘é€å‹ç¼©åçš„å›¾ç‰‡
+     */
+    private void sendPicFromFile() {
+        try {
+            //è‡ªå®šä¹‰æ–‡ä»¶ä¿å­˜è·¯å¾„  ä»¥æ‹æ‘„æ—¶é—´åŒºåˆ†å‘½å
+            File file = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
+                    + System.currentTimeMillis() + ".jpg");
+            file.getParentFile().mkdirs();
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+            if (fromFileBitmap == null) return;
+            fromFileBitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);//å°†å›¾ç‰‡å‹ç¼©çš„æµé‡Œé¢
+            bos.flush();// åˆ·æ–°æ­¤ç¼“å†²åŒºçš„è¾“å‡ºæµ
+            bos.close();// å…³é—­æ­¤è¾“å‡ºæµå¹¶é‡Šæ”¾ä¸æ­¤æµæœ‰å…³çš„æ‰€æœ‰ç³»ç»Ÿèµ„æº
+            fromFileBitmap.recycle();//å›æ”¶bitmapç©ºé—´
+            sendPicFromFilePath = "";
+            ToolLog.dbg("fiCompressCnt:" + String.valueOf(fromFileBitmap.getByteCount()));
+            ToolLog.dbg("fileCnt:" + String.valueOf(getFileSize(file)));
+            sendPicRes(file);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    ////////////////////////////////////////Titleå‘å¸ƒé€»è¾‘////////////////////////////////////////
+    public void sendPicRes(final File mImageFile){
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("file", mImageFile);
+        params.put("name", mImageFile.getName());
+
+        if(msgTag <= 0){
+            ToolLog.dbg("sendMsgTag err: " + String.valueOf(msgTag));
+            msgTag = 0;
+        }
+
+        AQuery aq = new AQuery(getApplicationContext());
+        aq.ajax(Constant.UPLOADRESURL, params, String.class,
+                new AjaxCallback<String>() {
+                    @Override
+                    public void callback(String url, String object,
+                                         AjaxStatus status) {
+                        super.callback(url, object, status);
+                        ToolLog.dbg("SendPicFinish");
+                        if (status.getCode() == 200) {
+                            try {
+                                sendTitle(msgTag,(int)getFileSize(mImageFile), object);
+                                msgTag = -1;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(),
+                                    R.string.network_err, Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    }
+                });
+
+        setResult(RESULT_OK);
+    }
+
+    private void sendTitle(int msgTag, int picSize, String titleCont) {
+        Http http = new Http();
+        String Text = picText.getText().toString();
+        ToolLog.dbg("Text:" + Text);
+        JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize, Text);//ç»„åŒ…
+        http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
+            @Override
+            public void onResponse(JSONObject response) {
+                super.onResponse(response);
+                if (response == null) {
+                    ToolLog.dbg("server error");
+                    return;
+                }
+
+                setResponsePublishTitle(JacksonWrapper.json2Bean(response, ResponsePublishTitle.class));
+                ToolLog.dbg("Send Finish");
+                if (responsePublishTitle.getStatusCode() == 0) {
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            R.string.network_err, Toast.LENGTH_SHORT)
+                            .show();
+                    setResult(RESULT_OK);
+                    finish();
+                }
+            }
+        });
+    }
+
+    /**
+     * è·å–æ–‡ä»¶å¤§å°
+     *
+     * @param f
+     * @return
+     * @throws Exception
+     */
+    private static long getFileSize(File file) throws Exception {
+        long size = 0;
+        if (file.exists()) {
+            FileInputStream fis = null;
+            fis = new FileInputStream(file);
+            size = fis.available();
+        } else {
+            file.createNewFile();
+            ToolLog.dbg("æ–‡ä»¶ä¸å­˜åœ¨!");
+        }
+        return size;
+    }
+
+    ///////////////////////////////////////////////get set ç±»/////////////////////////////////////
+    public ResponsePublishTitle getResponsePublishTitle(){return responsePublishTitle;}
+    public void setResponsePublishTitle(ResponsePublishTitle responsePublishTitle){this.responsePublishTitle = responsePublishTitle;}
+
+}

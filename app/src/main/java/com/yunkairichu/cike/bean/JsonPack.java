@@ -47,10 +47,12 @@ public class JsonPack implements JsonConstant{
         return JacksonWrapper.bean2Json(pr);
     }
 
-    public static JSONObject buildPublishTitle(int msgTag, int titleType, String titleCont, int voiceTimeLen, int picSize) {
+    public static JSONObject buildPublishTitle(int msgTag, int titleType, String titleCont, int voiceTimeLen, int picSize, String Text) {
         BasePostExtension postExtension = new BasePostExtension();
         postExtension.setPicSize(picSize);
         postExtension.setVoiceTimeLen(voiceTimeLen);
+        postExtension.setText(Text);
+        postExtension.setMsgTag(msgTag);
 
         PostPublishTitle pr = new PostPublishTitle();
         pr.setCmd(CMD.TITLE_PUBLISH);

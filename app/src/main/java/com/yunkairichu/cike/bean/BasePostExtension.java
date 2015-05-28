@@ -11,6 +11,8 @@ import java.io.Serializable;
 public class BasePostExtension implements Serializable {
     private int voiceTimeLen;
     private int picSize;
+    private String text;
+    private int msgTag;
 
     public int getVoiceTimeLen() {
         return voiceTimeLen;
@@ -26,5 +28,21 @@ public class BasePostExtension implements Serializable {
 
     public void setPicSize(int picSize) {
         this.picSize = picSize;
+    }
+
+    public int getMsgTag() {
+        return msgTag;
+    }
+
+    public void setMsgTag(int msgTag) {
+        this.msgTag = msgTag;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String Text) {
+        this.text = Text;
     }
 }
