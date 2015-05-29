@@ -5,20 +5,24 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jaf.jcore.Http;
@@ -72,17 +76,8 @@ public class ActivitySquare extends Activity{
     private MyDialog chooseStatusDialog;
     private Dialog dropDownDialog;
 
-
-    private RelativeLayout layoutHeader = null;
-    private TextView tvTopic = null;
-    private ImageView ivTopic = null;
-    private ImageView ivTopic2 = null;
-
     //数据与逻辑变量
     private int height = 0;
-
-
-    //��ݼ��߼������
     private Bitmap[] titleBitmap = new Bitmap[50]; //??????50
     private int bitmapNum;
     private int tmpCnt;
@@ -92,6 +87,13 @@ public class ActivitySquare extends Activity{
     private ResponseSearchTitle responseSearchTitle;
     private SquareOnTouchListener sqListener = new SquareOnTouchListener();
     private SendChoStaOnClickListener sendChoStaOnClickListener = new SendChoStaOnClickListener();
+    private int isOnCreated;
+
+//    //popup弹窗相关声明
+//    private RelativeLayout layoutHeader = null;
+//    private TextView tvTopic = null;
+//    private ImageView ivTopic = null;
+//    private ImageView ivTopic2 = null;
 
     //////////////////////////////////////////初始化//////////////////////////////////////////////////
 
@@ -131,10 +133,21 @@ public class ActivitySquare extends Activity{
                     popupChooseStatus();
             }
         });
+        
+        isOnCreated = 0;
+
+        for(int i=0; i<50;i++) {
+            if(titleBitmap[i]!=null) {
+                if (!titleBitmap[i].isRecycled()) {
+                    titleBitmap[i].recycle();   //回收图片所占的内存
+                }
+            }
+        }
 
         firReFlashSearchTitle();
         getTitleBitmap();
 
+        isOnCreated = 1;
     }
 
 
@@ -176,6 +189,14 @@ public class ActivitySquare extends Activity{
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
                         if(searchFlag==1) {
                             searchFlag = 0;
+                            for(int i=0; i<50;i++) {
+                                if(titleBitmap[i]!=null) {
+                                    if (!titleBitmap[i].isRecycled()) {
+                                        titleBitmap[i].recycle();   //回收图片所占的内存
+                                    }
+                                }
+                            }
+                            squareScrollView.scrollTo(10, 10);
                             doTitleSearch();
                         }
                     }
@@ -334,24 +355,32 @@ public class ActivitySquare extends Activity{
     }
 
     public void firReFlashSearchTitle(){
+        if(isOnCreated == 0){
+            ViewTreeObserver vto2 = squareScrollView.getViewTreeObserver();
+            vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    squareScrollView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    firPosReFlashSearchTitle(squareScrollView.getWidth(),squareScrollView.getHeight());
+                }
+            });
+        } else{
+            firPosReFlashSearchTitle(squareScrollView.getWidth(),squareScrollView.getHeight());
+        }
+    }
+
+    public void firPosReFlashSearchTitle(int width, int height){
         int lineNum = responseSearchTitle.getReturnData().getLineNum();
         int[] linePos = new int[lineNum];
         for(int i=0;i<lineNum;i++){linePos[i]=0;}
         squareGridLayout.removeAllViews();
         for(int i=0;i<responseSearchTitle.getReturnData().getContData().size();i++){
             BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
-            ImageView tv = new ImageView(this);
-            if(baseResponseTitleInfo.getTitleType()==3){tv.setBackgroundColor(123);}
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             int k = i%lineNum;
-            params.rowSpec = GridLayout.spec(k);
-            params.columnSpec = GridLayout.spec(linePos[k], baseResponseTitleInfo.getBlockLen());
-            linePos[k] += baseResponseTitleInfo.getBlockLen();
-            params.setGravity(Gravity.FILL);
-            tv.setLayoutParams(params);
-
-            tv.setTag(i);
-            tv.setOnClickListener(new View.OnClickListener() {
+            ToolLog.dbg("Height:"+String.valueOf(height)+" Width:"+String.valueOf(width));
+            ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
+            iv.setTag(i);
+            iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent i = new Intent(ActivitySquare.this, ActivityChat.class);
@@ -367,11 +396,18 @@ public class ActivitySquare extends Activity{
                     finish();
                 }
             });
-            squareGridLayout.addView(tv, i);
+            squareGridLayout.addView(iv, i);
+
+            TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
+//            tv.setText(baseResponseTitleInfo.getExtension().getText());
+            tv.setText("hehe");
+            squareGridLayout.addView(tv);
+
+            linePos[k] += baseResponseTitleInfo.getBlockLen();
         }
     }
 
-    public void secReFlashSearchTitle(int index){
+    public void secReFlashSearchTitle(int index) {
 //        int lineNum = responseSearchTitle.getReturnData().getLineNum();
 //        int[] linePos = new int[lineNum];
 //        for(int i=0;i<lineNum;i++){linePos[i]=0;}
@@ -391,9 +427,13 @@ public class ActivitySquare extends Activity{
 //        }
         tmpCnt++;
         //ToolLog.dbg("bitmapNum:"+String.valueOf(bitmapNum)+"tmpCnt:" + String.valueOf(tmpCnt));
-        if(tmpCnt==bitmapNum){searchFlag = 1;}
-        ((ImageView)squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
-
+        if (tmpCnt == bitmapNum) {
+            searchFlag = 1;
+        }
+        ((ImageViewSquareItem)squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
+//        BitmapDrawable bitmapDrawable = new BitmapDrawable(toRoundCorner(titleBitmap[index], 50));
+//        ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(toRoundCorner(titleBitmap[index], 50));
+        //titleBitmap[index].recycle();
     }
 
 /****************************************主逻辑 完********************************************************/
@@ -422,6 +462,30 @@ public class ActivitySquare extends Activity{
         //ToolLog.dbg("fiCompressCnt:" + String.valueOf(bitmap.getByteCount()));
         //return bitmap;
         return baos;
+    }
+
+    /**
+     * 获取圆角位图的方法
+     * @param bitmap 需要转化成圆角的位图
+     * @param pixels 圆角的度数，数值越大，圆角越大
+     * @return 处理后的圆角位图
+     */
+    public static Bitmap toRoundCorner(Bitmap bitmap, int pixels) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        final float roundPx = pixels;
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 
 /****************************************工具类 完********************************************************/

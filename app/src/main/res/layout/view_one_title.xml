@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:weightSum="2">
 
-</RelativeLayout>
+    <ImageView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="50" />
+
+    <TextView
+        android:id="@+id/role"
+        android:layout_width="30dp"
+        android:layout_height="13dp"
+        android:background="@color/student"
+        android:textSize="9sp"
+        android:text="学生"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:layout_marginRight="8dp"
+        />
+
+</FrameLayout>

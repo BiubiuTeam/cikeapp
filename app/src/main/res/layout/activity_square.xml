@@ -16,21 +16,20 @@
 
     <HorizontalScrollView
         android:layout_above="@+id/bigbutton_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/squereHScrollView"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="80dp"
-        android:layout_marginBottom="70dp"
+        android:layout_marginBottom="60dp"
         android:fillViewport="false"
         android:scrollbars="none">
 
         <GridLayout
             android:id="@+id/squereGridLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            >
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
         </GridLayout>
 
     </HorizontalScrollView>
