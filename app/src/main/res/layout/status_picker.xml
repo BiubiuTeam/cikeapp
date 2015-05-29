@@ -19,6 +19,8 @@
         android:id="@+id/myStatusGridView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
         android:numColumns="3"
         android:verticalSpacing="10dp"
         android:horizontalSpacing="45dp"
@@ -26,15 +28,16 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="85dp"
-        android:layout_above="@+id/status_cancel">
+        android:layout_marginTop="95dp"
+        android:layout_above="@+id/status_cancel_btn"
+        android:layout_marginBottom="30dp">
     </GridView>
 
-    <ImageButton
-        android:id="@+id/status_cancel"
+    <Button
+        android:id="@+id/status_cancel_btn"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/status_cancel"
+        android:background="@drawable/status_cancel_selector"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="49dp"
         android:layout_centerHorizontal="true"/>

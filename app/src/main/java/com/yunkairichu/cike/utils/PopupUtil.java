@@ -9,6 +9,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
+import com.yunkairichu.cike.main.MyDialog;
 import com.yunkairichu.cike.main.R;
 
 /**
@@ -100,6 +101,31 @@ public class PopupUtil {
         dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT);
         return dialog;
+    }
+
+    /**
+     * create a popup menu
+     * @param context
+     * @param contentView
+     * @return
+     */
+    public static MyDialog makeMyPopup(Context context, View contentView) {
+        MyDialog mydialog = new MyDialog(context, R.style.popupDialog);
+        Window window = mydialog.getWindow();
+        WindowManager.LayoutParams windowParams = new WindowManager.LayoutParams();
+        int[] size = getScreenSize(context);
+        windowParams.x = 0;
+        windowParams.y = size[HEIGHT];
+
+        //设置window的布局参数
+        window.setAttributes(windowParams);
+        // window.setBackgroundDrawableResource(R.drawable.alert_dialog_background);
+        mydialog.setCanceledOnTouchOutside(true);
+        mydialog.setContentView(contentView);
+        // 显示的大小是contentView 的大小
+        mydialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT);
+        return mydialog;
     }
 
     /**

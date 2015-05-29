@@ -12,7 +12,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
@@ -29,11 +28,8 @@ import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
-import com.yunkairichu.cike.popupwindow.ConstantCategoryMenu;
-import com.yunkairichu.cike.popupwindow.DeviceUtility;
-import com.yunkairichu.cike.popupwindow.MenuUtility;
-import com.yunkairichu.cike.popupwindow.PulldownMenuView;
 import com.yunkairichu.cike.utils.CommonUtils;
+import com.yunkairichu.cike.utils.PopupUtil;
 
 import org.json.JSONObject;
 
@@ -73,15 +69,10 @@ public class ActivitySquare extends Activity{
     private Button sendChosStaBackButton;
     private Button squareChainButton;
     private Button squarePubTiButton;
-//    private PopupWindow choseStatusPopupWindow;
-    private Dialog chooseStatusDialog;
+    private MyDialog chooseStatusDialog;
     private Dialog dropDownDialog;
 
-    //popup弹窗相关声明
-    // PulldownMenuView基本操作类
-    private MenuUtility menuUtility = null;
-    // PulldownMenuView对象
-    private PulldownMenuView pullDownMenu = null;
+
     private RelativeLayout layoutHeader = null;
     private TextView tvTopic = null;
     private ImageView ivTopic = null;
@@ -109,6 +100,8 @@ public class ActivitySquare extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_square);
+
+        chooseStatusDialog = new MyDialog(this);
         squareScrollView = (HorizontalScrollView) findViewById(R.id.squereHScrollView);
         squareGridLayout = (GridLayout) findViewById(R.id.squereGridLayout);
 
@@ -131,202 +124,41 @@ public class ActivitySquare extends Activity{
             }
         });
 
-//        squareSelectButton.setOnClickListener(new View.OnClickListener() {
-//              @Override
-//              public void onClick(View v) {
-//                  setContentView(selectView);
-//              }
-//         });
 
-//        squarePubTiButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//            if (choseStatusPopupWindow != null&& choseStatusPopupWindow.isShowing()) {
-//                choseStatusPopupWindow.dismiss();
-//                return;
-//            } else {
-//                initmPopupWindowView();
-//                choseStatusPopupWindow.showAsDropDown(v, 0, 5);
-//            }
-//            }
-//        }
-
-
-
-//
-//        squarePubTiButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (chooseStatusDialog != null&& chooseStatusDialog.isShowing()) {
-//                    chooseStatusDialog.dismiss();
-//                    return;
-//                } else {
-//                    popupChooseStatus();
-//                }
-//            }
-//        });
+        squarePubTiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    popupChooseStatus();
+            }
+        });
 
         firReFlashSearchTitle();
         getTitleBitmap();
 
-        // 初始化
-        initViews();
-
-//        /**
-//         * 为状态Map添加数据
-//         */
-//        for (int i = 0; i < statusId.length; i++) {
-//            statusMap.put(statusName[i], statusId[i]);
-//        }
-//
-//        addStatusData();
-
     }
 
 
-    protected void initViews(){
-        ivTopic = (ImageView) findViewById(R.id.look_into);
-        tvTopic = (TextView) findViewById(R.id.picker);
-        ivTopic2 = (ImageView) findViewById(R.id.picker_arrow);
 
 
-        squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
-        squareSelectButton.setClickable(true);
-        squareSelectButton.setOnClickListener(TopicOnClickListener);
-        layoutHeader = (RelativeLayout) findViewById(R.id.abovepopup);
-//        layoutBottom = (LinearLayout) findViewById(R.id.layout_bottom);
-//        layoutBody = (FrameLayout) findViewById(R.id.layout_body);
-
-        height = DeviceUtility.getScreenSize(this)[1] -DeviceUtility.getStatusBarHeight(this);
-
-        menuUtility = new MenuUtility(
-                ActivitySquare.this,
-                ConstantCategoryMenu.newsImageRes,
-                ConstantCategoryMenu.newsMenuTexts,
-                height,layoutHeader);
-    }
-
-    protected void showPulldownMenu(){
-        pullDownMenu = menuUtility.getPulldownMenuView((String)tvTopic.getText());
-        ivTopic.setImageResource(R.drawable.look_into_white);
-        ivTopic2.setImageResource(R.drawable.picker_arrow_white);
-    }
-
-    protected void hidePulldownMenu(){
-        pullDownMenu.releasePopupMenuView();
-        ivTopic.setImageResource(R.drawable.look_into_black);
-        ivTopic2.setImageResource(R.drawable.picker_arrow_black);
-    }
 
 /**************************************事件响应׽************************************************/
 
-    private View.OnClickListener TopicOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            // ��ʼ��ʾ�����˵�
-            showPulldownMenu();
 
-            // TODO Auto-generated method stub
-            pullDownMenu.setOnMenuItemClickListener(new PulldownMenuView.OnMenuItemClickListener() {
-                @Override
-                public void onMenuItemClick(AdapterView<?> parent, View view, int position) {
-                    // TODO Auto-generated method stub
-//                    tvTopic.setText(ConstantCategoryMenu.newsMenuTexts[position]);
-//                    layoutBody.setBackgroundResource(ConstantCategoryMenu.newsBodyRes[position]);
-                }
+    private void popupChooseStatus() {
+        View v = getLayoutInflater().inflate(R.layout.status_picker,
+                null);
 
-                @Override
-                public void hideMenu() {
-                    // TODO Auto-generated method stub
-                    hidePulldownMenu();
-                }
-            });
+        v.findViewById(R.id.status_cancel_btn).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        chooseStatusDialog.dismiss();
+                    }
+                });
+        chooseStatusDialog = PopupUtil.makeMyPopup(this, v);
+        chooseStatusDialog.show();
+    }
 
-            pullDownMenu.show();
-        }
-    };
-
-//    private void popupChooseStatus() {
-//        View v = getLayoutInflater().inflate(R.layout.status_picker,
-//                null);
-//
-//        v.findViewById(R.id.status_cancel).setOnClickListener(
-//                new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        chooseStatusDialog.dismiss();
-//                    }
-//                });
-//
-//        chooseStatusDialog = PopupUtil.makePopup(this, v);
-//        chooseStatusDialog.show();
-//    }
-
-    //��ʼ����������
-//    public void initmPopupWindowView() {
-//        // // ��ȡ�Զ��岼���ļ�pop.xml����ͼ
-//        View customView = getLayoutInflater().inflate(R.layout.menu_choose_status,
-//                null, false);
-//        // ����PopupWindowʵ��
-//        choseStatusPopupWindow = new PopupWindow(customView, 800, 960);
-//        // ���ö���Ч�� [R.style.AnimationFade ���Լ����ȶ���õ�]
-//        //popupWindow.setAnimationStyle(R.style.anim_take_pic);
-//        // �Զ���view��Ӵ����¼�
-//        customView.setOnTouchListener(new View.OnTouchListener() {
-//
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (choseStatusPopupWindow != null && choseStatusPopupWindow.isShowing()) {
-//                    choseStatusPopupWindow.dismiss();
-//                    choseStatusPopupWindow = null;
-//                }
-//
-//                return false;
-//            }
-//        });
-//
-//        /** ���������ʵ���Զ�����ͼ�Ĺ��� */
-//        sendChosStaLoveButton = (ImageView) customView.findViewById(R.id.btn_send_status_love);
-//        sendChosStaBoringButton = (ImageView) customView.findViewById(R.id.btn_send_status_boring);
-//        sendChosStaThinkLifeButton = (ImageView) customView.findViewById(R.id.btn_send_status_thinklife);
-//        sendChosStaSelfStudyButton = (ImageView) customView.findViewById(R.id.btn_send_status_selfstudy);
-//        sendChosStaOnTheWayButton = (ImageView) customView.findViewById(R.id.btn_send_status_ontheway);
-//        sendChosStaOnWorkButton = (ImageView) customView.findViewById(R.id.btn_send_status_onwork);
-//        sendChosStaBodyBuildingButton = (ImageView) customView.findViewById(R.id.btn_send_status_bodybuilding);
-//        sendChosStaBigMealButton = (ImageView) customView.findViewById(R.id.btn_send_status_bigmeal);
-//        sendChosStaSelfShotButton = (ImageView) customView.findViewById(R.id.btn_send_status_selfshot);
-//
-//        sendChosStaBackButton = (Button) customView.findViewById(R.id.btn_send_status_back);
-//
-//        sendChosStaLoveButton.setTag(R.id.tag_msg_tag, Constant.LOVE);
-//        sendChosStaLoveButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaBoringButton.setTag(R.id.tag_msg_tag, Constant.BORING);
-//        sendChosStaBoringButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaThinkLifeButton.setTag(R.id.tag_msg_tag, Constant.THINKLIFE);
-//        sendChosStaThinkLifeButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaSelfStudyButton.setTag(R.id.tag_msg_tag, Constant.SELFSTUDY);
-//        sendChosStaSelfStudyButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaOnTheWayButton.setTag(R.id.tag_msg_tag, Constant.ONTHEWAY);
-//        sendChosStaOnTheWayButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaOnWorkButton.setTag(R.id.tag_msg_tag, Constant.ONWORK);
-//        sendChosStaOnWorkButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaBodyBuildingButton.setTag(R.id.tag_msg_tag, Constant.BODYBUILDING);
-//        sendChosStaBodyBuildingButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaBigMealButton.setTag(R.id.tag_msg_tag, Constant.BIGMEAL);
-//        sendChosStaBigMealButton.setOnClickListener(sendChoStaOnClickListener);
-//        sendChosStaSelfShotButton.setTag(R.id.tag_msg_tag, Constant.SELFSHOT);
-//        sendChosStaSelfShotButton.setOnClickListener(sendChoStaOnClickListener);
-//
-//        sendChosStaBackButton.setOnClickListener(new View.OnClickListener(){
-//            @Override
-//            public void onClick(View view) {
-//                if (choseStatusPopupWindow != null&& choseStatusPopupWindow.isShowing()) {
-//                    choseStatusPopupWindow.dismiss();
-//                    return;
-//                }
-//            }
-//        });
-//    }
 
 //以下是vida的代码，保持不动即可
 /**************************************侦听函数׽************************************************/
