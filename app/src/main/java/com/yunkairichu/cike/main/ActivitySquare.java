@@ -212,12 +212,13 @@ public class ActivitySquare extends Activity{
         ivTopic2.setImageResource(R.drawable.picker_arrow_white);
     }
 
-/**************************************事件响应׽************************************************/
     protected void hidePulldownMenu(){
         pullDownMenu.releasePopupMenuView();
         ivTopic.setImageResource(R.drawable.look_into_black);
         ivTopic2.setImageResource(R.drawable.picker_arrow_black);
     }
+
+/**************************************事件响应׽************************************************/
 
     private View.OnClickListener TopicOnClickListener = new View.OnClickListener() {
         @Override
@@ -327,7 +328,8 @@ public class ActivitySquare extends Activity{
 //        });
 //    }
 
-/**************************************������׽************************************************/
+//以下是vida的代码，保持不动即可
+/**************************************侦听函数׽************************************************/
 
     class SquareOnTouchListener implements View.OnTouchListener {
         @Override
