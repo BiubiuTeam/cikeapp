@@ -1,11 +1,11 @@
 package com.yunkairichu.cike.main;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -23,6 +23,7 @@ import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jaf.jcore.Http;
@@ -49,7 +50,7 @@ import java.net.URL;
 /**
  * Created by vida2009 on 2015/5/11.
  */
-public class ActivitySquare extends Activity{
+public class ActivitySquare extends Activity {
     //本类常量
     public static final int REQUEST_CODE_CAMERA = 18;
 
@@ -74,7 +75,7 @@ public class ActivitySquare extends Activity{
     private Button squareChainButton;
     private Button squarePubTiButton;
     private MyDialog chooseStatusDialog;
-    private Dialog dropDownDialog;
+    private MySwitchDialog dropDownDialog;
 
     //数据与逻辑变量
     private int height = 0;
@@ -89,11 +90,11 @@ public class ActivitySquare extends Activity{
     private SendChoStaOnClickListener sendChoStaOnClickListener = new SendChoStaOnClickListener();
     private int isOnCreated;
 
-//    //popup弹窗相关声明
+    //popup弹窗相关声明
 //    private RelativeLayout layoutHeader = null;
-//    private TextView tvTopic = null;
-//    private ImageView ivTopic = null;
-//    private ImageView ivTopic2 = null;
+    private TextView tvTopic = null;
+    private ImageView ivTopic = null;
+    private ImageView ivTopic2 = null;
 
     //////////////////////////////////////////初始化//////////////////////////////////////////////////
 
@@ -104,9 +105,11 @@ public class ActivitySquare extends Activity{
         setContentView(R.layout.activity_square);
 
         chooseStatusDialog = new MyDialog(this);
+        dropDownDialog = new MySwitchDialog(this);
         squareScrollView = (HorizontalScrollView) findViewById(R.id.squereHScrollView);
         squareGridLayout = (GridLayout) findViewById(R.id.squereGridLayout);
-
+        squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
+        squareSelectButton.setClickable(true);
         squareChainButton = (Button) findViewById(R.id.squareUserChainButton);
         squarePubTiButton = (Button) findViewById(R.id.bigbutton_add);
         LayoutInflater inflater = getLayoutInflater();
@@ -114,8 +117,12 @@ public class ActivitySquare extends Activity{
         view = squareGridLayout.getChildAt(0);
         squareScrollView.setOnTouchListener(sqListener);
 
+        ivTopic = (ImageView) findViewById(R.id.look_into);
+        ivTopic2 = (ImageView) findViewById(R.id.picker_arrow);
+        tvTopic = (TextView) findViewById(R.id.picker);
+
         Bundle bundle = this.getIntent().getExtras();
-        responseSearchTitle = (ResponseSearchTitle)bundle.getSerializable("resSearchTitle");
+        responseSearchTitle = (ResponseSearchTitle) bundle.getSerializable("resSearchTitle");
 
         squareChainButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,18 +133,30 @@ public class ActivitySquare extends Activity{
             }
         });
 
+        squareSelectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (dropDownDialog != null&& dropDownDialog.isShowing()) {
+                    dropDownDialog.dismiss();
+                    return;
+                }
+                dropDownSelector();
+                changeImage();
+            }
+        });
 
         squarePubTiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    popupChooseStatus();
+                popupChooseStatus();
+
             }
         });
-        
+
         isOnCreated = 0;
 
-        for(int i=0; i<50;i++) {
-            if(titleBitmap[i]!=null) {
+        for (int i = 0; i < 50; i++) {
+            if (titleBitmap[i] != null) {
                 if (!titleBitmap[i].isRecycled()) {
                     titleBitmap[i].recycle();   //回收图片所占的内存
                 }
@@ -151,10 +170,9 @@ public class ActivitySquare extends Activity{
     }
 
 
-
-
-
-/**************************************事件响应׽************************************************/
+    /**
+     * ***********************************事件响应׽***********************************************
+     */
 
 
     private void popupChooseStatus() {
@@ -173,8 +191,41 @@ public class ActivitySquare extends Activity{
     }
 
 
+    private void dropDownSelector() {
+        View v = getLayoutInflater().inflate(R.layout.status_selector,
+                null);
+
+//        v.findViewById(R.id.status_cancel_btn).setOnClickListener(
+//                new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        chooseStatusDialog.dismiss();
+//                    }
+//                });
+        dropDownDialog = PopupUtil.makeMySwitchPopup(this, v);
+        dropDownDialog.show();
+    }
+
+    private void changeImage() {
+        if (dropDownDialog != null&& dropDownDialog.isShowing()) {
+            ivTopic.setImageResource(R.drawable.look_into_white);
+            ivTopic2.setImageResource(R.drawable.picker_arrow_white);
+            tvTopic.setTextColor(Color.argb(255,255,255,255));
+        }
+        else {
+            ivTopic.setImageResource(R.drawable.look_into_black);
+            ivTopic2.setImageResource(R.drawable.picker_arrow_black);
+            tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
+        }
+    }
+
+
+
 //以下是vida的代码，保持不动即可
-/**************************************侦听函数׽************************************************/
+
+    /**
+     * ***********************************侦听函数׽***********************************************
+     */
 
     class SquareOnTouchListener implements View.OnTouchListener {
         @Override
@@ -187,10 +238,10 @@ public class ActivitySquare extends Activity{
                     if (/*sqListener != null
                             && view != null
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
-                        if(searchFlag==1) {
+                        if (searchFlag == 1) {
                             searchFlag = 0;
-                            for(int i=0; i<50;i++) {
-                                if(titleBitmap[i]!=null) {
+                            for (int i = 0; i < 50; i++) {
+                                if (titleBitmap[i] != null) {
                                     if (!titleBitmap[i].isRecycled()) {
                                         titleBitmap[i].recycle();   //回收图片所占的内存
                                     }
@@ -224,7 +275,7 @@ public class ActivitySquare extends Activity{
 //            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
 //                    REQUEST_CODE_CAMERA);
 
-            sendMsgTag = (int)view.getTag(R.id.tag_msg_tag);
+            sendMsgTag = (int) view.getTag(R.id.tag_msg_tag);
             Intent i = new Intent(ActivitySquare.this, ActivityTakePhoto.class);
             Bundle bundle = new Bundle();
             bundle.putInt("msgTag", sendMsgTag);
@@ -255,18 +306,20 @@ public class ActivitySquare extends Activity{
         }
     }
 
-/****************************************子线程*******************************************/
+    /**
+     * *************************************子线程******************************************
+     */
 
 ///////////////////////////////////////////Handler/////////////////////////////////////////////////
 
-    private Handler handler=new Handler(){
-        public void handleMessage(Message msg){
+    private Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
             super.handleMessage(msg);
 
             Bundle data = msg.getData();
-            Bitmap bitmap = (Bitmap)data.getParcelable("bitmap");
+            Bitmap bitmap = (Bitmap) data.getParcelable("bitmap");
             int index = data.getInt("index");
-            ToolLog.dbg("OrigCnt"+String.valueOf(bitmap.getByteCount()));
+            ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
             //titleBitmap[index] = compressImage(bitmap);
             titleBitmap[index] = bitmap;
             secReFlashSearchTitle(index);
@@ -276,19 +329,23 @@ public class ActivitySquare extends Activity{
     private class ThreadGetSquareTitleBitmap implements Runnable {
         private ResponseSearchTitle responseSearchTitle;
 
-        public ThreadGetSquareTitleBitmap(ResponseSearchTitle responseSearchTitle){
+        public ThreadGetSquareTitleBitmap(ResponseSearchTitle responseSearchTitle) {
             this.responseSearchTitle = responseSearchTitle;
         }
 
         public void run() {
             bitmapNum = 0;
-            tmpCnt=0;
-            for(int i=0;i<responseSearchTitle.getReturnData().getContData().size();i++){
-                if(responseSearchTitle.getReturnData().getContData().get(i).getTitleType()==2||responseSearchTitle.getReturnData().getContData().get(i).getTitleType()==3){bitmapNum++;}
+            tmpCnt = 0;
+            for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
+                if (responseSearchTitle.getReturnData().getContData().get(i).getTitleType() == 2 || responseSearchTitle.getReturnData().getContData().get(i).getTitleType() == 3) {
+                    bitmapNum++;
+                }
             }
-            for(int i=0;i<responseSearchTitle.getReturnData().getContData().size();i++) {
+            for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
                 BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
-                if(baseResponseTitleInfo.getTitleType()!=2&&baseResponseTitleInfo.getTitleType()!=3){continue;}
+                if (baseResponseTitleInfo.getTitleType() != 2 && baseResponseTitleInfo.getTitleType() != 3) {
+                    continue;
+                }
                 URL url = null;
                 try {
                     url = new URL(baseResponseTitleInfo.getTitleCont());
@@ -327,7 +384,9 @@ public class ActivitySquare extends Activity{
         }
     }
 
-/****************************************主逻辑********************************************************/
+    /**
+     * *************************************主逻辑*******************************************************
+     */
 
     /////////////////////////////////////////广场瀑布流////////////////////////////////////////
     public void doTitleSearch() {
@@ -349,35 +408,37 @@ public class ActivitySquare extends Activity{
         });
     }
 
-    public void getTitleBitmap(){
-        ThreadGetSquareTitleBitmap threadGetSquareTitleBitmap =new ThreadGetSquareTitleBitmap(responseSearchTitle);
+    public void getTitleBitmap() {
+        ThreadGetSquareTitleBitmap threadGetSquareTitleBitmap = new ThreadGetSquareTitleBitmap(responseSearchTitle);
         new Thread(threadGetSquareTitleBitmap).start();
     }
 
-    public void firReFlashSearchTitle(){
-        if(isOnCreated == 0){
+    public void firReFlashSearchTitle() {
+        if (isOnCreated == 0) {
             ViewTreeObserver vto2 = squareScrollView.getViewTreeObserver();
             vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     squareScrollView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    firPosReFlashSearchTitle(squareScrollView.getWidth(),squareScrollView.getHeight());
+                    firPosReFlashSearchTitle(squareScrollView.getWidth(), squareScrollView.getHeight());
                 }
             });
-        } else{
-            firPosReFlashSearchTitle(squareScrollView.getWidth(),squareScrollView.getHeight());
+        } else {
+            firPosReFlashSearchTitle(squareScrollView.getWidth(), squareScrollView.getHeight());
         }
     }
 
-    public void firPosReFlashSearchTitle(int width, int height){
+    public void firPosReFlashSearchTitle(int width, int height) {
         int lineNum = responseSearchTitle.getReturnData().getLineNum();
         int[] linePos = new int[lineNum];
-        for(int i=0;i<lineNum;i++){linePos[i]=0;}
+        for (int i = 0; i < lineNum; i++) {
+            linePos[i] = 0;
+        }
         squareGridLayout.removeAllViews();
-        for(int i=0;i<responseSearchTitle.getReturnData().getContData().size();i++){
+        for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
             BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
-            int k = i%lineNum;
-            ToolLog.dbg("Height:"+String.valueOf(height)+" Width:"+String.valueOf(width));
+            int k = i % lineNum;
+            ToolLog.dbg("Height:" + String.valueOf(height) + " Width:" + String.valueOf(width));
             ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             iv.setTag(i);
             iv.setOnClickListener(new View.OnClickListener() {
@@ -398,7 +459,7 @@ public class ActivitySquare extends Activity{
             });
             squareGridLayout.addView(iv, i);
 
-            TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
+            TextViewSquareItem tv = new TextViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
 //            tv.setText(baseResponseTitleInfo.getExtension().getText());
             tv.setText("hehe");
             squareGridLayout.addView(tv);
@@ -430,7 +491,7 @@ public class ActivitySquare extends Activity{
         if (tmpCnt == bitmapNum) {
             searchFlag = 1;
         }
-        ((ImageViewSquareItem)squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
+        ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
 //        BitmapDrawable bitmapDrawable = new BitmapDrawable(toRoundCorner(titleBitmap[index], 50));
 //        ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(toRoundCorner(titleBitmap[index], 50));
         //titleBitmap[index].recycle();
@@ -438,21 +499,27 @@ public class ActivitySquare extends Activity{
 
 /****************************************主逻辑 完********************************************************/
 
-/****************************************辅助函数********************************************************/
+    /**
+     * *************************************辅助函数*******************************************************
+     */
 
 //////////////////////////////////////////get set类///////////////////////////////////////////
+    public ResponseSearchTitle getResponseSearchTitle() {
+        return responseSearchTitle;
+    }
 
-    public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
-    public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
+    public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle) {
+        this.responseSearchTitle = responseSearchTitle;
+    }
 
-/////////////////////////////////////////工具类///////////////////////////////////////////////
+    /////////////////////////////////////////工具类///////////////////////////////////////////////
     //图像压缩
     private /*Bitmap*/ ByteArrayOutputStream compressImage(Bitmap image) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 50, baos);//����ѹ������������100��ʾ��ѹ������ѹ�������ݴ�ŵ�baos��
         ToolLog.dbg("compressCnt:" + String.valueOf(baos.toByteArray().length));
         int options = 40;
-        while ( baos.toByteArray().length / 1024>35) {  //ѭ���ж����ѹ����ͼƬ�Ƿ����35kb,���ڼ���ѹ��
+        while (baos.toByteArray().length / 1024 > 35) {  //ѭ���ж����ѹ����ͼƬ�Ƿ����35kb,���ڼ���ѹ��
             baos.reset();//����baos�����baos
             image.compress(Bitmap.CompressFormat.JPEG, options, baos);//����ѹ��options%����ѹ�������ݴ�ŵ�baos��
             options -= 10;//ÿ�ζ�����10
@@ -466,6 +533,7 @@ public class ActivitySquare extends Activity{
 
     /**
      * 获取圆角位图的方法
+     *
      * @param bitmap 需要转化成圆角的位图
      * @param pixels 圆角的度数，数值越大，圆角越大
      * @return 处理后的圆角位图

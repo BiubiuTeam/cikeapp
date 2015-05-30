@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="#ffde32"
+    >
 
     <GridView
         android:id="@+id/statusscale"
@@ -11,14 +13,26 @@
         android:numColumns="3"
         android:verticalSpacing="18dp"
         android:stretchMode="columnWidth"
-        android:horizontalSpacing="20dp">
+        android:horizontalSpacing="20dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp">
 
     </GridView>
 
     <TextView
+        android:id="@+id/whatstatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/type_selector"/>
+        android:text="@string/type_selector"
+        android:layout_below="@+id/statusscale"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="#ffffff"
+        android:textSize="18sp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"/>
 
     <GridView
         android:id="@+id/statustype"
@@ -27,14 +41,27 @@
         android:numColumns="3"
         android:verticalSpacing="18dp"
         android:stretchMode="columnWidth"
-        android:horizontalSpacing="20dp">
+        android:horizontalSpacing="20dp"
+        android:layout_below="@+id/whatstatus"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp">
 
     </GridView>
 
     <TextView
+        android:id="@+id/whatgender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/user_selector"/>
+        android:text="@string/user_selector"
+        android:layout_below="@+id/statustype"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="#ffffff"
+        android:textSize="18sp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"/>
 
     <GridView
         android:id="@+id/usergender"
@@ -43,8 +70,13 @@
         android:numColumns="3"
         android:verticalSpacing="18dp"
         android:stretchMode="columnWidth"
-        android:horizontalSpacing="20dp">
+        android:horizontalSpacing="20dp"
+        android:layout_below="@+id/whatgender"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp">
 
     </GridView>
 
-</LinearLayout>
+</RelativeLayout>

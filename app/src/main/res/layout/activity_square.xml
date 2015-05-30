@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/welcome"
-    android:background="#ffd600">
+    android:background="@color/background">
 
     <Button
         android:id="@+id/bigbutton_add"

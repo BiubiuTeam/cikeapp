@@ -2,14 +2,18 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="wrap_content"
-    android:layout_width="fill_parent">
-    <Button
-        android:layout_height="wrap_content"
-        android:id="@+id/statusbutton"
-        android:layout_width="wrap_content"
+    android:layout_width="wrap_content"
+    >
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/statusbutton_selector"
-        android:text="lalala"
+        android:textColor="#ffffff"
+        android:gravity="center"
+        android:text="@string/back"
+        android:background="@drawable/status_picker_btn"
+        android:textSize="18sp"
         >
-    </Button>
+    </TextView>
 </RelativeLayout>

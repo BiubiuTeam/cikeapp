@@ -12,7 +12,7 @@
         android:id="@+id/look_into"
         android:layout_width="24.5dp"
         android:layout_height="19.5dp"
-        android:background="@drawable/look_into_black"
+        android:src="@drawable/look_into_black"
         android:layout_marginRight="8dp"
         android:layout_gravity="center"
         />
@@ -31,7 +31,7 @@
         android:id="@+id/picker_arrow"
         android:layout_width="13dp"
         android:layout_height="11dp"
-        android:background="@drawable/picker_arrow_black"
+        android:src="@drawable/picker_arrow_black"
         android:layout_gravity="center"
         />
 
