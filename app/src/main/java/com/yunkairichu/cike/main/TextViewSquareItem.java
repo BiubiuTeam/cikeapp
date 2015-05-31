@@ -16,7 +16,7 @@ public class TextViewSquareItem extends TextView {
         params.rowSpec = GridLayout.spec(rowSpec);
         params.columnSpec = GridLayout.spec(colSpec, BlockLen);
         params.height = parentHeight/lineNum-12;
-        params.width = parentWidth/lineNum-12;
+        params.width = parentWidth/lineNum*BlockLen-12;
         params.bottomMargin = 6;
         params.topMargin = 6;
         params.leftMargin = 6;

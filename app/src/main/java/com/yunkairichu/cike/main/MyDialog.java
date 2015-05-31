@@ -1,5 +1,6 @@
 package com.yunkairichu.cike.main;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -19,6 +20,7 @@ public class MyDialog extends Dialog {
     private GridView gv = null;
     private String str;
     private int position;
+    private Activity activity;
 
     //////////////////////////////////////////图片资源//////////////////////////////////////////////////
     private int[] statusId = new int[]{R.drawable.status000, R.drawable.status001, R.drawable.status002, R.drawable.status003
@@ -29,16 +31,19 @@ public class MyDialog extends Dialog {
         super(context);
         this.context = context;
         // TODO Auto-generated constructor stub
+        activity = (Activity) context;
     }
 
     public MyDialog(Context context, int theme, String str) {
         super(context, theme);
         this.context = context;
         this.str = str;
+        activity = (Activity) context;
     }
 
     public MyDialog(Context context, int theme) {
         this(context, theme, null);
+        activity = (Activity) context;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class MyDialog extends Dialog {
 
         gv.setSelector(new ColorDrawable(Color.TRANSPARENT));
         // 设置GridView的数据源
-        PictureAdapter adapter = new PictureAdapter(statusName, statusId, this.context);
+        PictureAdapter adapter = new PictureAdapter(statusName, statusId, this.context, activity);
         gv.setAdapter(adapter);
 
     }

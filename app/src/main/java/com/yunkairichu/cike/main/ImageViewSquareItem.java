@@ -11,9 +11,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 
@@ -34,14 +31,16 @@ public class ImageViewSquareItem extends ImageView {
         params.columnSpec = GridLayout.spec(colSpec, BlockLen);
         params.setGravity(Gravity.FILL);
         params.height = parentHeight/lineNum-12;
-        params.width = parentWidth/lineNum-12;
+        params.width = parentWidth/lineNum*BlockLen-12;
         params.bottomMargin = 6;
         params.topMargin = 6;
         params.leftMargin = 6;
         params.rightMargin = 6;
         this.setLayoutParams(params);
-        this.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        Animation animation = (AnimationSet) AnimationUtils.loadAnimation(context, R.anim.picture_move);
+        //this.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//        Animation animation = (AnimationSet) AnimationUtils.loadAnimation(context, R.anim.picture_move_2);
+//        this.startAnimation(animation);
+
         //this.setAnimation(animation);
         //animation.start();
         //this.setBackgroundResource(R.drawable.circle_corner);
@@ -91,8 +90,8 @@ public class ImageViewSquareItem extends ImageView {
         path.arcTo(new RectF(
                         0,
                         0,
-                        roundWidth*2,
-                        roundHeight*2),
+                        roundWidth * 2,
+                        roundHeight * 2),
                 -90,
                 -90);
         path.close();

@@ -76,6 +76,11 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Bundle bundle = this.getIntent().getExtras();
+        msgTag = bundle.getInt("msgTag", 0);
+
+        if(msgTag==9) cameraPosition = 0;
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);//没有标题
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//拍照过程屏幕一直处于高亮
@@ -101,9 +106,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         holder = surface.getHolder();//获得句柄
         holder.addCallback(this);//添加回调
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);//surfaceview不维护自己的缓冲区，等待屏幕渲染引擎将内容推送到用户面前
-
-        Bundle bundle = this.getIntent().getExtras();
-        msgTag = bundle.getInt("msgTag", 0);
 
         //设置监听
         back.setOnClickListener(listener);
@@ -192,6 +194,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                                     Camera.Parameters params = camera.getParameters();
                                     params.setPictureFormat(PixelFormat.JPEG);//图片格式
                                     params.setPreviewSize(800, 480);//图片大小
+                                    params.setRotation(90);
                                     camera.setParameters(params);//将参数设置到我的camera
                                     camera.takePicture(null, null, jpeg);//将拍摄到的照片给自定义的对象
                                 }
@@ -257,7 +260,19 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         // TODO Auto-generated method stub
         //当surfaceview创建时开启相机
         if(camera == null) {
-            camera = Camera.open();
+            if(msgTag==9){
+                Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                int cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
+
+                for(int i = 0; i < cameraCount; i++) {
+                    Camera.getCameraInfo(i, cameraInfo);//得到每一个摄像头的信息
+                    //现在是后置，变更为前置
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) camera = Camera.open(i);
+                }
+            }
+            else{
+                camera = Camera.open();
+            }
             try {
                 camera.setPreviewDisplay(holder);//通过surfaceview显示取景画面
                 camera.setDisplayOrientation(90);

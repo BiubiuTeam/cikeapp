@@ -35,7 +35,6 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
@@ -44,7 +43,6 @@ import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
-import com.yunkairichu.cike.utils.CommonUtils;
 import com.yunkairichu.cike.utils.PopupUtil;
 
 import org.json.JSONObject;
@@ -59,6 +57,8 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by vida2009 on 2015/5/11.
@@ -94,15 +94,17 @@ public class ActivitySquare extends Activity {
     //数据与逻辑变量
     private int height = 0;
     private Bitmap[] titleBitmap = new Bitmap[50]; //??????50
+    private int[] wpara = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    private int[] wdirect = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     private int bitmapNum;
     private int tmpCnt;
     private int searchFlag = 1;
-    private int sendMsgTag = -1;
     private File cameraFile;
     private ResponseSearchTitle responseSearchTitle;
     private SquareOnTouchListener sqListener = new SquareOnTouchListener();
-    private SendChoStaOnClickListener sendChoStaOnClickListener = new SendChoStaOnClickListener();
     private int isOnCreated;
+    private Timer timer = new Timer();
+    private Handler handler2;
 
     //popup弹窗相关声明
 //    private RelativeLayout layoutHeader = null;
@@ -187,7 +189,6 @@ public class ActivitySquare extends Activity {
             @Override
             public void onClick(View v) {
                 popupChooseStatus();
-
             }
         });
 
@@ -200,6 +201,62 @@ public class ActivitySquare extends Activity {
                 }
             }
         }
+
+        handler2 = new Handler() {
+            public void handleMessage(Message msg) {
+                if (msg.what == 1) {
+                    for(int i=0;i<50;i++){
+                        if(titleBitmap[i]!=null){
+                            ImageViewSquareItem ivsi = (ImageViewSquareItem) squareGridLayout.getChildAt(i);
+                            if(ivsi.getWidth() >= 1 && ivsi.getHeight() >= 1) {
+                                if (titleBitmap[i].getWidth() - ivsi.getWidth() <= 0) {
+                                    ivsi.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                    Bitmap bitmapTmp = Bitmap.createBitmap(titleBitmap[i], 0, wpara[i], titleBitmap[i].getWidth(), ivsi.getHeight());
+                                    ivsi.setImageBitmap(bitmapTmp);
+                                    if (titleBitmap[i].getHeight() - ivsi.getHeight() > 0) {
+                                        if (wdirect[i] == 0) wpara[i]++;
+                                        else wpara[i]--;
+                                        if (wpara[i] == 0) wdirect[i] = 0;
+                                        if (wpara[i] + ivsi.getHeight() >= titleBitmap[i].getHeight())
+                                            wdirect[i] = 1;
+                                    } else {
+                                        wpara[i] = 0;
+                                        wdirect[i] = 0;
+                                    }
+                                } else {
+                                    ivsi.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                    int bitMapHeightStart = titleBitmap[i].getHeight() / 2 - ivsi.getHeight() / 2;
+                                    Bitmap bitmapTmp = Bitmap.createBitmap(titleBitmap[i], wpara[i], bitMapHeightStart, ivsi.getWidth(), ivsi.getHeight());
+                                    ivsi.setImageBitmap(bitmapTmp);
+                                    if (titleBitmap[i].getWidth() - ivsi.getWidth() > 0) {
+                                        if (wdirect[i] == 0) wpara[i]++;
+                                        else wpara[i]--;
+                                        if (wpara[i] == 0) wdirect[i] = 0;
+                                        if (wpara[i] + ivsi.getWidth() >= titleBitmap[i].getWidth())
+                                            wdirect[i] = 1;
+                                    } else {
+                                        wpara[i] = 0;
+                                        wdirect[i] = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                super.handleMessage(msg);
+            };
+        };
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                // 需要做的事:发送消息
+                Message message = new Message();
+                message.what = 1;
+                handler2.sendMessage(message);
+            }
+        };
+
+        timer.schedule(task,0,80); // 1s后执行task,经过1s再次执行
 
         firReFlashSearchTitle();
         getTitleBitmap();
@@ -434,8 +491,11 @@ public class ActivitySquare extends Activity {
                                 if (titleBitmap[i] != null) {
                                     if (!titleBitmap[i].isRecycled()) {
                                         titleBitmap[i].recycle();   //回收图片所占的内存
+                                        titleBitmap[i] = null;
                                     }
                                 }
+                                wpara[i] = 0;
+                                wdirect[i] = 0;
                             }
                             squareScrollView.scrollTo(10, 10);
                             doTitleSearch();
@@ -446,31 +506,6 @@ public class ActivitySquare extends Activity {
                     break;
             }
             return false;
-        }
-    }
-
-    class SendChoStaOnClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            if (!CommonUtils.isExitsSdcard()) {
-                String st = getResources().getString(R.string.sd_card_does_not_exist);
-                Toast.makeText(getApplicationContext(), st, Toast.LENGTH_SHORT).show();
-                return;
-            }
-//
-//            sendMsgTag = (int)view.getTag(R.id.tag_msg_tag);
-//            cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
-//                    + System.currentTimeMillis() + ".jpg");
-//            cameraFile.getParentFile().mkdirs();
-//            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
-//                    REQUEST_CODE_CAMERA);
-
-            sendMsgTag = (int) view.getTag(R.id.tag_msg_tag);
-            Intent i = new Intent(ActivitySquare.this, ActivityTakePhoto.class);
-            Bundle bundle = new Bundle();
-            bundle.putInt("msgTag", sendMsgTag);
-            i.putExtras(bundle);
-            startActivityForResult(i, REQUEST_CODE_CAMERA);
         }
     }
 
@@ -489,9 +524,25 @@ public class ActivitySquare extends Activity {
 //                    choseStatusPopupWindow.dismiss();
 //                    return;
 //                }
-                sendMsgTag = -1;
 //                if (cameraFile != null && cameraFile.exists())
 //                    sendPicRes(cameraFile);
+                chooseStatusDialog.dismiss();
+
+                if(searchFlag==1) {
+                    searchFlag = 0;
+                    for(int i=0; i<50;i++) {
+                        if(titleBitmap[i]!=null) {
+                            if (!titleBitmap[i].isRecycled()) {
+                                titleBitmap[i].recycle();   //回收图片所占的内存
+                                titleBitmap[i] = null;
+                            }
+                        }
+                        wpara[i] = 0;
+                        wdirect[i] = 0;
+                    }
+                    squareScrollView.scrollTo(10, 10);
+                    doTitleSearch();
+                }
             }
         }
     }
@@ -622,14 +673,14 @@ public class ActivitySquare extends Activity {
         int lineNum = responseSearchTitle.getReturnData().getLineNum();
         int[] linePos = new int[lineNum];
         for (int i = 0; i < lineNum; i++) {
-            linePos[i] = 0;
+            linePos[i] = 1;
         }
         squareGridLayout.removeAllViews();
         for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
             BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
             int k = i % lineNum;
-            ToolLog.dbg("Height:" + String.valueOf(height) + " Width:" + String.valueOf(width));
-            ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
+            ToolLog.dbg("bLen:" + String.valueOf(baseResponseTitleInfo.getBlockLen()));
+            ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k + 1, linePos[k], lineNum);
             iv.setTag(i);
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -649,9 +700,9 @@ public class ActivitySquare extends Activity {
             });
             squareGridLayout.addView(iv, i);
 
-            TextViewSquareItem tv = new TextViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
-//            tv.setText(baseResponseTitleInfo.getExtension().getText());
-            tv.setText("hehe");
+            TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k+1, linePos[k], lineNum);
+            tv.setText(baseResponseTitleInfo.getExtension().getText());
+            //tv.setText("hehe");
             squareGridLayout.addView(tv);
 
             linePos[k] += baseResponseTitleInfo.getBlockLen();
@@ -659,32 +710,12 @@ public class ActivitySquare extends Activity {
     }
 
     public void secReFlashSearchTitle(int index) {
-//        int lineNum = responseSearchTitle.getReturnData().getLineNum();
-//        int[] linePos = new int[lineNum];
-//        for(int i=0;i<lineNum;i++){linePos[i]=0;}
-//        squareGridLayout.removeAllViews();
-//        for(int i=0;i<responseSearchTitle.getReturnData().getContData().size();i++){
-//            BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
-//            ImageView tv = new ImageView(this);
-//            if(baseResponseTitleInfo.getTitleType()==3){tv.setImageBitmap(titleBitmap[i]);}
-//            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-//            int k = i%lineNum;
-//            params.rowSpec = GridLayout.spec(k);
-//            params.columnSpec = GridLayout.spec(linePos[k], baseResponseTitleInfo.getBlockLen());
-//            linePos[k] += baseResponseTitleInfo.getBlockLen();
-//            params.setGravity(Gravity.FILL);
-//            tv.setLayoutParams(params);
-//            squareGridLayout.addView(tv,i);
-//        }
         tmpCnt++;
-        //ToolLog.dbg("bitmapNum:"+String.valueOf(bitmapNum)+"tmpCnt:" + String.valueOf(tmpCnt));
         if (tmpCnt == bitmapNum) {
             searchFlag = 1;
         }
+
         ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
-//        BitmapDrawable bitmapDrawable = new BitmapDrawable(toRoundCorner(titleBitmap[index], 50));
-//        ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(toRoundCorner(titleBitmap[index], 50));
-        //titleBitmap[index].recycle();
     }
 
 /****************************************主逻辑 完********************************************************/

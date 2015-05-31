@@ -1,14 +1,21 @@
 package com.yunkairichu.cike.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.yunkairichu.cike.main.ActivitySquare;
+import com.yunkairichu.cike.main.ActivityTakePhoto;
 import com.yunkairichu.cike.main.R;
+import com.yunkairichu.cike.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +26,22 @@ import java.util.List;
 
 //自定义适配器
 public class PictureAdapter extends BaseAdapter {
+    //本类常量
+    public static final int REQUEST_CODE_CAMERA = 18;
+
     private LayoutInflater inflater;
     private List<Picture> pictures;
+    private Activity activity;
 
-    public PictureAdapter(String[] titles, int[] images, Context context)
+    private int sendMsgTag = -1;
+    private SendChoStaOnClickListener sendChoStaOnClickListener = new SendChoStaOnClickListener();
+
+    public PictureAdapter(String[] titles, int[] images, Context context, Context context2)
     {
         super();
         pictures = new ArrayList<Picture>();
         inflater = LayoutInflater.from(context);
+        activity = (Activity) context2;
         for (int i = 0; i < images.length; i++)
         {
             Picture picture = new Picture(titles[i], images[i]);
@@ -75,6 +90,8 @@ public class PictureAdapter extends BaseAdapter {
         }
         viewHolder.title.setText(pictures.get(position).getTitle());
         viewHolder.image.setImageResource(pictures.get(position).getImageId());
+        viewHolder.image.setTag(R.id.tag_msg_tag, position + 1);
+        viewHolder.image.setOnClickListener(sendChoStaOnClickListener);
         return convertView;
     }
 
@@ -119,6 +136,32 @@ public class PictureAdapter extends BaseAdapter {
         public void setImageId(int imageId)
         {
             this.imageId = imageId;
+        }
+    }
+
+    class SendChoStaOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            if (!CommonUtils.isExitsSdcard()) {
+                String st = activity.getResources().getString(R.string.sd_card_does_not_exist);
+                Toast.makeText(activity.getApplicationContext(), st, Toast.LENGTH_SHORT).show();
+                return;
+            }
+//
+//            sendMsgTag = (int)view.getTag(R.id.tag_msg_tag);
+//            cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
+//                    + System.currentTimeMillis() + ".jpg");
+//            cameraFile.getParentFile().mkdirs();
+//            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
+//                    REQUEST_CODE_CAMERA);
+
+            sendMsgTag = (int)view.getTag(R.id.tag_msg_tag);
+            Intent i = new Intent((ActivitySquare)activity, ActivityTakePhoto.class);
+            Bundle bundle = new Bundle();
+            bundle.putInt("msgTag", sendMsgTag);
+            i.putExtras(bundle);
+            ((ActivitySquare)activity).startActivityForResult(i, REQUEST_CODE_CAMERA);
+            sendMsgTag = -1;
         }
     }
 
