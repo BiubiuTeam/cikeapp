@@ -4,16 +4,15 @@ import android.app.Dialog;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
 import com.yunkairichu.cike.main.MyDialog;
-import com.yunkairichu.cike.main.MySwitchDialog;
 import com.yunkairichu.cike.main.R;
-import com.yunkairichu.cike.main.ToolDevice;
+
+//import com.yunkairichu.cike.main.MySwitchDialog;
 
 /**
  * 需要在style里面添加这些xml
@@ -137,25 +136,25 @@ public class PopupUtil {
      * @param contentView
      * @return
      */
-    public static MySwitchDialog makeMySwitchPopup(Context context, View contentView) {
-        MySwitchDialog mydialog = new MySwitchDialog(context, R.style.popupMyDialog);
-        Window window = mydialog.getWindow();
-        WindowManager.LayoutParams windowParams = new WindowManager.LayoutParams();
-        int[] size = getScreenSize(context);
-        windowParams.x = 0;
-        windowParams.y = (int) ToolDevice.dp2px(80.0f);
-
-        //设置window的布局参数
-        window.setAttributes(windowParams);
-        window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
-        // window.setBackgroundDrawableResource(R.drawable.alert_dialog_background);
-        mydialog.setCanceledOnTouchOutside(true);
-        mydialog.setContentView(contentView);
-        // 显示的大小是contentView 的大小
-        mydialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
-                LayoutParams.WRAP_CONTENT);
-        return mydialog;
-    }
+//    public static MySwitchDialog makeMySwitchPopup(Context context, View contentView) {
+//        MySwitchDialog mydialog = new MySwitchDialog(context, R.style.popupMyDialog);
+//        Window window = mydialog.getWindow();
+//        WindowManager.LayoutParams windowParams = new WindowManager.LayoutParams();
+//        int[] size = getScreenSize(context);
+//        windowParams.x = 0;
+//        windowParams.y = (int) ToolDevice.dp2px(80.0f);
+//
+//        //设置window的布局参数
+//        window.setAttributes(windowParams);
+//        window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+//        // window.setBackgroundDrawableResource(R.drawable.alert_dialog_background);
+//        mydialog.setCanceledOnTouchOutside(true);
+//        mydialog.setContentView(contentView);
+//        // 显示的大小是contentView 的大小
+//        mydialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
+//                LayoutParams.WRAP_CONTENT);
+//        return mydialog;
+//    }
 
     /**
      * get device size

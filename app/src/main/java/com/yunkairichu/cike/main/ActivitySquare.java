@@ -11,18 +11,29 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +57,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by vida2009 on 2015/5/11.
@@ -75,7 +88,8 @@ public class ActivitySquare extends Activity {
     private Button squareChainButton;
     private Button squarePubTiButton;
     private MyDialog chooseStatusDialog;
-    private MySwitchDialog dropDownDialog;
+//    private MySwitchDialog dropDownDialog;
+    private PopupWindow menuWindow;
 
     //数据与逻辑变量
     private int height = 0;
@@ -96,6 +110,15 @@ public class ActivitySquare extends Activity {
     private ImageView ivTopic = null;
     private ImageView ivTopic2 = null;
 
+    private GridView gv1 = null;GridView gv2 = null;GridView gv3 = null;
+
+    private String[] statusName = new String[]{"全部","失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "健身", "吃大餐", "自拍"};
+    private String[] scale = new String[]{"全球","同城","身边"};
+    private String[] gender = new String[]{"所有人","男生","女生"};
+    HashMap<String,Integer> statusNameMap=null;
+    HashMap<String,Integer> scaleMap=null;
+    HashMap<String,Integer> genderMap=null;
+
     //////////////////////////////////////////初始化//////////////////////////////////////////////////
 
 
@@ -105,7 +128,7 @@ public class ActivitySquare extends Activity {
         setContentView(R.layout.activity_square);
 
         chooseStatusDialog = new MyDialog(this);
-        dropDownDialog = new MySwitchDialog(this);
+//        dropDownDialog = new MySwitchDialog(this);
         squareScrollView = (HorizontalScrollView) findViewById(R.id.squereHScrollView);
         squareGridLayout = (GridLayout) findViewById(R.id.squereGridLayout);
         squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
@@ -133,17 +156,32 @@ public class ActivitySquare extends Activity {
             }
         });
 
+//        squareSelectButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (dropDownDialog != null&& dropDownDialog.isShowing()) {
+//                    dropDownDialog.dismiss();
+//                    return;
+//                }
+//                dropDownSelector();
+//                changeImage();
+//            }
+//        });
+
         squareSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (dropDownDialog != null&& dropDownDialog.isShowing()) {
-                    dropDownDialog.dismiss();
+                if (menuWindow != null && menuWindow.isShowing()) {
+                    menuWindow.dismiss();
+                    changeImage();
                     return;
                 }
-                dropDownSelector();
+                menuWindowShow();
                 changeImage();
             }
         });
+
+
 
         squarePubTiButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,25 +227,25 @@ public class ActivitySquare extends Activity {
         chooseStatusDialog = PopupUtil.makeMyPopup(this, v);
         chooseStatusDialog.show();
     }
-
-
-    private void dropDownSelector() {
-        View v = getLayoutInflater().inflate(R.layout.status_selector,
-                null);
-
-//        v.findViewById(R.id.status_cancel_btn).setOnClickListener(
-//                new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        chooseStatusDialog.dismiss();
-//                    }
-//                });
-        dropDownDialog = PopupUtil.makeMySwitchPopup(this, v);
-        dropDownDialog.show();
-    }
-
+//
+//
+//    private void dropDownSelector() {
+//        View v = getLayoutInflater().inflate(R.layout.status_selector,
+//                null);
+//
+////        v.findViewById(R.id.status_cancel_btn).setOnClickListener(
+////                new View.OnClickListener() {
+////                    @Override
+////                    public void onClick(View v) {
+////                        chooseStatusDialog.dismiss();
+////                    }
+////                });
+//        dropDownDialog = PopupUtil.makeMySwitchPopup(this, v);
+//        dropDownDialog.show();
+//    }
+//
     private void changeImage() {
-        if (dropDownDialog != null&& dropDownDialog.isShowing()) {
+        if (menuWindow != null&& menuWindow.isShowing()) {
             ivTopic.setImageResource(R.drawable.look_into_white);
             ivTopic2.setImageResource(R.drawable.picker_arrow_white);
             tvTopic.setTextColor(Color.argb(255,255,255,255));
@@ -219,6 +257,158 @@ public class ActivitySquare extends Activity {
         }
     }
 
+
+    /**
+     * 显示下拉菜单
+     */
+    private void menuWindowShow()
+    {
+        LayoutInflater layout = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        RelativeLayout view = (RelativeLayout) layout.inflate(
+                R.layout.status_selector, null);
+        gv1 = (GridView) view.findViewById(R.id.statusscale);
+        gv2 = (GridView) view.findViewById(R.id.statustype);
+        gv3 = (GridView) view.findViewById(R.id.usergender);
+        ArrayList<HashMap<String, Object>> statusNameList = new ArrayList<HashMap<String, Object>>();
+
+        for (int i = 0; i <statusName.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("status", statusName[i]);
+            statusNameList.add(map);
+        }
+
+        ArrayList<HashMap<String, Object>> scaleList = new ArrayList<HashMap<String, Object>>();
+
+        for (int i = 0; i <scale.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("scale", scale[i]);
+            scaleList.add(map);
+        }
+
+        ArrayList<HashMap<String, Object>> genderList = new ArrayList<HashMap<String, Object>>();
+        for (int i = 0; i <gender.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("gender", gender[i]);
+            genderList.add(map);
+        }
+
+        // 设置GridView的数据源
+        SimpleAdapter simpleAdapter1 = new SimpleAdapter(this, scaleList,
+                R.layout.scale_item, new String[] { "scale" }, new int[] {
+                R.id.scale_item });
+        gv1.setAdapter(simpleAdapter1);
+
+        SimpleAdapter simpleAdapter2 = new SimpleAdapter(this, statusNameList,
+                R.layout.status_selector_item, new String[] { "status" }, new int[] {
+                R.id.status_text });
+        gv2.setAdapter(simpleAdapter2);
+
+        SimpleAdapter simpleAdapter3 = new SimpleAdapter(this, genderList,
+                R.layout.gender_item, new String[] { "gender" }, new int[] {
+                R.id.gender_item });
+        gv3.setAdapter(simpleAdapter3);
+
+        gv1.setSelector(new ColorDrawable(Color.TRANSPARENT));
+        gv2.setSelector(new ColorDrawable(Color.TRANSPARENT));
+        gv3.setSelector(new ColorDrawable(Color.TRANSPARENT));
+
+       //给查看区域的选项设置点击事件
+        gv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> contentView, View v,
+                                    int position, long id) {
+                switch (position) {
+                    case 0:
+
+                        break;
+                    case 1:
+
+                        break;
+                    case 2:
+
+                        break;
+
+                }
+            }
+        });
+
+        //给查看状态的选项设置点击事件
+        gv2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> contentView, View v,
+                                    int position, long id) {
+                switch (position) {
+                    case 0:
+
+                        break;
+                    case 1:
+
+                        break;
+                    case 2:
+
+                        break;
+                    case 3:
+
+                        break;
+                    case 4:
+
+                        break;
+                    case 5:
+
+                        break;
+                    case 6:
+
+                        break;
+                    case 7:
+
+                        break;
+                    case 8:
+
+                        break;
+                    case 9:
+
+                        break;
+                }
+            }
+        });
+
+        //给查看性别的选项设置点击事件
+        gv3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> contentView, View v,
+                                    int position, long id) {
+                switch (position) {
+                    case 0:
+
+                        break;
+                    case 1:
+
+                        break;
+                    case 2:
+
+                        break;
+                }
+            }
+        });
+        menuWindow = new PopupWindow(view, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        menuWindow.setBackgroundDrawable(getDrawable());
+//        menuWindow.setAnimationStyle(R.style.pulldown_in_out);
+        menuWindow.showAtLocation(findViewById(R.id.square),
+                Gravity.NO_GRAVITY, 0, (int) ToolDevice.dp2px(100.0f));
+        menuWindow.setFocusable(true);
+        menuWindow.setTouchable(true);
+        menuWindow.setOutsideTouchable(true);
+        menuWindow.update();
+
+    }
+
+    /**
+     * 给menWindow生成一个 透明的背景图片
+     * @return
+     */
+    private Drawable getDrawable(){
+        ShapeDrawable bgdrawable =new ShapeDrawable(new OvalShape());
+        bgdrawable.getPaint().setColor(getResources().getColor(android.R.color.transparent));
+        return   bgdrawable;
+    }
 
 
 //以下是vida的代码，保持不动即可
