@@ -153,7 +153,7 @@ public class ActivitySquare extends Activity {
         squareChainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(ActivitySquare.this, ActivityTab.class);
+                Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
                 startActivity(i);
                 finish();
             }
