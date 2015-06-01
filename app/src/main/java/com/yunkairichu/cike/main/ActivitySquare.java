@@ -63,6 +63,7 @@ import java.util.TimerTask;
 /**
  * Created by vida2009 on 2015/5/11.
  */
+//TEXT
 public class ActivitySquare extends Activity {
     //本类常量
     public static final int REQUEST_CODE_CAMERA = 18;
