@@ -67,6 +67,7 @@ import java.util.TimerTask;
 public class ActivitySquare extends Activity {
     //本类常量
     public static final int REQUEST_CODE_CAMERA = 18;
+    public static final int REQUEST_CODE_SINGLECHAT = 19;
 
     public static final int RESULT_CODE_COPY = 1;
 
@@ -76,15 +77,9 @@ public class ActivitySquare extends Activity {
     private View view;
     private View selectView;
     private LinearLayout squareSelectButton;
-    private ImageView sendChosStaLoveButton;
-    private ImageView sendChosStaBoringButton;
-    private ImageView sendChosStaThinkLifeButton;
-    private ImageView sendChosStaSelfStudyButton;
-    private ImageView sendChosStaOnTheWayButton;
-    private ImageView sendChosStaOnWorkButton;
-    private ImageView sendChosStaBodyBuildingButton;
-    private ImageView sendChosStaBigMealButton;
-    private ImageView sendChosStaSelfShotButton;
+    private ImageView squareBigPic;
+    private ImageView squareBigPicBg;
+    private TextView squareBigPicText;
     private Button sendChosStaBackButton;
     private Button squareChainButton;
     private Button squarePubTiButton;
@@ -104,8 +99,20 @@ public class ActivitySquare extends Activity {
     private ResponseSearchTitle responseSearchTitle;
     private SquareOnTouchListener sqListener = new SquareOnTouchListener();
     private int isOnCreated;
-    private Timer timer = new Timer();
+    //private Timer timer;
+    private TimerTask timerTask;
+    private Timer timer2;
+    private TimerTask timerTask2;
     private Handler handler2;
+    private int selectorStatus = 0;
+    private int selectorScale = 0;
+    private int selectorGender = 0;
+    private int selectorFlag = 0;
+    private SimpleAdapter simpleAdapter1;
+    private SimpleAdapter simpleAdapter2;
+    private SimpleAdapter simpleAdapter3;
+    private int menuWindowStatus = 0;
+    private int titleItemLongShortClickFlag = 0;
 
     //popup弹窗相关声明
 //    private RelativeLayout layoutHeader = null;
@@ -118,12 +125,15 @@ public class ActivitySquare extends Activity {
     private String[] statusName = new String[]{"全部","失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "健身", "吃大餐", "自拍"};
     private String[] scale = new String[]{"全球","同城","身边"};
     private String[] gender = new String[]{"所有人","男生","女生"};
+    private int[] statusNameNum = {0,1,2,3,4,5,6,8,9,10};
+    private int[] scaleNum = {0,1,1};
+    private int[] genderNum ={0,1,2};
+
     HashMap<String,Integer> statusNameMap=null;
     HashMap<String,Integer> scaleMap=null;
     HashMap<String,Integer> genderMap=null;
 
     //////////////////////////////////////////初始化//////////////////////////////////////////////////
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +148,9 @@ public class ActivitySquare extends Activity {
         squareSelectButton.setClickable(true);
         squareChainButton = (Button) findViewById(R.id.squareUserChainButton);
         squarePubTiButton = (Button) findViewById(R.id.bigbutton_add);
+        squareBigPic = (ImageView) findViewById(R.id.square_big_picture);
+        squareBigPicBg = (ImageView) findViewById(R.id.square_big_picture_bg);
+        squareBigPicText = (TextView) findViewById(R.id.square_big_picture_text);
         LayoutInflater inflater = getLayoutInflater();
         selectView = inflater.inflate(R.layout.view_square_selector, null);
         view = squareGridLayout.getChildAt(0);
@@ -146,6 +159,42 @@ public class ActivitySquare extends Activity {
         ivTopic = (ImageView) findViewById(R.id.look_into);
         ivTopic2 = (ImageView) findViewById(R.id.picker_arrow);
         tvTopic = (TextView) findViewById(R.id.picker);
+
+        ///////////////////////////////////////popupwindow相关//////////////////////////////////
+
+        ArrayList<HashMap<String, Object>> statusNameList = new ArrayList<HashMap<String, Object>>();
+        for (int i = 0; i <statusName.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("status", statusName[i]);
+            statusNameList.add(map);
+        }
+
+        ArrayList<HashMap<String, Object>> scaleList = new ArrayList<HashMap<String, Object>>();
+        for (int i = 0; i <scale.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("scale", scale[i]);
+            scaleList.add(map);
+        }
+
+        ArrayList<HashMap<String, Object>> genderList = new ArrayList<HashMap<String, Object>>();
+        for (int i = 0; i <gender.length ; i++) {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("gender", gender[i]);
+            genderList.add(map);
+        }
+
+        // 设置GridView的数据源
+        simpleAdapter1 = new SimpleAdapter(this, scaleList,
+                R.layout.scale_item, new String[] { "scale" }, new int[] {
+                R.id.scale_item });
+
+        simpleAdapter2 = new SimpleAdapter(this, statusNameList,
+                R.layout.status_selector_item, new String[] { "status" }, new int[] {
+                R.id.status_text });
+
+        simpleAdapter3 = new SimpleAdapter(this, genderList,
+                R.layout.gender_item, new String[] { "gender" }, new int[] {
+                R.id.gender_item });
 
         Bundle bundle = this.getIntent().getExtras();
         responseSearchTitle = (ResponseSearchTitle) bundle.getSerializable("resSearchTitle");
@@ -158,18 +207,6 @@ public class ActivitySquare extends Activity {
                 finish();
             }
         });
-
-//        squareSelectButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (dropDownDialog != null&& dropDownDialog.isShowing()) {
-//                    dropDownDialog.dismiss();
-//                    return;
-//                }
-//                dropDownSelector();
-//                changeImage();
-//            }
-//        });
 
         squareSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -184,7 +221,7 @@ public class ActivitySquare extends Activity {
             }
         });
 
-
+///////////////////////////////////////popupwindow相关 完//////////////////////////////////
 
         squarePubTiButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,21 +232,14 @@ public class ActivitySquare extends Activity {
 
         isOnCreated = 0;
 
-        for (int i = 0; i < 50; i++) {
-            if (titleBitmap[i] != null) {
-                if (!titleBitmap[i].isRecycled()) {
-                    titleBitmap[i].recycle();   //回收图片所占的内存
-                }
-            }
-        }
-
+        ///////////////////////////////////////动画  popupwindow的监控////////////////////////////////////
         handler2 = new Handler() {
             public void handleMessage(Message msg) {
                 if (msg.what == 1) {
                     for(int i=0;i<50;i++){
                         if(titleBitmap[i]!=null){
-                            ImageViewSquareItem ivsi = (ImageViewSquareItem) squareGridLayout.getChildAt(i);
-                            if(ivsi.getWidth() >= 1 && ivsi.getHeight() >= 1) {
+                            ImageViewSquareItem ivsi = (ImageViewSquareItem) squareGridLayout.getChildAt(2*i);
+                            if(ivsi != null && ivsi.getWidth() >= 1 && ivsi.getHeight() >= 1) {
                                 if (titleBitmap[i].getWidth() - ivsi.getWidth() <= 0) {
                                     ivsi.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                     Bitmap bitmapTmp = Bitmap.createBitmap(titleBitmap[i], 0, wpara[i], titleBitmap[i].getWidth(), ivsi.getHeight());
@@ -244,33 +274,68 @@ public class ActivitySquare extends Activity {
                         }
                     }
                 }
+                else if (msg.what==2){
+                    if(menuWindowStatus == 1){
+                        if(menuWindow==null || !menuWindow.isShowing()){
+                            ToolLog.dbg("selectorFlag:"+String.valueOf(selectorFlag)+"searchFlag"+String.valueOf(searchFlag));
+                            if (searchFlag == 1 && selectorFlag == 1) {
+                                searchFlag = 0;
+                                selectorFlag = 0;
+                                clearTitleBitmap();
+                                squareScrollView.scrollTo(10, 10);
+                                doTitleSearch();
+                            }
+
+                            ivTopic.setImageResource(R.drawable.look_into_black);
+                            ivTopic2.setImageResource(R.drawable.picker_arrow_black);
+                            tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
+                            tvTopic.setText(scale[selectorScale] + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
+
+                            menuWindowStatus = 0;
+                        }
+                    }
+                }
                 super.handleMessage(msg);
             };
         };
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                // 需要做的事:发送消息
-                Message message = new Message();
-                message.what = 1;
-                handler2.sendMessage(message);
-            }
-        };
+        ///////////////////////////////////////动画  popupwindow的监控 完////////////////////////////////////
 
-        timer.schedule(task,0,80); // 1s后执行task,经过1s再次执行
+        ///////////////////////////////////////动画相关（现在禁用了定时器）///////////////////////////////////////////
+        clearTitleBitmap();
 
-        firReFlashSearchTitle();
-        getTitleBitmap();
+//        timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                // 需要做的事:发送消息
+//                Message message = new Message();
+//                message.what = 1;
+//                handler2.sendMessage(message);
+//            }
+//        };
+
+        //timer.schedule(timerTask,0,80); // 1s后执行task,经过1s再次执行
+
+        ////////////////////////////////////////动画相关  完///////////////////////////////////////////////
+
+        ////////////////////////////////////// popupwindow的监控 //////////////////////////////////
+
+        startTimer2();
+
+        ////////////////////////////////////// popupwindow的监控  完//////////////////////////////////
+
+        if(responseSearchTitle != null) {
+            firReFlashSearchTitle();
+            getTitleBitmap();
+        } else{
+            doTitleSearch();
+        }
 
         isOnCreated = 1;
     }
 
-
     /**
      * ***********************************事件响应׽***********************************************
      */
-
-
     private void popupChooseStatus() {
         View v = getLayoutInflater().inflate(R.layout.status_picker,
                 null);
@@ -285,28 +350,13 @@ public class ActivitySquare extends Activity {
         chooseStatusDialog = PopupUtil.makeMyPopup(this, v);
         chooseStatusDialog.show();
     }
-//
-//
-//    private void dropDownSelector() {
-//        View v = getLayoutInflater().inflate(R.layout.status_selector,
-//                null);
-//
-////        v.findViewById(R.id.status_cancel_btn).setOnClickListener(
-////                new View.OnClickListener() {
-////                    @Override
-////                    public void onClick(View v) {
-////                        chooseStatusDialog.dismiss();
-////                    }
-////                });
-//        dropDownDialog = PopupUtil.makeMySwitchPopup(this, v);
-//        dropDownDialog.show();
-//    }
-//
+
     private void changeImage() {
         if (menuWindow != null&& menuWindow.isShowing()) {
             ivTopic.setImageResource(R.drawable.look_into_white);
             ivTopic2.setImageResource(R.drawable.picker_arrow_white);
-            tvTopic.setTextColor(Color.argb(255,255,255,255));
+            tvTopic.setTextColor(Color.argb(255, 255, 255, 255));
+            menuWindowStatus = 1;
         }
         else {
             ivTopic.setImageResource(R.drawable.look_into_black);
@@ -314,7 +364,6 @@ public class ActivitySquare extends Activity {
             tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
         }
     }
-
 
     /**
      * 显示下拉菜单
@@ -327,43 +376,9 @@ public class ActivitySquare extends Activity {
         gv1 = (GridView) view.findViewById(R.id.statusscale);
         gv2 = (GridView) view.findViewById(R.id.statustype);
         gv3 = (GridView) view.findViewById(R.id.usergender);
-        ArrayList<HashMap<String, Object>> statusNameList = new ArrayList<HashMap<String, Object>>();
 
-        for (int i = 0; i <statusName.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("status", statusName[i]);
-            statusNameList.add(map);
-        }
-
-        ArrayList<HashMap<String, Object>> scaleList = new ArrayList<HashMap<String, Object>>();
-
-        for (int i = 0; i <scale.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("scale", scale[i]);
-            scaleList.add(map);
-        }
-
-        ArrayList<HashMap<String, Object>> genderList = new ArrayList<HashMap<String, Object>>();
-        for (int i = 0; i <gender.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("gender", gender[i]);
-            genderList.add(map);
-        }
-
-        // 设置GridView的数据源
-        SimpleAdapter simpleAdapter1 = new SimpleAdapter(this, scaleList,
-                R.layout.scale_item, new String[] { "scale" }, new int[] {
-                R.id.scale_item });
         gv1.setAdapter(simpleAdapter1);
-
-        SimpleAdapter simpleAdapter2 = new SimpleAdapter(this, statusNameList,
-                R.layout.status_selector_item, new String[] { "status" }, new int[] {
-                R.id.status_text });
         gv2.setAdapter(simpleAdapter2);
-
-        SimpleAdapter simpleAdapter3 = new SimpleAdapter(this, genderList,
-                R.layout.gender_item, new String[] { "gender" }, new int[] {
-                R.id.gender_item });
         gv3.setAdapter(simpleAdapter3);
 
         gv1.setSelector(new ColorDrawable(Color.TRANSPARENT));
@@ -374,18 +389,14 @@ public class ActivitySquare extends Activity {
         gv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> contentView, View v,
                                     int position, long id) {
-                switch (position) {
-                    case 0:
-
-                        break;
-                    case 1:
-
-                        break;
-                    case 2:
-
-                        break;
-
+                ((TextView)gv1.getChildAt(selectorScale).findViewById(R.id.scale_item)).setTextColor(0xffffffff);
+                ToolLog.dbg("selectorScale:" + String.valueOf(selectorScale) + " position" + String.valueOf(position));
+                if(selectorScale != position){
+                    selectorFlag = 1;
                 }
+                selectorScale = position;
+                v.setSelected(true);
+                ((TextView)v.findViewById(R.id.scale_item)).setTextColor(0xff000000);
             }
         });
 
@@ -393,38 +404,14 @@ public class ActivitySquare extends Activity {
         gv2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> contentView, View v,
                                     int position, long id) {
-                switch (position) {
-                    case 0:
-
-                        break;
-                    case 1:
-
-                        break;
-                    case 2:
-
-                        break;
-                    case 3:
-
-                        break;
-                    case 4:
-
-                        break;
-                    case 5:
-
-                        break;
-                    case 6:
-
-                        break;
-                    case 7:
-
-                        break;
-                    case 8:
-
-                        break;
-                    case 9:
-
-                        break;
+                ((TextView)gv2.getChildAt(selectorStatus).findViewById(R.id.status_text)).setTextColor(0xffffffff);
+                ToolLog.dbg("selectorStatus:"+String.valueOf(selectorStatus)+" position"+String.valueOf(position));
+                if(selectorStatus != position){
+                    selectorFlag = 1;
                 }
+                selectorStatus = position;
+                v.setSelected(true);
+                ((TextView)v.findViewById(R.id.status_text)).setTextColor(0xff000000);
             }
         });
 
@@ -432,22 +419,21 @@ public class ActivitySquare extends Activity {
         gv3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> contentView, View v,
                                     int position, long id) {
-                switch (position) {
-                    case 0:
-
-                        break;
-                    case 1:
-
-                        break;
-                    case 2:
-
-                        break;
+                ((TextView)gv3.getChildAt(selectorGender).findViewById(R.id.gender_item)).setTextColor(0xffffffff);
+                ToolLog.dbg("selectorGender:" + String.valueOf(selectorGender) + " position" + String.valueOf(position));
+                if(selectorGender != position){
+                    selectorFlag = 1;
                 }
+                selectorGender = position;
+                v.setSelected(true);
+                ((TextView)v.findViewById(R.id.gender_item)).setTextColor(0xff000000);
             }
         });
+
         menuWindow = new PopupWindow(view, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        menuWindow.setBackgroundDrawable(getDrawable());
+//        menuWindow.setBackgroundDrawable(getDrawable());
+        menuWindow.setBackgroundDrawable(this.getResources().getDrawable(R.drawable.default_image));
 //        menuWindow.setAnimationStyle(R.style.pulldown_in_out);
         menuWindow.showAtLocation(findViewById(R.id.square),
                 Gravity.NO_GRAVITY, 0, (int) ToolDevice.dp2px(100.0f));
@@ -456,6 +442,22 @@ public class ActivitySquare extends Activity {
         menuWindow.setOutsideTouchable(true);
         menuWindow.update();
 
+        menuWindow.setTouchInterceptor(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // TODO Auto-generated method stub
+                /**** 如果点击了popupwindow的外部，popupwindow也会消失 ****/
+                if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                    menuWindow.dismiss();
+                    changeImage();
+                    //ToolLog.dbg("outside");
+                    return true;
+                }
+                //ToolLog.dbg("not-outside");
+                return false;
+            }
+        });
     }
 
     /**
@@ -465,6 +467,7 @@ public class ActivitySquare extends Activity {
     private Drawable getDrawable(){
         ShapeDrawable bgdrawable =new ShapeDrawable(new OvalShape());
         bgdrawable.getPaint().setColor(getResources().getColor(android.R.color.transparent));
+//        bgdrawable.getPaint().setARGB(0xFF, 0xFF,0xFF,0xFF);
         return   bgdrawable;
     }
 
@@ -479,28 +482,20 @@ public class ActivitySquare extends Activity {
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    break;
                 case MotionEvent.ACTION_UP:
                     // ��������¼������������ݣ�����ScrollView�Ѿ������ײ�������һ�����
                     if (/*sqListener != null
                             && view != null
                             &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
-                        if (searchFlag == 1) {
-                            searchFlag = 0;
-                            for (int i = 0; i < 50; i++) {
-                                if (titleBitmap[i] != null) {
-                                    if (!titleBitmap[i].isRecycled()) {
-                                        titleBitmap[i].recycle();   //回收图片所占的内存
-                                        titleBitmap[i] = null;
-                                    }
-                                }
-                                wpara[i] = 0;
-                                wdirect[i] = 0;
+                        if(squareBigPic.getVisibility() == View.GONE && squareBigPicText.getVisibility() == View.GONE && squareBigPicBg.getVisibility() == View.GONE) {
+                            if (searchFlag == 1) {
+                                searchFlag = 0;
+                                clearTitleBitmap();
+                                squareScrollView.scrollTo(10, 10);
+                                doTitleSearch();
                             }
-                            squareScrollView.scrollTo(10, 10);
-                            doTitleSearch();
                         }
+                        return true;
                     }
                     break;
                 default:
@@ -531,19 +526,20 @@ public class ActivitySquare extends Activity {
 
                 if(searchFlag==1) {
                     searchFlag = 0;
-                    for(int i=0; i<50;i++) {
-                        if(titleBitmap[i]!=null) {
-                            if (!titleBitmap[i].isRecycled()) {
-                                titleBitmap[i].recycle();   //回收图片所占的内存
-                                titleBitmap[i] = null;
-                            }
-                        }
-                        wpara[i] = 0;
-                        wdirect[i] = 0;
-                    }
+                    clearTitleBitmap();
                     squareScrollView.scrollTo(10, 10);
                     doTitleSearch();
                 }
+            }
+            else if(requestCode == REQUEST_CODE_SINGLECHAT){
+                if(responseSearchTitle != null) {
+                    firReFlashSearchTitle();
+                    getTitleBitmap();
+                } else{
+                    doTitleSearch();
+                }
+                startTimer2();
+                ToolLog.dbg("start2");
             }
         }
     }
@@ -633,7 +629,11 @@ public class ActivitySquare extends Activity {
     /////////////////////////////////////////广场瀑布流////////////////////////////////////////
     public void doTitleSearch() {
         Http http = new Http();
-        JSONObject jo = JsonPack.buildSearchTitle(0, 0);
+        int filter = 0;
+        filter |= (scaleNum[selectorScale]<<0);
+        filter |= (genderNum[selectorGender]<<1);
+        ToolLog.dbg("filter:"+String.valueOf(filter)+" tag:"+String.valueOf(statusNameNum[selectorStatus]));
+        JSONObject jo = JsonPack.buildSearchTitle(filter, statusNameNum[selectorStatus]);
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -644,6 +644,9 @@ public class ActivitySquare extends Activity {
                 }
 
                 setResponseSearchTitle(JacksonWrapper.json2Bean(response, ResponseSearchTitle.class));
+                if(responseSearchTitle.getReturnData().getContData().size()==0){
+                    searchFlag = 1;
+                }
                 firReFlashSearchTitle();
                 getTitleBitmap();
             }
@@ -674,37 +677,78 @@ public class ActivitySquare extends Activity {
         int lineNum = responseSearchTitle.getReturnData().getLineNum();
         int[] linePos = new int[lineNum];
         for (int i = 0; i < lineNum; i++) {
-            linePos[i] = 1;
+            linePos[i] = 0;
         }
         squareGridLayout.removeAllViews();
         for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
             BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
-            int k = i % lineNum;
-            ToolLog.dbg("bLen:" + String.valueOf(baseResponseTitleInfo.getBlockLen()));
-            ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k + 1, linePos[k], lineNum);
+            int k = 0;
+            if(lineNum>1) {
+                for (int j = 1; j < lineNum; j++) {
+                    if(linePos[j] < linePos[k]) k = j;
+                }
+            }
+            ToolLog.dbg("AllHeight:"+String.valueOf(height)+" AllWidth:"+String.valueOf(width));
+            ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             iv.setTag(i);
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent i = new Intent(ActivitySquare.this, ActivityChat.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("titleInfo", responseSearchTitle.getReturnData().getContData().get((int) v.getTag()));
-                    bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
-                    int iTag = (int) v.getTag();
-                    ToolLog.dbg("byteCnt:" + String.valueOf(titleBitmap[iTag].getByteCount()));
-                    ByteArrayOutputStream baos = compressImage(titleBitmap[iTag]);
-                    i.putExtra("bitmap", baos.toByteArray());
-                    i.putExtras(bundle);
-                    startActivity(i);
-                    finish();
+                    if(titleItemLongShortClickFlag==0) {
+                        Intent i = new Intent(ActivitySquare.this, ActivityChat.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("titleInfo", responseSearchTitle.getReturnData().getContData().get((int) v.getTag()));
+                        bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
+                        int iTag = (int) v.getTag();
+                        ToolLog.dbg("byteCnt:" + String.valueOf(titleBitmap[iTag].getByteCount()));
+                        ByteArrayOutputStream baos = compressImage(titleBitmap[iTag]);
+                        ToolLog.dbg("toByteArray:" + String.valueOf(baos.toByteArray().length));
+                        i.putExtra("bitmap", baos.toByteArray());
+                        i.putExtras(bundle);
+
+                        clearTitleBitmap();
+                        cancelTimer2();
+                        startActivityForResult(i, REQUEST_CODE_SINGLECHAT);
+//                        finish();
+                    } else{
+                        titleItemLongShortClickFlag = 0;
+                    }
                 }
             });
-            squareGridLayout.addView(iv, i);
+            iv.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    int iTag = (int) view.getTag();
+                    if (titleBitmap[iTag] == null) return false;
+                    BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(iTag);
+                    squareBigPicBg.setVisibility(View.VISIBLE);
+                    squareBigPic.setVisibility(View.VISIBLE);
+                    squareBigPicText.setVisibility(View.VISIBLE);
+                    squareBigPic.setImageBitmap(titleBitmap[iTag]);
+                    squareBigPicText.setText(baseResponseTitleInfo.getExtension().getText());
+                    titleItemLongShortClickFlag = 1;
+                    return false;
+                }
+            });
+            iv.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
+                            motionEvent.getAction() == MotionEvent.ACTION_CANCEL ||
+                            motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                        squareBigPicBg.setVisibility(View.GONE);
+                        squareBigPic.setVisibility(View.GONE);
+                        squareBigPicText.setVisibility(View.GONE);
+                        return false;
+                    }
+                    return false;
+                }
+            });
+            squareGridLayout.addView(iv, 2*i);
 
-            TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k+1, linePos[k], lineNum);
+            TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             tv.setText(baseResponseTitleInfo.getExtension().getText());
-            //tv.setText("hehe");
-            squareGridLayout.addView(tv);
+            squareGridLayout.addView(tv,2*i+1);
 
             linePos[k] += baseResponseTitleInfo.getBlockLen();
         }
@@ -716,7 +760,8 @@ public class ActivitySquare extends Activity {
             searchFlag = 1;
         }
 
-        ((ImageViewSquareItem) squareGridLayout.getChildAt(index)).setImageBitmap(titleBitmap[index]);
+        ((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(titleBitmap[index]);
+        ((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1)).setVisibility(View.VISIBLE);
     }
 
 /****************************************主逻辑 完********************************************************/
@@ -724,6 +769,50 @@ public class ActivitySquare extends Activity {
     /**
      * *************************************辅助函数*******************************************************
      */
+
+    ///////////////////////////////////////内存清理//////////////////////////////////////////
+    public void clearTitleBitmap(){
+        for(int i=0; i<50;i++) {
+            if(titleBitmap[i]!=null) {
+                if (!titleBitmap[i].isRecycled()) {
+                    titleBitmap[i].recycle();   //回收图片所占的内存
+                    titleBitmap[i] = null;
+                }
+            }
+            wpara[i] = 0;
+            wdirect[i] = 0;
+        }
+    }
+
+    //////////////////////////////////////定时器///////////////////////////////////////////
+    public void startTimer2(){
+        if(timer2 == null){timer2 = new Timer();}
+        if(timerTask2 == null) {
+            timerTask2 = new TimerTask() {
+                @Override
+                public void run() {
+                    // 需要做的事:发送消息
+                    Message message = new Message();
+                    message.what = 2;
+                    handler2.sendMessage(message);
+                }
+            };
+        }
+        //��ʼһ����ʱ����
+        if(timer2 != null && timerTask2 != null){timer2.schedule(timerTask2,2000,500);}// 1s后执行task,经过1s再次执行)
+    }
+
+    public void cancelTimer2(){
+        if (timer2 != null) {
+            timer2.cancel();
+            timer2 = null;
+        }
+
+        if (timerTask2 != null) {
+            timerTask2.cancel();
+            timerTask2 = null;
+        }
+    }
 
 //////////////////////////////////////////get set类///////////////////////////////////////////
     public ResponseSearchTitle getResponseSearchTitle() {

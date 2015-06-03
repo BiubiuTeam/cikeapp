@@ -12,8 +12,9 @@
         android:textColor="#ffffff"
         android:gravity="center"
         android:text="@string/back"
-        android:background="@drawable/status_picker_btn"
         android:textSize="18sp"
+        android:background="@drawable/status_picker_btn_default"
         >
+        <!--android:background="@drawable/status_picker_btn_default"-->
     </TextView>
 </RelativeLayout>

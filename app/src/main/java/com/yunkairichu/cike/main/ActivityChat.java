@@ -157,6 +157,7 @@ public class ActivityChat extends Activity {
     private TextView regionTV;
     private TextView recordingHint;       //语音取消提示
     private TextView timeline_text;       //时间线文字
+    private TextView big_image_text;      //聊天开始时那个大图的文字
     private ListView listView;
     private ImageView big_image;           //聊天开始时那个大图
     private ImageView ivToUserStatus;     //对方用户状态图标
@@ -248,6 +249,7 @@ public class ActivityChat extends Activity {
         iv_emoticons_normal = (ImageView) findViewById(R.id.iv_emoticons_normal);
         iv_emoticons_checked = (ImageView) findViewById(R.id.iv_emoticons_checked);
         big_image = (ImageView) findViewById(R.id.big_image);
+        big_image_text = (TextView) findViewById(R.id.big_image_text);
         emojiIconContainer = (LinearLayout) findViewById(R.id.ll_face_container);
         loadmorePB = (ProgressBar) findViewById(R.id.chat_load_more);
         edittext_layout = (RelativeLayout) findViewById(R.id.edittext_layout);  //聊天编辑框
@@ -270,8 +272,11 @@ public class ActivityChat extends Activity {
         //进来时的大图
         Intent intent=getIntent();
         byte [] bis=intent.getByteArrayExtra("bitmap");
+        ToolLog.dbg("bitLen:"+String.valueOf(bis.length));
         Bitmap bitmap= BitmapFactory.decodeByteArray(bis, 0, bis.length);
+        ToolLog.dbg("hehe");
         big_image.setImageBitmap(bitmap);
+        big_image_text.setText(baseResponseTitleInfo.getExtension().getText());
         big_pic_flag = 0;
         //状态图标设置
         dToUserStatus = new Drawable[] { getResources().getDrawable(R.drawable.boring),
@@ -296,7 +301,11 @@ public class ActivityChat extends Activity {
         int mHour=(86400-diffTime)/3600;
         int mMinuts=((86400-diffTime)%3600)/60;
         timeline.incrementProgressBy(lastTime);
-        timeline_text.setText("还有" + String.valueOf(mHour) + "小时" + String.valueOf(mMinuts) + "分钟会话销毁");
+        if(mHour<0||mMinuts<0){
+            timeline_text.setText("即将销毁会话");
+        } else {
+            timeline_text.setText("还有" + String.valueOf(mHour) + "小时" + String.valueOf(mMinuts) + "分钟会话销毁");
+        }
 
         roleTV.setText(roleText);
         regionTV.setText(regionText);
@@ -307,11 +316,12 @@ public class ActivityChat extends Activity {
         backTV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(ActivityChat.this, ActivitySquare.class);
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
-                i.putExtras(bundle);
-                startActivity(i);
+//                Intent i = new Intent(ActivityChat.this, ActivitySquare.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
+//                i.putExtras(bundle);
+//                startActivity(i);
+                setResult(RESULT_OK);
                 finish();
             }
         });
@@ -413,6 +423,7 @@ public class ActivityChat extends Activity {
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
                     layoutParams.setMargins(width * 2, 0, 0, 0);
                     v.setLayoutParams(layoutParams);
+                    big_image_text.setVisibility(View.GONE);
                     big_pic_flag = 1;
                 }
                 else{
@@ -421,6 +432,10 @@ public class ActivityChat extends Activity {
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
                     layoutParams.setMargins(0, 0, 0, 0);
                     v.setLayoutParams(layoutParams);
+                    RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
+                    layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
+                    big_image_text.setVisibility(View.VISIBLE);
+                    big_image_text.setLayoutParams(layoutParams2);
                     big_pic_flag = 0;
                 }
             }
