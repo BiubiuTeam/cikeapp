@@ -171,7 +171,7 @@ public class ActivityChat extends Activity {
     private ProgressBar timeline;            //时间线
     protected RelativeLayout faceLayout=null;    //底下拉出的黑框
     private RelativeLayout edittext_layout;
-    private PopupWindow popupWindow;
+    private Dialog mDialog;
     //private LinearLayout btnContainer;
     //private ViewPager expressionViewpager;
 
@@ -675,9 +675,6 @@ public class ActivityChat extends Activity {
 //            }
 //        });
 //    }
-
-    private Dialog mDialog;
-
 
     private void popupReport() {
         View v = getLayoutInflater().inflate(R.layout.popup_report,
@@ -1292,7 +1289,7 @@ public class ActivityChat extends Activity {
                 EMChatManager.getInstance().clearConversation(toChatUsername);
                 adapter.refresh();
             } else if (requestCode == REQUEST_CODE_CAMERA) { // 发送照片
-                popupWindow.dismiss();
+                mDialog.dismiss();
                 if (cameraFile != null && cameraFile.exists())
                     sendPicture(cameraFile.getAbsolutePath());
             } else if (requestCode == REQUEST_CODE_SELECT_VIDEO) { // 发送本地选择的视频
@@ -1335,7 +1332,7 @@ public class ActivityChat extends Activity {
 //                sendVideo(videoPath, file.getAbsolutePath(), duration / 1000);
             } else if (requestCode == REQUEST_CODE_LOCAL) { // 发送本地图片
                 if (data != null) {
-                    popupWindow.dismiss();
+                    mDialog.dismiss();
                     Uri selectedImage = data.getData();
                     if (selectedImage != null) {
                         sendPicByUri(selectedImage);

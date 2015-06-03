@@ -31,7 +31,7 @@ import java.util.Map;
 public class ToolShowBigImage {
     private ProgressDialog pd;
     private PhotoView image;
-    private int default_res = R.drawable.default_image;
+    private int default_res = R.drawable.default_image_gray;
     private String localFilePath;
     private Bitmap bitmap;
     private boolean isDownloaded;
@@ -47,13 +47,13 @@ public class ToolShowBigImage {
     }
 
     public void start_show_photo(Uri para_uri, String para_remotepath, String para_secret){
-        //default_res = getIntent().getIntExtra("default_image", R.drawable.default_avatar);
+        //default_res = getIntent().getIntExtra("default_image_gray", R.drawable.default_avatar);
         Uri uri = para_uri;
         String remotepath = para_remotepath;
         String secret = para_secret;
         System.err.println("show big image uri:" + uri + " remotepath:" + remotepath);
 
-        //±¾µØ´æÔÚ£¬Ö±½ÓÏÔÊ¾±¾µØµÄÍ¼Æ¬
+        //ï¿½ï¿½ï¿½Ø´ï¿½ï¿½Ú£ï¿½Ö±ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Øµï¿½Í¼Æ¬
         if (uri != null && new File(uri.getPath()).exists()) {
             System.err.println("showbigimage file exists. directly show it");
             DisplayMetrics metrics = new DisplayMetrics();
@@ -72,7 +72,7 @@ public class ToolShowBigImage {
             } else {
                 image.setImageBitmap(bitmap);
             }
-        } else if (remotepath != null) { //È¥·þÎñÆ÷ÏÂÔØÍ¼Æ¬
+        } else if (remotepath != null) { //È¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
             System.err.println("download remote image");
             Map<String, String> maps = new HashMap<String, String>();
             if (!TextUtils.isEmpty(secret)) {
@@ -101,7 +101,7 @@ public class ToolShowBigImage {
     }
 
     /**
-     * Í¨¹ýÔ¶³ÌURL£¬È·¶¨ÏÂ±¾µØÏÂÔØºóµÄlocalurl
+     * Í¨ï¿½ï¿½Ô¶ï¿½ï¿½URLï¿½ï¿½È·ï¿½ï¿½ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½ï¿½localurl
      * @param remoteUrl
      * @return
      */
@@ -117,7 +117,7 @@ public class ToolShowBigImage {
     }
 
     /**
-     * ÏÂÔØÍ¼Æ¬
+     * ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
      *
      * @param remoteFilePath
      */
@@ -234,7 +234,7 @@ public class ToolShowBigImage {
 
 //    private class ThreadPointerEvent implements Runnable {
 //        public void run() {
-//            //Ä£Äâ°´ÏÂÊÂ¼þ
+//            //Ä£ï¿½â°´ï¿½ï¿½ï¿½Â¼ï¿½
 //            Instrumentation mInst = new Instrumentation();
 //            mInst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
 //                    SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 200, 200, 0));

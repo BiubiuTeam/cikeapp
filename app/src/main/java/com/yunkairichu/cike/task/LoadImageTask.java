@@ -73,7 +73,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
 
         if (image != null) {
             iv.setImageBitmap(image);
-            iv.setImageResource(R.drawable.default_image);
+            iv.setImageResource(R.drawable.default_image_gray);
             ImageCache.getInstance().put(thumbnailPath, image);
             iv.setClickable(true);
             iv.setTag(thumbnailPath);
@@ -103,7 +103,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
                         if (message != null && message.direct == EMMessage.Direct.RECEIVE && !message.isAcked) {
                             message.isAcked = true;
                             try {
-                                // ¿´ÁË´óÍ¼ºó·¢¸öÒÑ¶Á»ØÖ´¸ø¶Ô·½
+                                // ï¿½ï¿½ï¿½Ë´ï¿½Í¼ï¿½ó·¢¸ï¿½ï¿½Ñ¶ï¿½ï¿½ï¿½Ö´ï¿½ï¿½Ô·ï¿½
                                 EMChatManager.getInstance().ackMessageRead(message.getFrom(), message.getMsgId());
                             } catch (Exception e) {
                                 e.printStackTrace();

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -649,14 +650,14 @@ public class MessageAdapter extends BaseAdapter {
             // "it is receive msg";
             if (message.status == EMMessage.Status.INPROGRESS) {
                 // "!!!! back receive";
-                holder.iv.setImageResource(R.drawable.default_image);
+                holder.iv.setImageResource(R.drawable.default_image_gray);
                 showDownloadImageProgress(message, holder);
                 // downloadImage(message, holder);
             } else {
                 // "!!!! not back receive, show image directly");
                 if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
                 if(holder.tv!=null)holder.tv.setVisibility(View.GONE);
-                holder.iv.setImageResource(R.drawable.default_image);
+                holder.iv.setImageResource(R.drawable.default_image_gray);
                 ImageMessageBody imgBody = (ImageMessageBody) message.getBody();
                 if (imgBody.getLocalUrl() != null) {
                     // String filePath = imgBody.getLocalUrl();
@@ -790,12 +791,12 @@ public class MessageAdapter extends BaseAdapter {
 //            // System.err.println("it is receive msg");
 //            if (message.status == EMMessage.Status.INPROGRESS) {
 //                // System.err.println("!!!! back receive");
-//                //holder.iv.setImageResource(R.drawable.default_image);
+//                //holder.iv.setImageResource(R.drawable.default_image_gray);
 //                showDownloadImageProgress(message, holder);
 //
 //            } else {
 //                // System.err.println("!!!! not back receive, show image directly");
-//                //holder.iv.setImageResource(R.drawable.default_image);
+//                //holder.iv.setImageResource(R.drawable.default_image_gray);
 //                if (localThumb != null) {
 //                    showVideoThumbView(localThumb, holder.iv, videoBody.getThumbnailUrl(), message);
 //                }
@@ -1184,8 +1185,8 @@ public class MessageAdapter extends BaseAdapter {
                     public void run() {
                         // message.setBackReceive(false);
                         if (message.getType() == EMMessage.Type.IMAGE) {
-                            holder.pb.setVisibility(View.GONE);
-                            holder.tv.setVisibility(View.GONE);
+                            if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                            if(holder.tv!=null)holder.tv.setVisibility(View.GONE);
                         }
                         notifyDataSetChanged();
                     }
@@ -1203,7 +1204,7 @@ public class MessageAdapter extends BaseAdapter {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            holder.tv.setText(progress + "%");
+                            if(holder.tv!=null)holder.tv.setText(progress + "%");
 
                         }
                     });
@@ -1338,7 +1339,7 @@ public class MessageAdapter extends BaseAdapter {
             // thumbnail image is already loaded, reuse the drawable
             iv.setImageBitmap(bitmap);
             //Bitmap coverBitmap = BitmapFactory.decodeResource();
-            iv.setImageResource(R.drawable.default_image);
+            iv.setImageResource(R.drawable.default_image_gray);
             iv.setClickable(true);
             iv.setTag(R.id.tag_message, message);
             iv.setTag(R.id.tag_position,position);
@@ -1489,7 +1490,7 @@ public class MessageAdapter extends BaseAdapter {
         toolShowBigImage.gonePhotoView();
         conversation.removeMessage(message.getMsgId());
         ListView listView = ((ActivityChat)activity).getListView();
-        listView.getChildAt(position).setVisibility(View.GONE);
+        if(listView.getChildAt(position)!=null)listView.getChildAt(position).setVisibility(View.GONE);
         notifyDataSetChanged();
         refresh();
     }
