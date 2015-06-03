@@ -23,6 +23,7 @@ public class TextViewSquareItem extends TextView {
         params.rightMargin = 6;
         this.setLayoutParams(params);
         this.setGravity(Gravity.CENTER);
+        this.setVisibility(INVISIBLE);
         this.setTextColor(0xFFFFFFFF);
     }
 }

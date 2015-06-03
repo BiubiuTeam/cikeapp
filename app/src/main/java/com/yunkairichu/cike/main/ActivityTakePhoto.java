@@ -13,14 +13,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidquery.AQuery;
@@ -38,8 +42,6 @@ import com.yunkairichu.cike.bean.ResponsePublishTitle;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -62,6 +64,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     private ImageView shutter;//快门
     private SurfaceHolder holder;
     private EditText picText;
+    private TextView picLastText;
     private ImageView fromFile;
     private ImageView photoFromFile;
     private Camera camera;//声明相机
@@ -72,6 +75,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     private String sendPicFromFilePath = "";
     private int captureOrFromFileFlag = 0;
     private Bitmap fromFileBitmap = null;
+    private Layout_take_photo layout_take_photo;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,17 +105,76 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         surface = (SurfaceView) findViewById(R.id.take_photo_sv);
         shutter = (ImageView) findViewById(R.id.take_photo_iv);
         picText = (EditText) findViewById(R.id.take_photo_text_tv);
+        picLastText = (TextView) findViewById(R.id.take_photo_last_text_tv);
         fromFile = (ImageView) findViewById(R.id.take_photo_from_file_iv);
         photoFromFile = (ImageView) findViewById(R.id.take_photo_from_file_show_iv);
         holder = surface.getHolder();//获得句柄
         holder.addCallback(this);//添加回调
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);//surfaceview不维护自己的缓冲区，等待屏幕渲染引擎将内容推送到用户面前
+        layout_take_photo = (Layout_take_photo) findViewById(R.id.take_photo_layout);
 
         //设置监听
         back.setOnClickListener(listener);
         chanCam.setOnClickListener(listener);
         shutter.setOnClickListener(listener);
         fromFile.setOnClickListener(listener);
+
+        picText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                picLastText.setText(String.valueOf(picText.getText().length()) + "/30");
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+//        layout_take_photo.setOnkbdStateListener(new Layout_take_photo.onKybdsChangeListener() {
+//
+//            public void onKeyBoardStateChange(int state) {
+//                switch (state) {
+//                    case Layout_take_photo.KEYBOARD_STATE_HIDE:
+//                        picLastText.setVisibility(View.INVISIBLE);
+//                        picText.setGravity(Gravity.CENTER);
+//                        ToolLog.dbg("Hide");
+//                        break;
+//                    case Layout_take_photo.KEYBOARD_STATE_SHOW:
+//                        picLastText.setVisibility(View.VISIBLE);
+//                        picText.setGravity(Gravity.CENTER);
+//                        ToolLog.dbg("Show");
+//                        break;
+//                }
+//            }
+//        });
+//
+//        //给该layout设置监听，监听其布局发生变化事件
+//        layout_take_photo.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+//
+//            @Override
+//            public void onGlobalLayout(){
+//
+//                //比较Activity根布局与当前布局的大小
+//                int heightDiff = layout_take_photo.getRootView().getHeight()- layout_take_photo.getHeight();
+//                ToolLog.dbg("Diff"+String.valueOf(heightDiff)+" root:"+String.valueOf(layout_take_photo.getRootView().getHeight()));
+//                if(heightDiff >100){
+//                    //大小超过100时，一般为显示虚拟键盘事件
+//                    picLastText.setVisibility(View.INVISIBLE);
+//                    picText.setGravity(Gravity.CENTER);
+//                }else{
+//                    //大小小于100时，为不显示虚拟键盘或虚拟键盘隐藏
+//                    picLastText.setVisibility(View.VISIBLE);
+//                    picText.setGravity(Gravity.CENTER);
+//                }
+//            }
+//        });
+
     }
 
     //响应点击事件

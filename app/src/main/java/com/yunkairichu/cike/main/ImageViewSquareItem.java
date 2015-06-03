@@ -32,12 +32,13 @@ public class ImageViewSquareItem extends ImageView {
         params.setGravity(Gravity.FILL);
         params.height = parentHeight/lineNum-12;
         params.width = parentWidth/lineNum*BlockLen-12;
+        ToolLog.dbg("pheight:"+String.valueOf(params.height)+" pWidth:"+String.valueOf(params.width));
         params.bottomMargin = 6;
         params.topMargin = 6;
         params.leftMargin = 6;
         params.rightMargin = 6;
         this.setLayoutParams(params);
-        //this.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        this.setScaleType(ImageView.ScaleType.CENTER_CROP);  //不做帧动画时，打开
 //        Animation animation = (AnimationSet) AnimationUtils.loadAnimation(context, R.anim.picture_move_2);
 //        this.startAnimation(animation);
 

@@ -11,7 +11,7 @@ public class PostSearchTitle extends BasePostField {
         return filter;
     }
 
-    public void setFilter(int userConfig) {
+    public void setFilter(int filter) {
         this.filter = filter;
     }
 

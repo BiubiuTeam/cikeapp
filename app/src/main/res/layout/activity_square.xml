@@ -54,7 +54,6 @@
 
     </RelativeLayout>
 
-
-
+    <include layout="@layout/view_square_bigpic"></include>
 
 </RelativeLayout>
