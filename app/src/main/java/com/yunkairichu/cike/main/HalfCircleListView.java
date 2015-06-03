@@ -10,7 +10,7 @@ import android.widget.ListView;
  */
 public class HalfCircleListView extends ListView implements AbsListView.OnScrollListener {
     //设置类似ios的listview下拉阻尼效果
-    private static final int MAX_Y_OVERSCROLL_DISTANCE = 100;
+    private static final int MAX_Y_OVERSCROLL_DISTANCE = 0;
     private int mMaxYOverscrollDistance;
 
     public HalfCircleListView(Context context) {

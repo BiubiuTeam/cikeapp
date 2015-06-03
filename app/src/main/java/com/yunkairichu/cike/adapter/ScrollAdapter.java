@@ -4,9 +4,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.jaf.jcore.Application;
+import com.yunkairichu.cike.main.ActivityChatview;
 import com.yunkairichu.cike.main.MyHalfItem;
 import com.yunkairichu.cike.main.R;
+import com.yunkairichu.cike.widget.ChatListItemModel;
 
 import java.util.List;
 
@@ -15,10 +20,10 @@ import java.util.List;
  */
 public class ScrollAdapter extends BaseAdapter {
 
-    private List<String> scrollViews;
+    private List<ChatListItemModel> scrollViews;
     private static final String TAG = ScrollAdapter.class.getSimpleName();
 
-    public ScrollAdapter(List<String> scrollViews){
+    public ScrollAdapter(List<ChatListItemModel> scrollViews){
 
         this.scrollViews = scrollViews;
     }
@@ -28,7 +33,7 @@ public class ScrollAdapter extends BaseAdapter {
     }
 
     @Override
-    public String getItem(int i) {
+    public ChatListItemModel getItem(int i) {
         return scrollViews.get(i);
     }
 
@@ -37,22 +42,38 @@ public class ScrollAdapter extends BaseAdapter {
         return i;
     }
 
-
-
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        if(view == null){
+        if (view == null) {
             view = new MyHalfItem(viewGroup.getContext());
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //send object link with this view
+                    MyHalfItem clickView = (MyHalfItem)v;
+                    ChatListItemModel model = (ChatListItemModel)clickView.itemModel;
+
+                    //how?
+                    
+                }
+            });
         }
 
-
         MyHalfItem currentView = (MyHalfItem) view;
-        String itemViewType = getItem(i);
-        Log.d(TAG, itemViewType);
-//        ((MyView) view).setLayoutParams(new ActionBar.LayoutParams(50,50));
-        ((MyHalfItem) view).setImageResource(R.drawable.male_avatar);
-//        ((MyView) view).setMaxHeight(30);
-//        ((MyView) view).setMinimumHeight(10);
+        ChatListItemModel itemModel = getItem(i);
+        currentView.itemModel = itemModel;
+
+        boolean isLocal = itemModel.isLocalTmp;
+        if (isLocal) {
+            //transparent image source
+            ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
+        } else{
+            boolean isFemale = itemModel.isFemale;
+            if (isFemale)
+                ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
+            else
+                ((MyHalfItem) view).setImageResource(R.drawable.male_avatar);
+        }
         return currentView;
     }
 }
