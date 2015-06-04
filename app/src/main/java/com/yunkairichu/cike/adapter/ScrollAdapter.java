@@ -1,5 +1,6 @@
 package com.yunkairichu.cike.adapter;
 
+import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +23,13 @@ public class ScrollAdapter extends BaseAdapter {
 
     private List<ChatListItemModel> scrollViews;
     private static final String TAG = ScrollAdapter.class.getSimpleName();
+    private ActivityChatview activity;
 
-    public ScrollAdapter(List<ChatListItemModel> scrollViews){
-
+    public ScrollAdapter(ActivityChatview activity, List<ChatListItemModel> scrollViews){
+        this.activity = activity;
         this.scrollViews = scrollViews;
     }
+
     @Override
     public int getCount() {
         return scrollViews.size();
@@ -52,9 +55,11 @@ public class ScrollAdapter extends BaseAdapter {
                     //send object link with this view
                     MyHalfItem clickView = (MyHalfItem)v;
                     ChatListItemModel model = (ChatListItemModel)clickView.itemModel;
+                    if (model.isLocalTmp){
+                        return;
+                    }
 
-                    //how?
-                    
+                    activity.clickAvatarAtIndex(model);
                 }
             });
         }
@@ -66,7 +71,7 @@ public class ScrollAdapter extends BaseAdapter {
         boolean isLocal = itemModel.isLocalTmp;
         if (isLocal) {
             //transparent image source
-            ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
+            ((MyHalfItem) view).setImageResource(R.drawable.transparent_avatar);
         } else{
             boolean isFemale = itemModel.isFemale;
             if (isFemale)
