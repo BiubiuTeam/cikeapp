@@ -3,15 +3,18 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
 
     <ImageView
-        android:background="@drawable/chatsend_bg"
+        android:background="@drawable/chat_view_info_bg"
         android:longClickable="true"
         android:clickable="false"
         android:focusable="false"
-        android:visibility="invisible"
-        android:layout_centerInParent="true"
         android:id="@+id/detailPicture"
+        android:adjustViewBounds="true"
+        android:maxHeight="200dp"
+        android:maxWidth="200dp"
+        android:minHeight="200dp"
+        android:minWidth="150dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="fitCenter" />
+        />
 
 </RelativeLayout>

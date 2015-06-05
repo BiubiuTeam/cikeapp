@@ -64,6 +64,7 @@ public class ActivityChatview extends Activity {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         layoutParams.topMargin = 0;
         layoutParams.leftMargin = dm.widthPixels/2;
+
         layoutParams.width = dm.widthPixels/2;
 
         listViewHeight = MyHalfItem.ITEM_DEFAULT_HEIGHT * 5 + listView.getDividerHeight()*(5-1);
@@ -71,12 +72,17 @@ public class ActivityChatview extends Activity {
         chatview.addView(listView, layoutParams);
 
         detailImage = (ImageView)findViewById(R.id.detailPicture);
+        RelativeLayout.LayoutParams infoLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        infoLP.leftMargin = (dm.widthPixels/2 - detailImage.getWidth())/2;
+        infoLP.topMargin = listViewHeight/2 - detailImage.getHeight();
+
         detailImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(ActivityChatview.this,"Chat",Toast.LENGTH_SHORT).show();
             }
         });
+        detailImage.setLayoutParams(infoLP);
 
         chatview.bringChildToFront(cancelButton);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -125,9 +131,7 @@ public class ActivityChatview extends Activity {
         Bitmap bmp = BitmapFactory.decodeResource(res, R.drawable.female_avatar);
         detailImage.setImageBitmap(bmp);
         detailImage.setVisibility(View.VISIBLE);
-        detailImage.setRight(listView.getLeft());
 
-        int yOffset = (listViewHeight - detailImage.getHeight())/2;
-        detailImage.setTop(yOffset);
+
     }
 }

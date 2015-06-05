@@ -6,7 +6,6 @@
     android:id="@+id/chatview"
     android:background="#ffde32">
 
-
     <include layout="@layout/chatview_detail"/>
 
     <Button
