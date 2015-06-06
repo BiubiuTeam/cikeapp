@@ -8,9 +8,9 @@ import android.widget.ImageView;
  * Created by liuxiaobo on 15/6/1.
  */
 public class MyHalfItem extends ImageView{
-
-    public  Object itemModel;
-    public static  final int ITEM_DEFAULT_HEIGHT = (int)ToolDevice.dp2px(84);
+    public int position;
+    public Object itemModel;
+    public static  final int ITEM_DEFAULT_HEIGHT = (int)ToolDevice.dp2px(60);
 
     public MyHalfItem(Context context) {
         super(context);

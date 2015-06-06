@@ -21,23 +21,23 @@ import java.util.List;
  */
 public class ScrollAdapter extends BaseAdapter {
 
-    private List<ChatListItemModel> scrollViews;
+    private List<ChatListItemModel> modelList;
     private static final String TAG = ScrollAdapter.class.getSimpleName();
     private ActivityChatview activity;
 
-    public ScrollAdapter(ActivityChatview activity, List<ChatListItemModel> scrollViews){
+    public ScrollAdapter(ActivityChatview activity, List<ChatListItemModel> modelList){
         this.activity = activity;
-        this.scrollViews = scrollViews;
+        this.modelList = modelList;
     }
 
     @Override
     public int getCount() {
-        return scrollViews.size();
+        return modelList.size();
     }
 
     @Override
     public ChatListItemModel getItem(int i) {
-        return scrollViews.get(i);
+        return modelList.get(i);
     }
 
     @Override
@@ -58,8 +58,7 @@ public class ScrollAdapter extends BaseAdapter {
                     if (model.isLocalTmp){
                         return;
                     }
-
-                    activity.clickAvatarAtIndex(model);
+                    activity.clickAvatarAtIndex(model,clickView.position);
                 }
             });
         }
@@ -67,6 +66,7 @@ public class ScrollAdapter extends BaseAdapter {
         MyHalfItem currentView = (MyHalfItem) view;
         ChatListItemModel itemModel = getItem(i);
         currentView.itemModel = itemModel;
+        currentView.position = i;
 
         boolean isLocal = itemModel.isLocalTmp;
         if (isLocal) {
