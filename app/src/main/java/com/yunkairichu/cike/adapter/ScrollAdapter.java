@@ -1,5 +1,6 @@
 package com.yunkairichu.cike.adapter;
 
+import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,21 +21,23 @@ import java.util.List;
  */
 public class ScrollAdapter extends BaseAdapter {
 
-    private List<ChatListItemModel> scrollViews;
+    private List<ChatListItemModel> modelList;
     private static final String TAG = ScrollAdapter.class.getSimpleName();
+    private ActivityChatview activity;
 
-    public ScrollAdapter(List<ChatListItemModel> scrollViews){
-
-        this.scrollViews = scrollViews;
+    public ScrollAdapter(ActivityChatview activity, List<ChatListItemModel> modelList){
+        this.activity = activity;
+        this.modelList = modelList;
     }
+
     @Override
     public int getCount() {
-        return scrollViews.size();
+        return modelList.size();
     }
 
     @Override
     public ChatListItemModel getItem(int i) {
-        return scrollViews.get(i);
+        return modelList.get(i);
     }
 
     @Override
@@ -52,9 +55,10 @@ public class ScrollAdapter extends BaseAdapter {
                     //send object link with this view
                     MyHalfItem clickView = (MyHalfItem)v;
                     ChatListItemModel model = (ChatListItemModel)clickView.itemModel;
-
-                    //how?
-                    
+                    if (model.isLocalTmp){
+                        return;
+                    }
+                    activity.clickAvatarAtIndex(model,clickView.position);
                 }
             });
         }
@@ -62,11 +66,12 @@ public class ScrollAdapter extends BaseAdapter {
         MyHalfItem currentView = (MyHalfItem) view;
         ChatListItemModel itemModel = getItem(i);
         currentView.itemModel = itemModel;
+        currentView.position = i;
 
         boolean isLocal = itemModel.isLocalTmp;
         if (isLocal) {
             //transparent image source
-            ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
+            ((MyHalfItem) view).setImageResource(R.drawable.transparent_avatar);
         } else{
             boolean isFemale = itemModel.isFemale;
             if (isFemale)

@@ -204,7 +204,7 @@ public class ActivitySquare extends Activity {
             public void onClick(View v) {
                 Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
                 startActivity(i);
-                finish();
+//                finish();
             }
         });
 
