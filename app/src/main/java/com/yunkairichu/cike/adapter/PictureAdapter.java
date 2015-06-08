@@ -160,7 +160,10 @@ public class PictureAdapter extends BaseAdapter {
             Bundle bundle = new Bundle();
             bundle.putInt("msgTag", sendMsgTag);
             i.putExtras(bundle);
+            ((ActivitySquare)activity).clearTitleBitmap();
+            ((ActivitySquare)activity).cancelTimer2();
             ((ActivitySquare)activity).startActivityForResult(i, REQUEST_CODE_CAMERA);
+            ((ActivitySquare)activity).overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
             sendMsgTag = -1;
         }
     }

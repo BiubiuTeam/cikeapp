@@ -28,4 +28,5 @@ dependencies {
     compile project(':libpulltorefresh')
     compile project(':libactionbar')
     compile files('libs/easemobchat_2.1.8.jar')
+    compile files('libs/BaiduLBS_Android.jar')
 }

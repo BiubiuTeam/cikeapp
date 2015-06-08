@@ -122,8 +122,6 @@
         android:layout_above="@id/faceLayout"
         >
 
-
-
         <LinearLayout
             android:id="@+id/rl_bottom"
             android:layout_width="match_parent"
@@ -134,6 +132,16 @@
             android:paddingTop="7dp"
             android:paddingBottom="7dp"
            >
+
+            <TextView
+                android:id="@+id/self_chat_tv"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="117dp"
+                android:text="这条是您发的信息哦"
+                android:textColor="@color/color_white"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/btn_set_mode_voice"
@@ -178,7 +186,6 @@
                     android:textColor="#000000"
                     android:textSize="16sp" />
             </LinearLayout>
-
             <RelativeLayout
                 android:id="@+id/edittext_layout"
                 android:layout_width="0dp"
@@ -208,7 +215,7 @@
 
             </RelativeLayout>
 
-            <LinearLayout
+    <LinearLayout
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp">
@@ -241,14 +248,14 @@
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_marginRight="10dp"
-        android:background="@drawable/btn_add_picture_click"
+        android:background="@color/color_white"
         android:onClick="onClick"
         android:text="@string/button_send"
         android:textColor="#666666"
         android:textSize="16sp"
         android:visibility="gone" />
-
-</LinearLayout>
+                <!--android:background="@drawable/btn_add_picture_click"-->
+    </LinearLayout>
 
         </LinearLayout>
 
@@ -277,7 +284,8 @@
 
 
             </LinearLayout>
-        </LinearLayout>
+
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<set xmlns:android="http://schemas.android.com/apk/res/android">
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:drawable="@drawable/voice_send_play_1"
         android:duration="200" />
@@ -9,4 +9,4 @@
     <item
         android:drawable="@drawable/voice_send_play_3"
         android:duration="200" />
-</set>
+</animation-list>

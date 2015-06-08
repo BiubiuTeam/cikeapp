@@ -74,7 +74,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
         if (image != null) {
             iv.setImageBitmap(image);
             iv.setImageResource(R.drawable.default_image_gray);
-            ImageCache.getInstance().put(thumbnailPath, image);
+            ImageCache.getInstance().put(thumbnailPath, image);  //缓存小图片
             iv.setClickable(true);
             iv.setTag(thumbnailPath);
             iv.setTag(R.id.tag_message,message);

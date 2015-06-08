@@ -1335,9 +1335,9 @@ public class MessageAdapter extends BaseAdapter {
         ToolLog.dbg("local = " + localFullSizePath + " remote: " + remote);
         // first check if the thumbnail image already loaded into cache
         Bitmap bitmap = ImageCache.getInstance().get(thumbernailPath);
-        if (bitmap != null) {
+        //if (bitmap != null) {
             // thumbnail image is already loaded, reuse the drawable
-            iv.setImageBitmap(bitmap);
+            //iv.setImageBitmap(bitmap);  //小图片不需要存储和存在
             //Bitmap coverBitmap = BitmapFactory.decodeResource();
             iv.setImageResource(R.drawable.default_image_gray);
             iv.setClickable(true);
@@ -1381,12 +1381,14 @@ public class MessageAdapter extends BaseAdapter {
                     return false;
                 }
             });
-            return true;
-        } else {
-            new LoadImageTask().execute(thumbernailPath, localFullSizePath, remote, message.getChatType(), iv, activity, message, conversation, position);
             notifyDataSetChanged();
             return true;
-        }
+        //}
+//        else {
+//            new LoadImageTask().execute(thumbernailPath, localFullSizePath, remote, message.getChatType(), iv, activity, message, conversation, position);
+//            notifyDataSetChanged();
+//            return true;
+//        }
 
     }
 

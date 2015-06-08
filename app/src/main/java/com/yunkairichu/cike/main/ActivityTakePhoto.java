@@ -35,6 +35,7 @@ import com.jaf.jcore.Application;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
+import com.jaf.jcore.ToolGetLocationInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponsePublishTitle;
@@ -57,6 +58,8 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     public static final int TITLE_TYPE_PICTURE = 3;
 
     public static final int REQUEST_CODE_LOCAL = 19;
+
+    public static final int RESULT_FORCE_REFLASH = 101;
 
     //变量
     private ImageView back, chanCam;//返回和切换前后置摄像头
@@ -187,6 +190,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                     //返回
                     ActivityTakePhoto.this.setResult(RESULT_OK);
                     ActivityTakePhoto.this.finish();
+                    ActivityTakePhoto.this.overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                     break;
 
                 case R.id.take_photo_change_canmera_iv:
@@ -280,6 +284,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                         intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     }
                     startActivityForResult(intent, REQUEST_CODE_LOCAL);
+                    overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                     break;
             }
         }
@@ -497,15 +502,23 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                         }
                     }
                 });
-
-        setResult(RESULT_OK);
+        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+        setResult(RESULT_FORCE_REFLASH);
     }
 
     private void sendTitle(int msgTag, int picSize, String titleCont) {
         Http http = new Http();
         String Text = picText.getText().toString();
         ToolLog.dbg("Text:" + Text);
-        JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize, Text);//组包
+        if(System.currentTimeMillis()- ToolGetLocationInfo.getInstance().getLastRecTime()>300000){
+            ToolGetLocationInfo.getInstance().startLocation();
+        }
+        if(ToolGetLocationInfo.getInstance().getFailFlag()==1){
+            Toast.makeText(ActivityTakePhoto.this, "网络不太好，请稍后再试", Toast.LENGTH_SHORT);
+            return;
+        }
+        JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize, Text,
+                ToolGetLocationInfo.getInstance().getLastLatitude(),ToolGetLocationInfo.getInstance().getLastLongitude(),ToolGetLocationInfo.getInstance().getLastCity());//组包
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -518,14 +531,16 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 setResponsePublishTitle(JacksonWrapper.json2Bean(response, ResponsePublishTitle.class));
                 ToolLog.dbg("Send Finish");
                 if (responsePublishTitle.getStatusCode() == 0) {
-                    setResult(RESULT_OK);
+                    setResult(RESULT_FORCE_REFLASH);
                     finish();
+                    overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 } else {
                     Toast.makeText(getApplicationContext(),
                             R.string.network_err, Toast.LENGTH_SHORT)
                             .show();
-                    setResult(RESULT_OK);
+                    setResult(RESULT_FORCE_REFLASH);
                     finish();
+                    overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 }
             }
         });

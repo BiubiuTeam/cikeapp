@@ -9,7 +9,6 @@ import android.widget.ProgressBar;
 
 import com.easemob.util.ImageUtils;
 import com.yunkairichu.cike.main.R;
-import com.yunkairichu.cike.utils.ImageCache;
 import com.yunkairichu.cike.widget.PhotoView;
 
 /**
@@ -58,13 +57,15 @@ public class LoadLocalBigImgTask extends AsyncTask<Void, Void, Bitmap> {
         super.onPostExecute(result);
         if(pb!=null)pb.setVisibility(View.INVISIBLE);
         photoView.setVisibility(View.VISIBLE);
-        if (result != null)
-            ImageCache.getInstance().put(path, result);
-        else
+        if (result != null) {
+            //ImageCache.getInstance().put(path, result); //不缓存图片
+        }
+        else {
 //            result = BitmapFactory.decodeResource(context.getResources(),
 //                    R.drawable.signin_local_gallry);
             result = BitmapFactory.decodeResource(context.getResources(),
                     R.drawable.default_image_gray);
+        }
         photoView.setImageBitmap(result);
     }
 }

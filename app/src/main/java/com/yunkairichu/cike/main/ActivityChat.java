@@ -37,20 +37,22 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import com.easemob.EMCallBack;
 import com.easemob.EMError;
+import com.easemob.chat.CmdMessageBody;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMMessage;
 import com.easemob.chat.ImageMessageBody;
 import com.easemob.chat.TextMessageBody;
 import com.easemob.chat.VoiceMessageBody;
+import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.PathUtil;
 import com.easemob.util.VoiceRecorder;
 import com.jaf.jcore.Application;
@@ -63,6 +65,7 @@ import com.yunkairichu.cike.adapter.VoicePlayClickListener;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
+import com.yunkairichu.cike.bean.ResponseImpeach;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainInsert;
 import com.yunkairichu.cike.utils.CommonUtils;
@@ -113,6 +116,7 @@ public class ActivityChat extends Activity {
     public static final int RESULT_CODE_DWONLOAD = 5;
     public static final int RESULT_CODE_TO_CLOUD = 6;
     public static final int RESULT_CODE_EXIT_GROUP = 7;
+    public static final int RESULT_FORCE_REFLASH = 101;
 
     public static final int CHATTYPE_SINGLE = 1;
     public static final int CHATTYPE_GROUP = 2;
@@ -157,6 +161,7 @@ public class ActivityChat extends Activity {
     private TextView regionTV;
     private TextView recordingHint;       //语音取消提示
     private TextView timeline_text;       //时间线文字
+    private TextView tvSelfChat;             //自己和自己聊的提示
     private TextView big_image_text;      //聊天开始时那个大图的文字
     private ListView listView;
     private ImageView big_image;           //聊天开始时那个大图
@@ -172,6 +177,7 @@ public class ActivityChat extends Activity {
     protected RelativeLayout faceLayout=null;    //底下拉出的黑框
     private RelativeLayout edittext_layout;
     private Dialog mDialog;
+    private Bitmap bigBitmap;                //进来时的大图
     //private LinearLayout btnContainer;
     //private ViewPager expressionViewpager;
 
@@ -188,6 +194,7 @@ public class ActivityChat extends Activity {
     private BaseResponseTitleInfo baseResponseTitleInfo;
     private ResponseSearchTitle responseSearchTitle;
     private ResponseUserChainInsert responseUserChainInsert;
+    private ResponseImpeach responseImpeach;
     private int chatType;
     private NewMessageBroadcastReceiver receiver; //接收器
     private PowerManager.WakeLock wakeLock;       //电源管理器
@@ -196,6 +203,8 @@ public class ActivityChat extends Activity {
     private int smboardHeight = 0;  //小图标高
     private int smboardWidth = 0;  //小图标宽
     private int big_pic_flag;  //大小图标标识
+    private int impeachReasonFlag = 0;
+    private String impeachReasonCont = "";
 
     //定义大表情相关变量
     ArrayList<ImageView> pointList=null;
@@ -250,6 +259,7 @@ public class ActivityChat extends Activity {
         iv_emoticons_checked = (ImageView) findViewById(R.id.iv_emoticons_checked);
         big_image = (ImageView) findViewById(R.id.big_image);
         big_image_text = (TextView) findViewById(R.id.big_image_text);
+        tvSelfChat = (TextView) findViewById(R.id.self_chat_tv);
         emojiIconContainer = (LinearLayout) findViewById(R.id.ll_face_container);
         loadmorePB = (ProgressBar) findViewById(R.id.chat_load_more);
         edittext_layout = (RelativeLayout) findViewById(R.id.edittext_layout);  //聊天编辑框
@@ -273,9 +283,9 @@ public class ActivityChat extends Activity {
         Intent intent=getIntent();
         byte [] bis=intent.getByteArrayExtra("bitmap");
         ToolLog.dbg("bitLen:"+String.valueOf(bis.length));
-        Bitmap bitmap= BitmapFactory.decodeByteArray(bis, 0, bis.length);
+        bigBitmap = BitmapFactory.decodeByteArray(bis, 0, bis.length);
         ToolLog.dbg("hehe");
-        big_image.setImageBitmap(bitmap);
+        big_image.setImageBitmap(bigBitmap);
         big_image_text.setText(baseResponseTitleInfo.getExtension().getText());
         big_pic_flag = 0;
         //状态图标设置
@@ -321,8 +331,7 @@ public class ActivityChat extends Activity {
 //                bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
 //                i.putExtras(bundle);
 //                startActivity(i);
-                setResult(RESULT_OK);
-                finish();
+                forceQuit(0);
             }
         });
 
@@ -412,31 +421,36 @@ public class ActivityChat extends Activity {
 
             @Override
             public void onClick(View v) {
-                int height, width;
-                if(big_pic_flag == 0) {
-                    if(boardHeight==0||boardHeight<v.getHeight())boardHeight = v.getHeight();
-                    if(boardWidth==0||boardWidth<v.getWidth())boardWidth = v.getWidth();
-                    smboardHeight = boardHeight/4;
-                    smboardWidth = boardWidth*1/3;
-                    height = smboardHeight;
-                    width = smboardWidth;
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-                    layoutParams.setMargins(width * 2, 0, 0, 0);
-                    v.setLayoutParams(layoutParams);
-                    big_image_text.setVisibility(View.GONE);
-                    big_pic_flag = 1;
-                }
-                else{
-                    height = boardHeight;
-                    width = boardWidth;
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-                    layoutParams.setMargins(0, 0, 0, 0);
-                    v.setLayoutParams(layoutParams);
-                    RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
-                    layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
-                    big_image_text.setVisibility(View.VISIBLE);
-                    big_image_text.setLayoutParams(layoutParams2);
-                    big_pic_flag = 0;
+                ToolLog.dbg("myId2:"+ToolDevice.getId(Application.getInstance().getApplicationContext())+" baseID2:"+baseResponseTitleInfo.getDvcId());
+                if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
+                    forceQuit(0);
+                } else {
+                    int height, width;
+                    if (big_pic_flag == 0) {
+                        if (boardHeight == 0 || boardHeight < v.getHeight())
+                            boardHeight = v.getHeight();
+                        if (boardWidth == 0 || boardWidth < v.getWidth()) boardWidth = v.getWidth();
+                        smboardHeight = boardHeight / 4;
+                        smboardWidth = boardWidth * 1 / 3;
+                        height = smboardHeight;
+                        width = smboardWidth;
+                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+                        layoutParams.setMargins(width * 2, 0, 0, 0);
+                        v.setLayoutParams(layoutParams);
+                        big_image_text.setVisibility(View.GONE);
+                        big_pic_flag = 1;
+                    } else {
+                        height = boardHeight;
+                        width = boardWidth;
+                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+                        layoutParams.setMargins(0, 0, 0, 0);
+                        v.setLayoutParams(layoutParams);
+                        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
+                        layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
+                        big_image_text.setVisibility(View.VISIBLE);
+                        big_image_text.setLayoutParams(layoutParams2);
+                        big_pic_flag = 0;
+                    }
                 }
             }
         });
@@ -529,7 +543,16 @@ public class ActivityChat extends Activity {
         addFaceData();
         addGridView();
 
-        //Toast.makeText(ActivityChat.this, "titleId:" + String.valueOf(baseResponseTitleInfo.getSortId()), Toast.LENGTH_SHORT).show();
+        ///////////////////////自己点击了自己的TITLE/////////////////////////////////
+        ToolLog.dbg("myId:"+ToolDevice.getId(Application.getInstance().getApplicationContext())+" baseID:"+baseResponseTitleInfo.getDvcId());
+        if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
+            buttonSetModeVoice.setVisibility(View.GONE);
+            mEditTextContent.setVisibility(View.GONE);
+            iv_emoticons_checked.setVisibility(View.GONE);
+            chatBottomLook.setVisibility(View.GONE);
+            btnPicture.setVisibility(View.GONE);
+            tvSelfChat.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setUpView() {
@@ -684,8 +707,10 @@ public class ActivityChat extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        impeachReasonFlag = 1;
+                        impeachReasonCont = ((TextView)v).getText().toString();
                         mDialog.dismiss();
+                        popupImpeachConfirm();
                     }
                 });
 
@@ -694,18 +719,22 @@ public class ActivityChat extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        impeachReasonFlag = 2;
+                        impeachReasonCont = ((TextView)v).getText().toString();
                         mDialog.dismiss();
+                        popupImpeachConfirm();
                     }
                 });
 
         //人身攻击
-        v.findViewById(R.id.btnPolitics).setOnClickListener(
+        v.findViewById(R.id.btnAttack).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        impeachReasonFlag = 4;
+                        impeachReasonCont = ((TextView)v).getText().toString();
                         mDialog.dismiss();
+                        popupImpeachConfirm();
                     }
                 });
 
@@ -739,6 +768,7 @@ public class ActivityChat extends Activity {
                         cameraFile.getParentFile().mkdirs();
                         startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
                                 REQUEST_CODE_CAMERA);
+                        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                     }
                 });
 
@@ -755,6 +785,7 @@ public class ActivityChat extends Activity {
                             intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                         }
                         startActivityForResult(intent, REQUEST_CODE_LOCAL);
+                        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                     }
                 });
 
@@ -770,13 +801,53 @@ public class ActivityChat extends Activity {
         mDialog.show();
     }
 
+    private void popupImpeachConfirm() {
+        View v = getLayoutInflater().inflate(R.layout.popup_impeach_confirm,
+                null);
 
+        v.findViewById(R.id.btnImpeachConfirm).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                        sendImpeach(Constant.IMPEACH_TITLE, baseResponseTitleInfo.getSortId(), impeachReasonFlag, impeachReasonCont);
+                    }
+                });
+
+        v.findViewById(R.id.btnImpeachCancel).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                    }
+                });
+
+        mDialog = PopupUtil.makePopup(this, v);
+        mDialog.show();
+    }
+
+    private void popupImpeachResult() {
+        View v = getLayoutInflater().inflate(R.layout.popup_impeach_result,
+                null);
+
+        v.findViewById(R.id.btnImpeachResultConfirm).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                        forceQuit(1);
+                    }
+                });
+
+        mDialog = PopupUtil.makePopup(this, v);
+        mDialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        mDialog.show();
+    }
 
 /*************************************主逻辑******************************************/
 
-/////////////////////////与本地后台对接的逻辑/////////////////////////////////////
-    public void addUserChain()
-    {
+/////////////////////////与本地后台对接的逻辑  加好友，举报/////////////////////////////////////
+    public void addUserChain() {
         Http http = new Http();
         JSONObject jo = JsonPack.buildUserChainInsert(baseResponseTitleInfo.getDvcId(), baseResponseTitleInfo.getSortId());
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
@@ -789,13 +860,35 @@ public class ActivityChat extends Activity {
                 }
                 setResponseUserChainInsert(JacksonWrapper.json2Bean(response, ResponseUserChainInsert.class));
 
-                if(responseUserChainInsert.getStatusCode() != 0){
+                if (responseUserChainInsert.getStatusCode() != 0) {
                     ToolLog.dbg("Add chain faild!");
                 }
             }
         });
     }
 
+    public void sendImpeach(int contType, long contId, int reason, String resonCont) {
+        Http http = new Http();
+        JSONObject jo = JsonPack.buildImpeach(contType, contId, reason, resonCont);
+        http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
+            @Override
+            public void onResponse(JSONObject response) {
+                super.onResponse(response);
+                if (response == null) {
+                    ToolLog.dbg("server error");
+                    return;
+                }
+
+                setResponseImpeach(JacksonWrapper.json2Bean(response, ResponseImpeach.class));
+                if (responseImpeach.getStatusCode() == 0) {
+                    popupImpeachResult();
+                }
+                else{
+                    Toast.makeText(ActivityChat.this,"举报失败，请重试一次",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 
 /////////////////////////////////////文本 图片 语音发送///////////////////////////
 
@@ -985,6 +1078,32 @@ public class ActivityChat extends Activity {
         }
     }
 
+    private void sendImpeachCmd(){
+        EMMessage cmdMsg = EMMessage.createSendMessage(EMMessage.Type.CMD);
+
+        String action="sillychat#report";//action可以自定义，在广播接收时可以收到
+        CmdMessageBody cmdBody=new CmdMessageBody(action);
+        cmdMsg.setReceipt(toChatUsername);//发送给某个人
+        cmdMsg.setAttribute(action, impeachReasonFlag);//举报原因
+        cmdMsg.setAttribute("broadcast", String.valueOf(baseResponseTitleInfo.getSortId()));//聊天序列号
+        cmdMsg.setAttribute("from", ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase());//自己ID
+        cmdMsg.addBody(cmdBody);
+        EMChatManager.getInstance().sendMessage(cmdMsg, new EMCallBack() {
+
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int code, String error) {
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+            }
+        });
+    }
+
 /////////////////////////////////////接收侦听相关///////////////////////////////////////////
 
     /**
@@ -996,8 +1115,30 @@ public class ActivityChat extends Activity {
         public void onReceive(Context context, Intent intent) {
             String username = intent.getStringExtra("from");
             String msgid = intent.getStringExtra("msgid");
+
             // 收到这个广播的时候，message已经在db和内存里了，可以通过id获取mesage对象
             EMMessage message = EMChatManager.getInstance().getMessage(msgid);
+
+            EMMessage messageEx = intent.getParcelableExtra("message");
+            if(messageEx!=null) {
+                CmdMessageBody cmdMessageBody = (CmdMessageBody) messageEx.getBody();
+                String action = cmdMessageBody.action;
+                if (action.equals("sillychat#report")) {
+                    int iTitleId = 0;
+                    try {
+                        iTitleId = Integer.parseInt(messageEx.getStringAttribute("broadcast"));
+                    } catch (EaseMobException e) {
+                        e.printStackTrace();
+                    }
+
+                    ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
+                    if (iTitleId == baseResponseTitleInfo.getSortId()) {
+                        forceQuit(1);
+                        return;
+                    }
+                }
+            }
+
             // 如果是群聊消息，获取到group id
             if (message.getChatType() == EMMessage.ChatType.GroupChat) {
                 username = message.getTo();
@@ -1253,8 +1394,7 @@ public class ActivityChat extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_CODE_EXIT_GROUP) {
-            setResult(RESULT_OK);
-            finish();
+            forceQuit(0);
             return;
         }
         if (requestCode == REQUEST_CODE_CONTEXT_MENU) {
@@ -1391,11 +1531,30 @@ public class ActivityChat extends Activity {
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
     public ResponseUserChainInsert getResponseUserChainInsert(){return responseUserChainInsert;}
     public void setResponseUserChainInsert(ResponseUserChainInsert responseUserChainInsert){this.responseUserChainInsert = responseUserChainInsert;}
+    public ResponseImpeach getResponseImpeach(){return responseImpeach;}
+    public void setResponseImpeach(ResponseImpeach responseImpeach){this.responseImpeach = responseImpeach;}
     public ListView getListView() {
         return listView;
     }
     public MessageAdapter getAdapter(){
         return adapter;
+    }
+
+////////////////////////////////////辅助函数//////////////////////////////////////////////////
+    public void forceQuit(int isForce){
+        if(bigBitmap != null){
+            if(!bigBitmap.isRecycled()){
+                bigBitmap.recycle();
+                bigBitmap = null;
+            }
+        }
+        if(isForce==1) {
+            setResult(RESULT_FORCE_REFLASH);
+        } else if(isForce==0){
+            setResult(RESULT_OK);
+        }
+        finish();
+        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
     }
 
 ////////////////////////////////////表情相关函数/////////////////////////////////////////
@@ -1444,13 +1603,9 @@ public class ActivityChat extends Activity {
             /**
              * 将image放入pointList，便于修改点的颜色
              */
-
-
-
         }
 
     }
-
 
     private boolean moveable = true;
     private float startX = 0;

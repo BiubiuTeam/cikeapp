@@ -11,6 +11,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -35,10 +36,12 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
+import com.jaf.jcore.ToolGetLocationInfo;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
@@ -68,6 +71,9 @@ public class ActivitySquare extends Activity {
     //本类常量
     public static final int REQUEST_CODE_CAMERA = 18;
     public static final int REQUEST_CODE_SINGLECHAT = 19;
+    public static final int REQUEST_CODE_USER_CHAIN = 101;
+
+    public static final int RESULT_FORCE_REFLASH = 101;
 
     public static final int RESULT_CODE_COPY = 1;
 
@@ -79,11 +85,14 @@ public class ActivitySquare extends Activity {
     private LinearLayout squareSelectButton;
     private ImageView squareBigPic;
     private ImageView squareBigPicBg;
+    private ImageView squareNothingPic;
+    private ImageView squareNothingAnim;
     private TextView squareBigPicText;
     private Button sendChosStaBackButton;
     private Button squareChainButton;
     private Button squarePubTiButton;
     private MyDialog chooseStatusDialog;
+    private AnimationDrawable animationDrawable;
 //    private MySwitchDialog dropDownDialog;
     private PopupWindow menuWindow;
 
@@ -155,6 +164,9 @@ public class ActivitySquare extends Activity {
         selectView = inflater.inflate(R.layout.view_square_selector, null);
         view = squareGridLayout.getChildAt(0);
         squareScrollView.setOnTouchListener(sqListener);
+        squareNothingPic = (ImageView) findViewById(R.id.square_nothing_pic);
+        squareNothingAnim = (ImageView) findViewById(R.id.square_nothing_anim);
+        animationDrawable=(AnimationDrawable) squareNothingAnim.getBackground();
 
         ivTopic = (ImageView) findViewById(R.id.look_into);
         ivTopic2 = (ImageView) findViewById(R.id.picker_arrow);
@@ -199,12 +211,16 @@ public class ActivitySquare extends Activity {
         Bundle bundle = this.getIntent().getExtras();
         responseSearchTitle = (ResponseSearchTitle) bundle.getSerializable("resSearchTitle");
 
+        squareNothingDisplay();
+
         squareChainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
-                startActivity(i);
-//                finish();
+                clearTitleBitmap();
+                cancelTimer2();
+                startActivityForResult(i, REQUEST_CODE_USER_CHAIN);
+                overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
             }
         });
 
@@ -277,20 +293,24 @@ public class ActivitySquare extends Activity {
                 else if (msg.what==2){
                     if(menuWindowStatus == 1){
                         if(menuWindow==null || !menuWindow.isShowing()){
-                            ToolLog.dbg("selectorFlag:"+String.valueOf(selectorFlag)+"searchFlag"+String.valueOf(searchFlag));
+                            ToolLog.dbg("selectorFlag:" + String.valueOf(selectorFlag) + "searchFlag" + String.valueOf(searchFlag));
                             if (searchFlag == 1 && selectorFlag == 1) {
                                 searchFlag = 0;
                                 selectorFlag = 0;
                                 clearTitleBitmap();
                                 squareScrollView.scrollTo(10, 10);
+                                responseSearchTitle = null;
                                 doTitleSearch();
                             }
 
                             ivTopic.setImageResource(R.drawable.look_into_black);
                             ivTopic2.setImageResource(R.drawable.picker_arrow_black);
                             tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
-                            tvTopic.setText(scale[selectorScale] + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
-
+                            if(selectorScale==1||selectorScale==2) {
+                                tvTopic.setText(ToolGetLocationInfo.getInstance().getLastCity() + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
+                            } else {
+                                tvTopic.setText(scale[selectorScale] + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
+                            }
                             menuWindowStatus = 0;
                         }
                     }
@@ -324,10 +344,17 @@ public class ActivitySquare extends Activity {
         ////////////////////////////////////// popupwindow的监控  完//////////////////////////////////
 
         if(responseSearchTitle != null) {
+            squareNothingDisplay();
             firReFlashSearchTitle();
             getTitleBitmap();
         } else{
-            doTitleSearch();
+            if(searchFlag==1) {
+                responseSearchTitle = null;
+                searchFlag = 0;
+                clearTitleBitmap();
+                squareScrollView.scrollTo(10, 10);
+                doTitleSearch();
+            }
         }
 
         isOnCreated = 1;
@@ -492,6 +519,7 @@ public class ActivitySquare extends Activity {
                                 searchFlag = 0;
                                 clearTitleBitmap();
                                 squareScrollView.scrollTo(10, 10);
+                                responseSearchTitle = null;
                                 doTitleSearch();
                             }
                         }
@@ -513,33 +541,38 @@ public class ActivitySquare extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) { // �����Ϣ
-            if (requestCode == REQUEST_CODE_CAMERA) { // ������Ƭ
-                ToolLog.dbg("Take Pic Finish");
-//                if (choseStatusPopupWindow != null&& choseStatusPopupWindow.isShowing()) {
-//                    choseStatusPopupWindow.dismiss();
-//                    return;
-//                }
-//                if (cameraFile != null && cameraFile.exists())
-//                    sendPicRes(cameraFile);
+        if (resultCode == RESULT_OK) {
+            if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
                 chooseStatusDialog.dismiss();
 
+                if(responseSearchTitle != null) {
+                    squareNothingDisplay();
+                    firReFlashSearchTitle();
+                    getTitleBitmap();
+                } else{
+                    if(searchFlag==1) {
+                        responseSearchTitle = null;
+                        searchFlag = 0;
+                        clearTitleBitmap();
+                        squareScrollView.scrollTo(10, 10);
+                        doTitleSearch();
+                    }
+                }
+                startTimer2();
+                ToolLog.dbg("start2");
+            }
+        } else if(resultCode == RESULT_FORCE_REFLASH){
+            if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_CAMERA){
+                startTimer2();
+                chooseStatusDialog.dismiss();
                 if(searchFlag==1) {
+                    responseSearchTitle = null;
                     searchFlag = 0;
                     clearTitleBitmap();
                     squareScrollView.scrollTo(10, 10);
                     doTitleSearch();
                 }
-            }
-            else if(requestCode == REQUEST_CODE_SINGLECHAT){
-                if(responseSearchTitle != null) {
-                    firReFlashSearchTitle();
-                    getTitleBitmap();
-                } else{
-                    doTitleSearch();
-                }
-                startTimer2();
-                ToolLog.dbg("start2");
+                ToolLog.dbg("start3");
             }
         }
     }
@@ -633,7 +666,15 @@ public class ActivitySquare extends Activity {
         filter |= (scaleNum[selectorScale]<<0);
         filter |= (genderNum[selectorGender]<<1);
         ToolLog.dbg("filter:"+String.valueOf(filter)+" tag:"+String.valueOf(statusNameNum[selectorStatus]));
-        JSONObject jo = JsonPack.buildSearchTitle(filter, statusNameNum[selectorStatus]);
+        if(System.currentTimeMillis()- ToolGetLocationInfo.getInstance().getLastRecTime()>600000){
+            ToolGetLocationInfo.getInstance().startLocation();
+        }
+        if(ToolGetLocationInfo.getInstance().getFailFlag()==1){
+            Toast.makeText(ActivitySquare.this,"网络不太好，请稍后再试",Toast.LENGTH_SHORT);
+            return;
+        }
+        JSONObject jo = JsonPack.buildSearchTitle(filter, statusNameNum[selectorStatus],
+                ToolGetLocationInfo.getInstance().getLastLatitude(),ToolGetLocationInfo.getInstance().getLastLongitude(),ToolGetLocationInfo.getInstance().getLastCity());
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -644,9 +685,10 @@ public class ActivitySquare extends Activity {
                 }
 
                 setResponseSearchTitle(JacksonWrapper.json2Bean(response, ResponseSearchTitle.class));
-                if(responseSearchTitle.getReturnData().getContData().size()==0){
+                if (responseSearchTitle.getReturnData().getContData().size() == 0) {
                     searchFlag = 1;
                 }
+                squareNothingDisplay();
                 firReFlashSearchTitle();
                 getTitleBitmap();
             }
@@ -700,15 +742,18 @@ public class ActivitySquare extends Activity {
                         bundle.putSerializable("titleInfo", responseSearchTitle.getReturnData().getContData().get((int) v.getTag()));
                         bundle.putSerializable("resSearchTitle", getResponseSearchTitle());
                         int iTag = (int) v.getTag();
-                        ToolLog.dbg("byteCnt:" + String.valueOf(titleBitmap[iTag].getByteCount()));
-                        ByteArrayOutputStream baos = compressImage(titleBitmap[iTag]);
-                        ToolLog.dbg("toByteArray:" + String.valueOf(baos.toByteArray().length));
-                        i.putExtra("bitmap", baos.toByteArray());
-                        i.putExtras(bundle);
+                        if(titleBitmap[iTag]!=null) {
+                            ToolLog.dbg("byteCnt:" + String.valueOf(titleBitmap[iTag].getByteCount()));
+                            ByteArrayOutputStream baos = compressImage(titleBitmap[iTag]);
+                            ToolLog.dbg("toByteArray:" + String.valueOf(baos.toByteArray().length));
+                            i.putExtra("bitmap", baos.toByteArray());
+                            i.putExtras(bundle);
 
-                        clearTitleBitmap();
-                        cancelTimer2();
-                        startActivityForResult(i, REQUEST_CODE_SINGLECHAT);
+                            clearTitleBitmap();
+                            cancelTimer2();
+                            startActivityForResult(i, REQUEST_CODE_SINGLECHAT);
+                            overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+                        }
 //                        finish();
                     } else{
                         titleItemLongShortClickFlag = 0;
@@ -744,11 +789,11 @@ public class ActivitySquare extends Activity {
                     return false;
                 }
             });
-            squareGridLayout.addView(iv, 2*i);
+            squareGridLayout.addView(iv, 2 * i);
 
             TextViewSquareItem tv = new TextViewSquareItem(this,height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             tv.setText(baseResponseTitleInfo.getExtension().getText());
-            squareGridLayout.addView(tv,2*i+1);
+            squareGridLayout.addView(tv, 2 * i + 1);
 
             linePos[k] += baseResponseTitleInfo.getBlockLen();
         }
@@ -781,6 +826,19 @@ public class ActivitySquare extends Activity {
             }
             wpara[i] = 0;
             wdirect[i] = 0;
+        }
+    }
+
+    public void squareNothingDisplay(){
+        if(responseSearchTitle.getReturnData().getContData() == null || responseSearchTitle.getReturnData().getContData().size() <= 0){
+            squareNothingPic.setVisibility(View.VISIBLE);
+            squareNothingAnim.setVisibility(View.VISIBLE);
+            animationDrawable.setOneShot(false);
+            animationDrawable.start();
+        } else {
+            animationDrawable.stop();
+            squareNothingPic.setVisibility(View.GONE);
+            squareNothingAnim.setVisibility(View.GONE);
         }
     }
 

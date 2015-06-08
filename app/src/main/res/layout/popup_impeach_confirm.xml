@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:background="#e0ffffff"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_centerHorizontal="true"
+    android:layout_weight="2"
+    >
+
+    <TextView
+        android:id="@+id/btnImpeachText"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="15dp"
+        android:text="举报后将不会再看到该内容" />
+
+    <Button
+        android:id="@+id/btnImpeachConfirm"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginLeft="100dp"
+        android:layout_below="@+id/btnImpeachText"
+        android:textSize="15dp"
+        android:text="确认" />
+
+    <Button
+        android:id="@+id/btnImpeachCancel"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@+id/btnImpeachText"
+        android:layout_toRightOf="@+id/btnImpeachConfirm"
+        android:textSize="15dp"
+        android:text="取消" />
+
+</RelativeLayout>

@@ -1,11 +1,15 @@
 package com.jaf.jcore;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.androidquery.AQuery;
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
 import com.easemob.chat.EMChat;
 
 /**
@@ -19,6 +23,8 @@ public class Application extends android.app.Application {
     private ImageLoader mImageLoader;
     public AppExtraInfo mAppExtraInfo;
     private static Context context;
+    public static LocationClient MLOCATIONCLIENT;
+    public MyLocationListener mMyLocationListener;
 
     @Override
     public void onCreate() {
@@ -33,31 +39,40 @@ public class Application extends android.app.Application {
 
 //		int pid = android.os.Process.myPid();
 //		String processAppName =  getAppName(pid);
-//		// Èç¹ûappÆôÓÃÁËÔ¶³ÌµÄservice£¬´Ëapplication:onCreate»á±»µ÷ÓÃ2´Î
-//		// ÎªÁË·ÀÖ¹»·ĞÅSDK±»³õÊ¼»¯2´Î£¬¼Ó´ËÅĞ¶Ï»á±£Ö¤SDK±»³õÊ¼»¯1´Î
-//		// Ä¬ÈÏµÄapp»áÔÚÒÔ°üÃûÎªÄ¬ÈÏµÄprocess nameÏÂÔËĞĞ£¬Èç¹û²éµ½µÄprocess name²»ÊÇappµÄprocess name¾ÍÁ¢¼´·µ»Ø
+//		// ï¿½ï¿½ï¿½appï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½Ìµï¿½serviceï¿½ï¿½ï¿½ï¿½application:onCreateï¿½á±»ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½
+//		// Îªï¿½Ë·ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½SDKï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½2ï¿½Î£ï¿½ï¿½Ó´ï¿½ï¿½Ğ¶Ï»á±£Ö¤SDKï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½1ï¿½ï¿½
+//		// Ä¬ï¿½Ïµï¿½appï¿½ï¿½ï¿½ï¿½ï¿½Ô°ï¿½ï¿½ï¿½ÎªÄ¬ï¿½Ïµï¿½process nameï¿½ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½ï¿½ï¿½ï¿½éµ½ï¿½ï¿½process nameï¿½ï¿½ï¿½ï¿½appï¿½ï¿½process nameï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
 //		if (processAppName == null ||!processAppName.equalsIgnoreCase("com.easemob.chatuidemo")) {
 //			Log.e(TAG, "enter the service process!");
-//			//"com.easemob.chatuidemo"ÎªdemoµÄ°üÃû£¬»»µ½×Ô¼ºÏîÄ¿ÖĞÒª¸Ä³É×Ô¼º°üÃû
+//			//"com.easemob.chatuidemo"Îªdemoï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Òªï¿½Ä³ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //
-//			// Ôò´Ëapplication::onCreate ÊÇ±»service µ÷ÓÃµÄ£¬Ö±½Ó·µ»Ø
+//			// ï¿½ï¿½ï¿½application::onCreate ï¿½Ç±ï¿½service ï¿½ï¿½ï¿½ÃµÄ£ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½
 //			return;
 //		}
 
+        //ç¯ä¿¡ç›¸å…³
         EMChat.getInstance().setAutoLogin(true);
         EMChat.getInstance().init(applicationContext);
 
         /**
-         * debugMode == true Ê±Îª´ò¿ª£¬sdk »áÔÚlogÀïÊäÈëµ÷ÊÔĞÅÏ¢
+         * debugMode == true Ê±Îªï¿½ò¿ª£ï¿½sdk ï¿½ï¿½ï¿½ï¿½logï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
          * @param debugMode
-         * ÔÚ×ö´úÂë»ìÏıµÄÊ±ºòĞèÒªÉèÖÃ³Éfalse
+         * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ã³ï¿½false
          */
-        EMChat.getInstance().setDebugMode(true);//ÔÚ×ö´ò°ü»ìÏıÊ±£¬Òª¹Ø±ÕdebugÄ£Ê½£¬Èç¹ûÎ´±»¹Ø±Õ£¬Ôò»á³öÏÖ³ÌĞòÎŞ·¨ÔËĞĞÎÊÌâ
-        //JPushInterface.setDebugMode(Constant.Debug.DEBUG); 	// ÉèÖÃ¿ªÆôÈÕÖ¾,·¢²¼Ê±Çë¹Ø±ÕÈÕÖ¾
+        EMChat.getInstance().setDebugMode(true);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Òªï¿½Ø±ï¿½debugÄ£Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½Ø±Õ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        //JPushInterface.setDebugMode(Constant.Debug.DEBUG); 	// ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾,ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ø±ï¿½ï¿½ï¿½Ö¾
         //JPushInterface.init(this);
 
         hxSDKHelper.onInit(applicationContext);
+
+
+        //ç™¾åº¦åœ°å›¾ç›¸å…³
+        MLOCATIONCLIENT = new LocationClient(this.getApplicationContext());
+        mMyLocationListener = new MyLocationListener();
+        MLOCATIONCLIENT.registerLocationListener(mMyLocationListener);
+
+        ToolGetLocationInfo.getInstance().initLocation();
     }
 
     public static final Application getInstance() {
@@ -68,8 +83,16 @@ public class Application extends android.app.Application {
         return ret;
     }
 
+    public static final LocationClient getLocationClient() {
+        LocationClient ret;
+        synchronized (Application.class) {
+            ret = MLOCATIONCLIENT;
+        }
+        return ret;
+    }
+
     /**
-     * ÉèÖÃÓÃ»§Ãû
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½
      *
      * @param user
      */
@@ -78,7 +101,7 @@ public class Application extends android.app.Application {
     }
 
     /**
-     * »ñÈ¡µ±Ç°µÇÂ½ÓÃ»§Ãû
+     * ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½Â½ï¿½Ã»ï¿½ï¿½ï¿½
      *
      * @return
      */
@@ -156,4 +179,67 @@ public class Application extends android.app.Application {
 //		}
 //		return processName;
 //	}
+
+    /**
+     * å®ç°å®ä½å›è°ƒç›‘å¬
+     */
+    public class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+
+//            //Receive Location
+//            StringBuffer sb = new StringBuffer(256);
+//            sb.append("time : ");
+//            sb.append(location.getTime());
+//            sb.append("\nerror code : ");
+//            sb.append(location.getLocType());
+//            sb.append("\nlatitude : ");
+//            sb.append(location.getLatitude());
+//            sb.append("\nlontitude : ");
+//            sb.append(location.getLongitude());
+//            sb.append("\nradius : ");
+//            sb.append(location.getRadius());
+//            if (location.getLocType() == BDLocation.TypeGpsLocation){
+//                sb.append("\nspeed : ");
+//                sb.append(location.getSpeed());
+//                sb.append("\nsatellite : ");
+//                sb.append(location.getSatelliteNumber());
+//                sb.append("\ndirection : ");
+//                sb.append("\naddr : ");
+//                sb.append(location.getAddrStr());
+//                sb.append(location.getDirection());
+//            } else if (location.getLocType() == BDLocation.TypeNetWorkLocation){
+//                sb.append("\naddr : ");
+//                sb.append(location.getAddrStr());
+//                //è¿è¥å•†ä¿¡æ¯
+//                sb.append("\noperationers : ");
+//                sb.append(location.getOperators());
+//            }
+//            Log.i("LocationApi", sb.toString());
+            int ret = location.getLocType();
+            if (ret==61||ret==65||ret==161) {
+                ToolGetLocationInfo.getInstance().setLastLatitude(location.getLatitude());
+                ToolGetLocationInfo.getInstance().setLastLongitude(location.getLongitude());
+                if (location.getCity().equals("")) {
+                    ToolGetLocationInfo.getInstance().setLastCity("æµ·å¤–");
+                } else {
+                    ToolGetLocationInfo.getInstance().setLastCity(location.getCity());
+                }
+                ToolGetLocationInfo.getInstance().setLastRecTime(System.currentTimeMillis());
+                ToolGetLocationInfo.getInstance().stopLocation();
+                ToolGetLocationInfo.getInstance().setFailFlag(0);
+                ToolGetLocationInfo.getInstance().setFailTime(0);
+            }
+            else if (ToolGetLocationInfo.getInstance().getFailTime() < 10){
+                ToolGetLocationInfo.getInstance().requestLocation();
+                int failTime = ToolGetLocationInfo.getInstance().getFailTime() + 1;
+                ToolGetLocationInfo.getInstance().setFailTime(failTime);
+            }
+            else {
+                ToolGetLocationInfo.getInstance().stopLocation();
+                ToolGetLocationInfo.getInstance().setFailTime(0);
+            }
+        }
+    }
 }

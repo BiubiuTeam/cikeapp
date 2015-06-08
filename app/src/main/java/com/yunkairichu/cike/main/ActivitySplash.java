@@ -93,6 +93,7 @@ public class ActivitySplash extends BindableActivity {
                     i = new Intent(ActivitySplash.this, ActivityWelcome.class);    //其他也暂定是注册
                 }
                 startActivity(i);
+                overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 finish();
             }
         });

@@ -30,10 +30,11 @@ public class ActivityGender extends Activity {
                 Intent i = new Intent(ActivityGender.this, ActivityRole.class);
 
                 Bundle bundle = new Bundle();
-                bundle.putInt("genderPick", 0);  //男性为0
+                bundle.putInt("genderPick", 0);  //锟斤拷锟斤拷为0
                 i.putExtras(bundle);
 
                 startActivity(i);
+                overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 finish();
             }
         });
@@ -44,10 +45,11 @@ public class ActivityGender extends Activity {
                 Intent i = new Intent(ActivityGender.this, ActivityRole.class);
 
                 Bundle bundle = new Bundle();
-                bundle.putInt("genderPick", 1);  //女性为1
+                bundle.putInt("genderPick", 1);  //女锟斤拷为1
                 i.putExtras(bundle);
 
                 startActivity(i);
+                overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 finish();
             }
         });

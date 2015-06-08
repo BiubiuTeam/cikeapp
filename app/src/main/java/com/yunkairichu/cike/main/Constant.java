@@ -13,4 +13,5 @@ public class Constant {
     public static final String UPLOADRESURL = "http://biubiu.co/upload.php";
 
     public static final int MAX_INPUT_TEXT_LENGTH = 30;
+    public static final int IMPEACH_TITLE = 1;
 }

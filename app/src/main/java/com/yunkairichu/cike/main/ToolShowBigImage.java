@@ -61,6 +61,7 @@ public class ToolShowBigImage {
             // int screenWidth = metrics.widthPixels;
             // int screenHeight =metrics.heightPixels;
             bitmap = ImageCache.getInstance().get(uri.getPath());
+
             if (bitmap == null) {
                 LoadLocalBigImgTask task = new LoadLocalBigImgTask(activity, uri.getPath(), image, loadLocalPb, ImageUtils.SCALE_IMAGE_WIDTH,
                         ImageUtils.SCALE_IMAGE_HEIGHT);
@@ -146,7 +147,7 @@ public class ToolShowBigImage {
                             image.setImageResource(default_res);
                         } else {
                             image.setImageBitmap(bitmap);
-                            ImageCache.getInstance().put(localFilePath, bitmap);
+                            //ImageCache.getInstance().put(localFilePath, bitmap); //不缓存图片
                             isDownloaded = true;
                         }
                         if (pd != null) {
@@ -194,6 +195,12 @@ public class ToolShowBigImage {
 
     public void gonePhotoView(){
         image.setVisibility(View.GONE);
+        if(bitmap!=null) {
+            if(!bitmap.isRecycled()) {
+                bitmap.recycle();
+                bitmap = null;
+            }
+        }
     }
 
 //    @Override
