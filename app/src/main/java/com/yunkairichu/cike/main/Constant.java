@@ -14,4 +14,6 @@ public class Constant {
 
     public static final int MAX_INPUT_TEXT_LENGTH = 30;
     public static final int IMPEACH_TITLE = 1;
+    public static final int IDTYPE_GETOLD = 1;
+    public static final int IDTYPE_GETNEW = 2;
 }

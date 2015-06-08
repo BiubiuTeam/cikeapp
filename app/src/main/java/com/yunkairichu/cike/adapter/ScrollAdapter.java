@@ -1,17 +1,13 @@
 package com.yunkairichu.cike.adapter;
 
-import android.app.Activity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.jaf.jcore.Application;
 import com.yunkairichu.cike.main.ActivityChatview;
 import com.yunkairichu.cike.main.MyHalfItem;
 import com.yunkairichu.cike.main.R;
+import com.yunkairichu.cike.main.ToolLog;
 import com.yunkairichu.cike.widget.ChatListItemModel;
 
 import java.util.List;
@@ -32,11 +28,17 @@ public class ScrollAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return modelList.size();
+        ToolLog.dbg("modelListLen:"+String.valueOf(modelList.size()));
+        if(modelList!=null){
+            return modelList.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public ChatListItemModel getItem(int i) {
+        ToolLog.dbg("modelListLen:"+String.valueOf(modelList.size()));
         return modelList.get(i);
     }
 
@@ -47,6 +49,7 @@ public class ScrollAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
+        ToolLog.dbg("userChain itemnum:"+String.valueOf(i));
         if (view == null) {
             view = new MyHalfItem(viewGroup.getContext());
             view.setOnClickListener(new View.OnClickListener() {
