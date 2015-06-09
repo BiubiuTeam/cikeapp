@@ -6,10 +6,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -25,6 +30,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -1525,7 +1532,7 @@ public class ActivityChat extends Activity {
     }
 
     public void didClickToSendEmoji(ChatEmoji emoji){
-        flyEmojiHandler.postDelayed(new EmojiRunnable(emoji.getFlyEmojiId()), 0);
+        flyEmojiHandler.postDelayed(new EmojiRunnable(emoji.getFlyEmojiId(),false), 0);
         // logic send out from here
 
     }
@@ -1534,21 +1541,33 @@ public class ActivityChat extends Activity {
 
     public class EmojiRunnable implements Runnable
     {
-        public int resourceId = R.drawable.f_000;
+        private int resourceId = R.drawable.f_000;
+        //是否需要镜像效果，本地发送为false，接收到对方的为true
+        private boolean needsMirrorCovert = false;
 
         public EmojiRunnable() {
             super();
         }
 
-        public EmojiRunnable(int resourceId) {
+        public EmojiRunnable(int resourceId, boolean mirrorCovert) {
             super();
             this.resourceId = resourceId;
+            this.needsMirrorCovert = mirrorCovert;
         }
 
         @Override
         public void run() {
             ImageView flyEmojiView = new ImageView(ActivityChat.this);
-            flyEmojiView.setImageResource(resourceId);
+            float relativeX0 = 1.5f;
+            float relativeX1 = -1.5f;
+            if (needsMirrorCovert){
+                flyEmojiView.setImageBitmap(MirrorConvert(BitmapFactory.decodeResource(getResources(),resourceId)));
+                float tmp = relativeX0;
+                relativeX0 = relativeX1;
+                relativeX1 = tmp;
+            }else {
+                flyEmojiView.setImageResource(resourceId);
+            }
 
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
             lp.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -1557,8 +1576,8 @@ public class ActivityChat extends Activity {
 
             float randomY = (float)(Math.random()*3.5f-3f);
             TranslateAnimation ta = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 1.5f,
-                    Animation.RELATIVE_TO_SELF, -1.5f,
+                    Animation.RELATIVE_TO_SELF, relativeX0,
+                    Animation.RELATIVE_TO_SELF, relativeX1,
                     Animation.RELATIVE_TO_SELF, randomY,
                     Animation.RELATIVE_TO_SELF, randomY);
             ta.setDuration((int)Math.ceil((Math.random()*2000 + 4000)));
@@ -1582,5 +1601,19 @@ public class ActivityChat extends Activity {
             flyEmojiView.setTag(ta);
             flyEmojiView.startAnimation(ta);
         }
+    }
+    //bitmap镜像效果
+    public static Bitmap MirrorConvert(Bitmap a)
+    {
+        int w = a.getWidth();
+        int h = a.getHeight();
+        Bitmap newb = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);// 创建一个新的和SRC长度宽度一样的位图
+
+        Canvas cv = new Canvas(newb);
+        Matrix m = new Matrix();
+        m.postScale(-1, 1);   //镜像水平翻转
+        Bitmap new2 = Bitmap.createBitmap(a, 0, 0, w, h, m, true);
+        cv.drawBitmap(new2, new Rect(0, 0, new2.getWidth(), new2.getHeight()),new Rect(0, 0, w, h), null);
+        return newb;
     }
 }
