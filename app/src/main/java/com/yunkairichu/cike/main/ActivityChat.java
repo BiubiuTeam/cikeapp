@@ -10,7 +10,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -23,17 +22,18 @@ import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -41,7 +41,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import com.easemob.EMCallBack;
 import com.easemob.EMError;
@@ -60,7 +59,6 @@ import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.yunkairichu.cike.adapter.MessageAdapter;
-import com.yunkairichu.cike.adapter.MyGridAdapter;
 import com.yunkairichu.cike.adapter.VoicePlayClickListener;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
@@ -70,14 +68,14 @@ import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainInsert;
 import com.yunkairichu.cike.utils.CommonUtils;
 import com.yunkairichu.cike.utils.PopupUtil;
+import com.yunkairichu.cike.widget.ChatEmoji;
+import com.yunkairichu.cike.widget.FaceRelativeLayout;
 import com.yunkairichu.cike.widget.PasteEditText;
 
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -174,9 +172,9 @@ public class ActivityChat extends Activity {
     private LinearLayout emojiIconContainer;
     private ProgressBar loadmorePB;
     private ProgressBar timeline;            //时间线
-    protected RelativeLayout faceLayout=null;    //底下拉出的黑框
+    protected FaceRelativeLayout faceLayout=null;    //底下拉出的黑框
     private RelativeLayout edittext_layout;
-    private Dialog mDialog;
+//    private Dialog mDialog = null;
     private Bitmap bigBitmap;                //进来时的大图
     //private LinearLayout btnContainer;
     //private ViewPager expressionViewpager;
@@ -207,19 +205,11 @@ public class ActivityChat extends Activity {
     private String impeachReasonCont = "";
 
     //定义大表情相关变量
-    ArrayList<ImageView> pointList=null;
-    ArrayList<ArrayList<HashMap<String,Object>>> listGrid=null;
-    protected ViewFlipper viewFlipper=null;
     protected ImageView chatBottomLook=null;
-    protected LinearLayout pagePoint=null,fillGapLinear=null;
 
     private boolean expanded=false;
 
-    int[] faceId={R.drawable.f_static_000,R.drawable.f_static_001,R.drawable.f_static_002,R.drawable.f_static_003
-            ,R.drawable.f_static_004,R.drawable.f_static_005,R.drawable.f_static_006,R.drawable.f_static_007,R.drawable.f_static_008,R.drawable.f_static_009,R.drawable.f_static_010,R.drawable.f_static_011};
-    String[] faceName={"鄙视","害羞","汗","抠鼻","哭","酷","吐舌头","笑","正直","窒息","醉了","Duang"};
-    HashMap<String,Integer> faceMap=null;
-
+    private RelativeLayout rootlayout = null;
 //////////////////////////////////////////////////初始化/////////////////////////////////////////////
 
     private Handler micImageHandler = new Handler() {
@@ -240,6 +230,7 @@ public class ActivityChat extends Activity {
         baseResponseTitleInfo = (BaseResponseTitleInfo)bundle.getSerializable("titleInfo");
         responseSearchTitle = (ResponseSearchTitle)bundle.getSerializable("resSearchTitle");
 
+        rootlayout = (RelativeLayout)findViewById(R.id.rootlayout);
         backTV = (TextView) findViewById(R.id.back);
         reportTV = (TextView) findViewById(R.id.report);
         roleTV = (TextView) findViewById(R.id.role);
@@ -459,19 +450,11 @@ public class ActivityChat extends Activity {
 
         //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        faceMap=new HashMap<String,Integer>();
-        listGrid=new ArrayList<ArrayList<HashMap<String,Object>>>();
-        pointList=new ArrayList<ImageView>();
-
         //btnPicture =(Button)findViewById(R.id.btn_add_picture);
         //mEditTextContent= (PasteEditText) findViewById(R.id.et_sendmessage);
 
         chatBottomLook=(ImageView)findViewById(R.id.iv_emoticons_normal);
-        faceLayout=(RelativeLayout)findViewById(R.id.faceLayout);
-        pagePoint=(LinearLayout)findViewById(R.id.pagePoint);
-        fillGapLinear=(LinearLayout)findViewById(R.id.fill_the_gap);
-        viewFlipper=(ViewFlipper)findViewById(R.id.faceFlipper);
-        fillGapLinear=(LinearLayout)findViewById(R.id.fill_the_gap);
+        faceLayout=(FaceRelativeLayout)findViewById(R.id.FaceRelativeLayout);
 
         chatBottomLook.setOnClickListener(new View.OnClickListener() {
 
@@ -484,19 +467,10 @@ public class ActivityChat extends Activity {
 
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
-
-                    /**height不设为0是因为，希望可以使再次打开时viewFlipper已经初始化为第一页 避免
-                     *再次打开ViewFlipper时画面在动的结果,
-                     *为了避免因为1dip的高度产生一个白缝，所以这里在ViewFlipper所在的RelativeLayout
-                     *最上面添加了一个1dip高的黑色色块
-                     */
-
                 } else {
 
                     setFaceLayoutExpandState(true);
                     expanded = true;
-                    setPointEffect(0);
-
                 }
             }
 
@@ -533,26 +507,7 @@ public class ActivityChat extends Activity {
             }
         });
 
-        /**
-         * 为表情Map添加数据
-         */
-        for (int i = 0; i < faceId.length; i++) {
-            faceMap.put(faceName[i], faceId[i]);
-        }
-
-        addFaceData();
-        addGridView();
-
-        ///////////////////////自己点击了自己的TITLE/////////////////////////////////
-        ToolLog.dbg("myId:"+ToolDevice.getId(Application.getInstance().getApplicationContext())+" baseID:"+baseResponseTitleInfo.getDvcId());
-        if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
-            buttonSetModeVoice.setVisibility(View.GONE);
-            mEditTextContent.setVisibility(View.GONE);
-            iv_emoticons_checked.setVisibility(View.GONE);
-            chatBottomLook.setVisibility(View.GONE);
-            btnPicture.setVisibility(View.GONE);
-            tvSelfChat.setVisibility(View.VISIBLE);
-        }
+        //Toast.makeText(ActivityChat.this, "titleId:" + String.valueOf(baseResponseTitleInfo.getSortId()), Toast.LENGTH_SHORT).show();
     }
 
     private void setUpView() {
@@ -698,6 +653,9 @@ public class ActivityChat extends Activity {
 //            }
 //        });
 //    }
+
+    private Dialog mDialog;
+
 
     private void popupReport() {
         View v = getLayoutInflater().inflate(R.layout.popup_report,
@@ -897,8 +855,6 @@ public class ActivityChat extends Activity {
      *
      * @param content
      *            message content
-     * @param isResend
-     *            boolean resend
      */
     private void sendText(String content) {
         Toast.makeText(ActivityChat.this, "listViewCnt:" + String.valueOf(listView.getCount()), Toast.LENGTH_SHORT);
@@ -1539,8 +1495,8 @@ public class ActivityChat extends Activity {
     public MessageAdapter getAdapter(){
         return adapter;
     }
-
-////////////////////////////////////辅助函数//////////////////////////////////////////////////
+    
+    ////////////////////////////////////辅助函数//////////////////////////////////////////////////
     public void forceQuit(int isForce){
         if(bigBitmap != null){
             if(!bigBitmap.isRecycled()){
@@ -1556,165 +1512,75 @@ public class ActivityChat extends Activity {
         finish();
         overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
     }
-
-////////////////////////////////////表情相关函数/////////////////////////////////////////
-
-    private void addFaceData() {
-        ArrayList<HashMap<String, Object>> list = null;
-        for (int i = 0; i < faceId.length; i++) {
-            if (i % 6 == 0) {
-                list = new ArrayList<HashMap<String, Object>>();
-                listGrid.add(list);
-            }
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("image", faceId[i]);
-            map.put("faceName", faceName[i]);
-
-            /**
-             * 这里把表情对应的名字也添加进数据对象中，便于在点击时获得表情对应的名称
-             */
-            listGrid.get(i / 6).add(map);
+    
+/************************************emoji keyboard******************************/
+    private void setFaceLayoutExpandState(boolean isexpand) {
+        if (isexpand == false) {
+            faceLayout.hideFaceView();
+        } else {
+            ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow
+                    (ActivityChat.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            faceLayout.showFaceView();
         }
-        System.out.println("listGrid size is " + listGrid.size());
     }
 
-    private void addGridView() {
-        for (int i = 0; i < listGrid.size(); i++) {
-            View view = LayoutInflater.from(this).inflate(R.layout.view_item, null);
-            GridView gv = (GridView) view.findViewById(R.id.myGridView);
-            gv.setNumColumns(3);
-            gv.setSelector(new ColorDrawable(Color.TRANSPARENT));
-            MyGridAdapter adapter = new MyGridAdapter(this, listGrid.get(i), R.layout.chat_grid_item, new String[]{"image"}, new String[]{"faceName"}, new int[]{R.id.gridImage},new int[]{R.id.gridText});
-            gv.setAdapter(adapter);
-            gv.setOnTouchListener(new MyTouchListener(viewFlipper));
-            viewFlipper.addView(view);
-            /**
-             * 这里不喜欢用Java代码设置Image的边框大小等，所以单独配置了一个Imageview的布局文件
-             */
-            View pointView = LayoutInflater.from(this).inflate(R.layout.point_image_layout, null);
-            ImageView image = (ImageView) pointView.findViewById(R.id.pointImageView);
-            image.setBackgroundResource(R.drawable.qian_point);
-            pagePoint.addView(pointView);
-            /**
-             * 这里验证了LinearLayout属于ViewGroup类型，可以采用addView 动态添加view
-             */
-
-            pointList.add(image);
-            /**
-             * 将image放入pointList，便于修改点的颜色
-             */
-        }
+    public void didClickToSendEmoji(ChatEmoji emoji){
+        flyEmojiHandler.postDelayed(new EmojiRunnable(emoji.getFlyEmojiId()), 0);
+        // logic send out from here
 
     }
 
-    private boolean moveable = true;
-    private float startX = 0;
+    private Handler flyEmojiHandler = new Handler();
 
-    class MyTouchListener implements View.OnTouchListener {
+    public class EmojiRunnable implements Runnable
+    {
+        public int resourceId = R.drawable.f_000;
 
-        ViewFlipper viewFlipper = null;
-
-
-        public MyTouchListener(ViewFlipper viewFlipper) {
+        public EmojiRunnable() {
             super();
-            this.viewFlipper = viewFlipper;
+        }
+
+        public EmojiRunnable(int resourceId) {
+            super();
+            this.resourceId = resourceId;
         }
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            // TODO Auto-generated method stub
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    startX = event.getX();
-                    moveable = true;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (moveable) {
-                        if (event.getX() - startX > 40) {
-                            moveable = false;
-                            int childIndex = viewFlipper.getDisplayedChild();
-                            /**
-                             * 这里的这个if检测是防止表情列表循环滑动
-                             */
-                            if (childIndex > 0) {
-                                viewFlipper.setInAnimation(AnimationUtils.loadAnimation(ActivityChat.this, R.anim.left_in));
-                                viewFlipper.setOutAnimation(AnimationUtils.loadAnimation(ActivityChat.this, R.anim.right_out));
-                                viewFlipper.showPrevious();
-                                setPointEffect(childIndex - 1);
-                            }
-                        } else if (event.getX() - startX < -40) {
-                            moveable = false;
-                            int childIndex = viewFlipper.getDisplayedChild();
-                            /**
-                             * 这里的这个if检测是防止表情列表循环滑动
-                             */
-                            if (childIndex < listGrid.size() - 1) {
-                                viewFlipper.setInAnimation(AnimationUtils.loadAnimation(ActivityChat.this, R.anim.right_in));
-                                viewFlipper.setOutAnimation(AnimationUtils.loadAnimation(ActivityChat.this, R.anim.left_out));
-                                viewFlipper.showNext();
-                                setPointEffect(childIndex + 1);
-                            }
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    moveable = true;
-                    break;
-                default:
-                    break;
-            }
+        public void run() {
+            ImageView flyEmojiView = new ImageView(ActivityChat.this);
+            flyEmojiView.setImageResource(resourceId);
 
-            return false;
-        }
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+            lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
-    }
+            rootlayout.addView(flyEmojiView, lp);
 
-    private void setSoftInputState() {
-        ((InputMethodManager) ActivityChat.this.getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
-    }
+            float randomY = (float)(Math.random()*3.5f-3f);
+            TranslateAnimation ta = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 1.5f,
+                    Animation.RELATIVE_TO_SELF, -1.5f,
+                    Animation.RELATIVE_TO_SELF, randomY,
+                    Animation.RELATIVE_TO_SELF, randomY);
+            ta.setDuration((int)Math.ceil((Math.random()*2000 + 4000)));
+            ta.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
-    private void setFaceLayoutExpandState(boolean isexpand) {
-        if (isexpand == false) {
+                }
 
-            viewFlipper.setDisplayedChild(0);
-            ViewGroup.LayoutParams params = faceLayout.getLayoutParams();
-            params.height = 1;
-            faceLayout.setLayoutParams(params);
-            /**height不设为0是因为，希望可以使再次打开时viewFlipper已经初始化为第一页 避免
-             *再次打开ViewFlipper时画面在动的结果,
-             *为了避免因为1dip的高度产生一个白缝，所以这里在ViewFlipper所在的RelativeLayout中ViewFlipper
-             *上层添加了一个1dip高的黑色色块
-             *
-             *viewFlipper必须在屏幕中有像素才能执行setDisplayedChild()操作
-             */
-            chatBottomLook.setBackgroundResource(R.drawable.chatting_biaoqing_btn_normal);
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    View subView = rootlayout.findViewWithTag(animation);
+                    rootlayout.removeView(subView);
+                }
 
+                @Override
+                public void onAnimationRepeat(Animation animation) {
 
-        } else {
-            /**
-             * 让软键盘消失
-             */
-            ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow
-                    (ActivityChat.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-
-            ViewGroup.LayoutParams params = faceLayout.getLayoutParams();
-            params.height = (int) ToolDevice.dp2px(265);
-            faceLayout.setLayoutParams(params);
-            chatBottomLook.setBackgroundResource(R.drawable.chatting_setmode_keyboard_btn);
-
+                }
+            });
+            flyEmojiView.setTag(ta);
+            flyEmojiView.startAnimation(ta);
         }
     }
-
-    /**
-     翻页表情时的小圆点效果
-     */
-    private void setPointEffect(int darkPointNum){
-        for(int i=0; i<pointList.size(); i++){
-            pointList.get(i).setBackgroundResource(R.drawable.qian_point);
-        }
-        pointList.get(darkPointNum).setBackgroundResource(R.drawable.shen_point);
-    }
-
-
 }

@@ -81,34 +81,13 @@
     <RelativeLayout
         android:id="@+id/faceLayout"
         android:layout_width="match_parent"
-        android:layout_height="1dip"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
-        <ViewFlipper
-            android:id="@+id/faceFlipper"
-            android:layout_width="match_parent"
-            android:layout_height="245dip"
-            android:background="#393832"
-            >
-        </ViewFlipper>
-        <LinearLayout
-            android:id="@+id/fill_the_gap"
-            android:layout_width="match_parent"
-            android:layout_height="1dip"
-            android:background="#393832"
-            android:orientation="horizontal">
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/pagePoint"
-            android:layout_width="match_parent"
-            android:layout_height="20dip"
-            android:layout_below="@id/faceFlipper"
-            android:background="#393832"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-        </LinearLayout>
+        <include
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            layout="@layout/custom_facerelativelayout" />
     </RelativeLayout>
 
     <LinearLayout
@@ -344,6 +323,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:visibility="invisible"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bar_bottom"
