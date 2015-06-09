@@ -72,16 +72,9 @@ public class ScrollAdapter extends BaseAdapter {
         currentView.position = i;
 
         boolean isLocal = itemModel.isLocalTmp;
-        if (isLocal) {
-            //transparent image source
-            ((MyHalfItem) view).setImageResource(R.drawable.transparent_avatar);
-        } else{
-            boolean isFemale = itemModel.isFemale;
-            if (isFemale)
-                ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
-            else
-                ((MyHalfItem) view).setImageResource(R.drawable.male_avatar);
-        }
+        boolean isFemale = itemModel.isFemale;
+        currentView.setModelWithGendarAndHeartbeat(isLocal,isFemale,true);
+
         return currentView;
     }
 }

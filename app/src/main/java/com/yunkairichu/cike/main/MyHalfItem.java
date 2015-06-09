@@ -2,6 +2,7 @@ package com.yunkairichu.cike.main;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
 /**
@@ -33,7 +34,7 @@ public class MyHalfItem extends ImageView{
 
     public float getIndent(float distance){
         float x_vertex = maxIndent();
-        distance = distance + ITEM_DEFAULT_HEIGHT/2;
+        distance = distance + ITEM_DEFAULT_HEIGHT;
 
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         float y_vertex = displayMetrics.heightPixels  / displayMetrics.density;
@@ -47,5 +48,34 @@ public class MyHalfItem extends ImageView{
     {
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         return displayMetrics.widthPixels/(2*displayMetrics.density);
+    }
+
+    public void setModelWithGendarAndHeartbeat(boolean isLocal, boolean isFemale ,boolean heartbeat){
+        if (isLocal) {
+            //transparent image source
+            this.setImageResource(R.drawable.transparent_avatar);
+        } else{
+            if (isFemale) {
+                if (heartbeat) {
+                    this.setImageResource(R.drawable.animate_female);
+
+                    AnimationDrawable animationDrawable = (AnimationDrawable) this.getDrawable();
+                    animationDrawable.start();
+                }else{
+                    this.setImageResource(R.drawable.female_avatar);
+                }
+            }else {
+                if (heartbeat){
+                    this.setImageResource(R.drawable.animate_male);
+
+                    AnimationDrawable animationDrawable = (AnimationDrawable) this.getDrawable();
+                    animationDrawable.start();
+                }else {
+                    this.setImageResource(R.drawable.male_avatar);
+                }
+            }
+        }
+
+        this.invalidate();
     }
 }

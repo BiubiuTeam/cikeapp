@@ -144,6 +144,9 @@ public class ActivityChatview extends Activity {
 
     /////////////////////////////////////////////////////事件响应//////////////////////////////
     public void clickAvatarAtIndex(ChatListItemModel model,int index){
+        if (model == null || model.isLocalTmp){
+            return;
+        }
         //get the model, and show up the image
         detailImage.setVisibility(View.VISIBLE);
         detailImage.dataContent = model;
@@ -197,6 +200,10 @@ public class ActivityChatview extends Activity {
         listView.setSelection(index - 2);
     }
 
+    public void centeralListViewAtIndex(int index){
+        ChatListItemModel model = scrollAdapter.getItem(index+2);
+        this.clickAvatarAtIndex(model,index+2);
+    }
     ///////////////////////////////////////大事件响应/////////////////////////////////////
 
     /**

@@ -3,6 +3,7 @@ package com.yunkairichu.cike.main;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.widget.AbsListView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 /**
@@ -13,16 +14,35 @@ public class HalfCircleListView extends ListView implements AbsListView.OnScroll
     private static final int MAX_Y_OVERSCROLL_DISTANCE = 0;
     private int mMaxYOverscrollDistance;
 
+    private int adapterCount = 0;
+
+    private boolean userOperation = false;
+
+    private Context superContext;
+
     public HalfCircleListView(Context context) {
         super(context);
         setOnScrollListener(this);
         initBounceListView();
+        this.superContext = context;
     }
 
-
     @Override
-    public void onScrollStateChanged(AbsListView absListView, int i) {
-        //Ignored
+    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+
+        int first = absListView.getFirstVisiblePosition();
+        int count = absListView.getChildCount();
+        if(userOperation && (scrollState == SCROLL_STATE_IDLE || (first + count > adapterCount) )) {//冗余判断listview是否到了最末端
+            ToolLog.dbg("SCROLL_STATE_IDLE ");
+            //center list view when scroll state finish
+//            absListView.setSelection(first);
+            userOperation = false;
+            ActivityChatview chatview = (ActivityChatview)this.superContext;
+            chatview.centeralListViewAtIndex(first);
+        }
+        if(scrollState == SCROLL_STATE_TOUCH_SCROLL || scrollState == SCROLL_STATE_FLING){
+            userOperation = true;
+        }
     }
 
     @Override
@@ -38,6 +58,12 @@ public class HalfCircleListView extends ListView implements AbsListView.OnScroll
         final float density = metrics.density;
 
         mMaxYOverscrollDistance = (int) (density * MAX_Y_OVERSCROLL_DISTANCE);
+    }
+
+    @Override
+    public void setAdapter(ListAdapter adapter) {
+        super.setAdapter(adapter);
+        this.adapterCount = adapter.getCount();
     }
 
     @Override

@@ -37,8 +37,6 @@ public class ActivityBeforeSearch extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        LayoutInflater inflater = getLayoutInflater();
-        searching = inflater.inflate(R.layout.activity_search, null);
         setContentView(R.layout.activity_before_search);
 
         button = (Button) findViewById(R.id.bigbutton);
@@ -52,6 +50,10 @@ public class ActivityBeforeSearch extends Activity {
                     HXLogin();
                     Toast.makeText(ActivityBeforeSearch.this, "网络不太好，请稍后再点击", Toast.LENGTH_SHORT).show();
                 } else{
+
+                    LayoutInflater inflater = getLayoutInflater();
+                    searching = inflater.inflate(R.layout.activity_search, null);
+
                     Application.getInstance().setUserName(ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase());
                     setContentView(searching);
                     Http http = new Http();
