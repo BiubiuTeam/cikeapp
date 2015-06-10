@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -59,6 +60,8 @@ public class ActivityChatview extends Activity implements EMEventListener {
     public static final int REQUEST_CODE_CHAIN_TO_SCHAT = 102;
 
     private Button cancelButton = null;
+    private ImageView emptyView = null;
+
     RelativeLayout chatview = null;
     private InfoImageView detailImage = null;
     private Bitmap detailImageBitMap = null;
@@ -87,6 +90,15 @@ public class ActivityChatview extends Activity implements EMEventListener {
         topLeftLayout = (RelativeLayout)findViewById(R.id.chatview_info_holder);
 
         detailImage = (InfoImageView)findViewById(R.id.detailPicture);
+
+        emptyView = new ImageView(this);
+        emptyView.setVisibility(View.INVISIBLE);
+        emptyView.setImageResource(R.drawable.silly_list_empty);
+        emptyView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        RelativeLayout.LayoutParams emptyLayout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
+//        emptyLayout.addRule(RelativeLayout.CENTER_IN_PARENT);
+        emptyLayout.setMargins(20,0,20,0);
+        chatview.addView(emptyView, emptyLayout);
 
         //ui instance
         listView = new HalfCircleListView(this);
@@ -151,6 +163,9 @@ public class ActivityChatview extends Activity implements EMEventListener {
         //一直检测吧
         userChainPull(Constant.IDTYPE_GETOLD, 0, Application.getInstance().isFirstCheckUnread);
         //Application.getInstance().isFirstCheckUnread = 0;
+
+        boolean hasChain = (scrollAdapter.getCount() > 4);
+        ActivityChatview.this.setEmptyViewHidden(hasChain);
     }
 
     /**
@@ -181,6 +196,8 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     if(listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getTitleId() == iTitleId){
                         listOfModels.get(i).unReadCnt = 1;
                         scrollAdapter.notifyDataSetChanged();
+                        boolean hasChain = (scrollAdapter.getCount() > 4);
+                        ActivityChatview.this.setEmptyViewHidden(hasChain);
                         break;
                     }
                 }
@@ -259,6 +276,17 @@ public class ActivityChatview extends Activity implements EMEventListener {
     public void centeralListViewAtIndex(int index){
         ChatListItemModel model = scrollAdapter.getItem(index+2);
         this.clickAvatarAtIndex(model,index+2);
+    }
+
+    public void setEmptyViewHidden(boolean hidden){
+        if (hidden){
+            emptyView.setVisibility(View.INVISIBLE);
+            chatview.bringChildToFront(listView);
+            chatview.bringChildToFront(detailImage);
+        }else {
+            emptyView.setVisibility(View.VISIBLE);
+            chatview.bringChildToFront(emptyView);
+        }
     }
     ///////////////////////////////////////大事件响应/////////////////////////////////////
 
@@ -371,7 +399,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                         if (isCheckUnread == 1) {
                             try {
-                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                                if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
                                     checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
                                     EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
                                     unReadCnt = conversation.getUnreadMsgCount();
@@ -392,7 +420,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                         if (isCheckUnread == 1) {
                             try {
-                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
                                     checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
                                     EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
                                     unReadCnt = conversation.getUnreadMsgCount();
@@ -409,6 +437,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 }
                 ToolLog.dbg("UserChainNum:" + responseUserChainPull.getReturnData().getContData().size());
                 scrollAdapter.notifyDataSetChanged();
+
+                if(detailImage.getVisibility() != View.VISIBLE){
+                    ActivityChatview.this.centeralListViewAtIndex(0);
+                }
+                boolean hasChain = (scrollAdapter.getCount() > 4);
+                ActivityChatview.this.setEmptyViewHidden(hasChain);
             }
         });
     }

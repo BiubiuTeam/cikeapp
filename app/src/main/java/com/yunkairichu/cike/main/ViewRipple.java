@@ -110,7 +110,7 @@ public class ViewRipple extends View {
 //        mRippleHeight = mDevice.getDh();
         mBitmapWidth = mRippleBitmap.getWidth();
         mBitmapHeight = mRippleBitmap.getHeight();
-        startRipple();
+//        startRipple();
     }
 
     @Override
@@ -203,10 +203,13 @@ public class ViewRipple extends View {
         mRect = new RectF(widthPaddingLeft, heightPaddingTop, width
                 - widthPaddingRight, height * 2 - heightPaddingBottom);
     }
+
     public void startRipple() {
         isStartRipple = true;
         handler.sendEmptyMessage(0);
     }
 
-
+    public void stopRipple(){
+        isStartRipple = false;
+    }
 }

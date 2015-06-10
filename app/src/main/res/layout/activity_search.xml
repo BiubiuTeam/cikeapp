@@ -9,6 +9,7 @@
 
 
     <com.yunkairichu.cike.main.ViewRipple
+        android:id="@+id/search_view_ripple"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"

@@ -37,6 +37,10 @@ public class ActivityBeforeSearch extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        LayoutInflater inflater = getLayoutInflater();
+        searching = inflater.inflate(R.layout.activity_search, null);
+
         setContentView(R.layout.activity_before_search);
 
         button = (Button) findViewById(R.id.bigbutton);
@@ -51,8 +55,7 @@ public class ActivityBeforeSearch extends Activity {
                     Toast.makeText(ActivityBeforeSearch.this, "网络不太好，请稍后再点击", Toast.LENGTH_SHORT).show();
                 } else{
 
-                    LayoutInflater inflater = getLayoutInflater();
-                    searching = inflater.inflate(R.layout.activity_search, null);
+                    ((ViewRipple)searching.findViewById(R.id.search_view_ripple)).startRipple();
 
                     Application.getInstance().setUserName(ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase());
                     setContentView(searching);
@@ -73,10 +76,10 @@ public class ActivityBeforeSearch extends Activity {
 
                             setResponseSearchTitle(JacksonWrapper.json2Bean(response, ResponseSearchTitle.class));
 
-                            //�ӳ�������ת
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
+                                    ((ViewRipple)searching.findViewById(R.id.search_view_ripple)).stopRipple();
                                     Intent i = new Intent(ActivityBeforeSearch.this, ActivitySquare.class);
                                     Bundle bundle = new Bundle();
                                     bundle.putSerializable("resSearchTitle", getResponseSearchTitle());

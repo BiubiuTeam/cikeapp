@@ -232,6 +232,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 cancelTimer2();
                 startActivityForResult(i, REQUEST_CODE_USER_CHAIN);
                 overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+                ActivitySquare.this.updateChatChainButtonBeating(false);
             }
         });
 
@@ -378,6 +379,15 @@ public class ActivitySquare extends Activity implements EMEventListener {
         isOnCreated = 1;
     }
 
+    public void updateChatChainButtonBeating(boolean isBeating){
+        if (isBeating){
+            squareChainButton.setBackgroundResource(R.drawable.oval_button);
+            AnimationDrawable animationDrawable = (AnimationDrawable) squareChainButton.getBackground();
+            animationDrawable.start();
+        }else{
+            squareChainButton.setBackgroundResource(R.drawable.btn_chatlist_selector);
+        }
+    }
     /**
      * ***********************************事件响应׽***********************************************
      */
@@ -611,6 +621,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 //单聊消息
                 username = message.getFrom();
                 ToolLog.dbg("squreview");
+                ActivitySquare.this.updateChatChainButtonBeating(true);
                 HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
                 break;
             }
