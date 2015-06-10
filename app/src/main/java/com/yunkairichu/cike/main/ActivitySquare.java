@@ -19,6 +19,7 @@ import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -38,14 +39,23 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.easemob.EMEventListener;
+import com.easemob.EMNotifierEvent;
+import com.easemob.chat.EMChatManager;
+import com.easemob.chat.EMConversation;
+import com.easemob.chat.EMMessage;
+import com.jaf.jcore.DemoHXSDKHelper;
+import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.jaf.jcore.ToolGetLocationInfo;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
+import com.yunkairichu.cike.bean.BaseResponseUserChainInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
+import com.yunkairichu.cike.bean.ResponseUserChainPull;
 import com.yunkairichu.cike.utils.PopupUtil;
 
 import org.json.JSONObject;
@@ -67,7 +77,7 @@ import java.util.TimerTask;
  * Created by vida2009 on 2015/5/11.
  */
 //TEXT
-public class ActivitySquare extends Activity {
+public class ActivitySquare extends Activity implements EMEventListener {
     //本类常量
     public static final int REQUEST_CODE_CAMERA = 18;
     public static final int REQUEST_CODE_SINGLECHAT = 19;
@@ -95,6 +105,7 @@ public class ActivitySquare extends Activity {
     private AnimationDrawable animationDrawable;
 //    private MySwitchDialog dropDownDialog;
     private PopupWindow menuWindow;
+    private ResponseUserChainPull responseUserChainPull;
 
     //数据与逻辑变量
     private int height = 0;
@@ -236,6 +247,13 @@ public class ActivitySquare extends Activity {
                 changeImage();
             }
         });
+
+        //////////////////////////////////////////////////推送相关//////////////////////////////////////////////////////
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
+
+        checkUnread();
 
 ///////////////////////////////////////popupwindow相关 完//////////////////////////////////
 
@@ -540,7 +558,7 @@ public class ActivitySquare extends Activity {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        //checkUnread();
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
                 chooseStatusDialog.dismiss();
@@ -574,6 +592,30 @@ public class ActivitySquare extends Activity {
                 }
                 ToolLog.dbg("start3");
             }
+        }
+    }
+
+    /**
+     * 事件监听（第二种接收方式）
+     *
+     * see {@link EMNotifierEvent}
+     */
+    @Override
+    public void onEvent(EMNotifierEvent event) {
+        switch (event.getEvent()) {
+            case EventNewMessage:
+            {
+                //获取到message
+                EMMessage message = (EMMessage) event.getData();
+                String username = null;
+                //单聊消息
+                username = message.getFrom();
+                ToolLog.dbg("squreview");
+                HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -815,6 +857,65 @@ public class ActivitySquare extends Activity {
      * *************************************辅助函数*******************************************************
      */
 
+    ////////////////////////////////////////////////ACT生存周期类/////////////////////////////////
+    @Override
+    protected void onResume() {
+        Log.i("ChatActivity", "onResume");
+        super.onResume();
+
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+        sdkHelper.pushActivity(this);
+        // register the event listener when enter the foreground
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
+    }
+
+    @Override
+    protected void onStop(){
+        Log.i("ChatActivity", "onStop");
+
+        // unregister this event listener when this activity enters the background
+        EMChatManager.getInstance().unregisterEventListener(this);
+
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+
+        // 把此activity 从foreground activity 列表里移除
+        sdkHelper.popActivity(this);
+
+        super.onStop();
+    }
+
+    ///////////////////////////////////////检查是否有未读消息////////////////////////////////////
+    public void checkUnread(){
+        Http http = new Http();
+        JSONObject jo = JsonPack.buildUserChainPull(1, 0);
+        http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
+            @Override
+            public void onResponse(JSONObject response) {
+                super.onResponse(response);
+                if (response == null) {
+                    ToolLog.dbg("server error");
+                    return;
+                }
+
+                //入列表
+                setResponseUserChainPull(JacksonWrapper.json2Bean(response, ResponseUserChainPull.class));
+                int i;
+                for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
+                    BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
+                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
+                    int unReadCnt = conversation.getUnreadMsgCount();
+                    ToolLog.dbg("unread:"+String.valueOf(unReadCnt));
+                    if(unReadCnt > 0){
+                        Toast.makeText(ActivitySquare.this, "unread", Toast.LENGTH_SHORT);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
     ///////////////////////////////////////内存清理//////////////////////////////////////////
     public void clearTitleBitmap(){
         for(int i=0; i<50;i++) {
@@ -879,6 +980,14 @@ public class ActivitySquare extends Activity {
 
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle) {
         this.responseSearchTitle = responseSearchTitle;
+    }
+
+    public ResponseUserChainPull getResponseUserChainPull() {
+        return responseUserChainPull;
+    }
+
+    public void setResponseUserChainPull(ResponseUserChainPull responseUserChainPull) {
+        this.responseUserChainPull = responseUserChainPull;
     }
 
     /////////////////////////////////////////工具类///////////////////////////////////////////////

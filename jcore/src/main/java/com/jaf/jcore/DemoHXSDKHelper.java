@@ -1,14 +1,25 @@
 package com.jaf.jcore;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.easemob.EMEventListener;
+import com.easemob.EMNotifierEvent;
+import com.easemob.chat.CmdMessageBody;
 import com.easemob.chat.EMChatManager;
-//import com.yunkairichu.cike.utils.User;
+import com.easemob.chat.EMMessage;
+import com.easemob.util.EMLog;
+import com.easemob.util.EasyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+//import com.yunkairichu.cike.utils.User;
 
 /**
  * Created by vida2009 on 2015/5/19.
@@ -33,7 +44,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
     //private CallReceiver callReceiver;
 
     /**
-     * ÓÃÀ´¼ÇÂ¼foreground Activity
+     * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼foreground Activity
      */
     private List<Activity> activityList = new ArrayList<Activity>();
 
@@ -56,148 +67,143 @@ public class DemoHXSDKHelper extends HXSDKHelper{
 //
 //    }
 
-//    @Override
-//    protected void initListener(){
-//        super.initListener();
-//        IntentFilter callFilter = new IntentFilter(EMChatManager.getInstance().getIncomingCallBroadcastAction());
-//        if(callReceiver == null){
-//            callReceiver = new CallReceiver();
-//        }
-//
-//        //×¢²áÍ¨»°¹ã²¥½ÓÊÕÕß
-//        appContext.registerReceiver(callReceiver, callFilter);
-//        //×¢²áÏûÏ¢ÊÂ¼ş¼àÌı
-//        initEventListener();
-//    }
+    @Override
+    protected void initListener(){
+        super.initListener();
+        //æ³¨å†Œæ¶ˆæ¯äº‹ä»¶ç›‘å¬
+        //initEventListener();
+    }
 
     /**
-     * È«¾ÖÊÂ¼ş¼àÌı
-     * ÒòÎª¿ÉÄÜ»áÓĞUIÒ³ÃæÏÈ´¦Àíµ½Õâ¸öÏûÏ¢£¬ËùÒÔÒ»°ãÈç¹ûUIÒ³ÃæÒÑ¾­´¦Àí£¬ÕâÀï¾Í²»ĞèÒªÔÙ´Î´¦Àí
-     * activityList.size() <= 0 ÒâÎ¶×ÅËùÓĞÒ³Ãæ¶¼ÒÑ¾­ÔÚºóÌ¨ÔËĞĞ£¬»òÕßÒÑ¾­Àë¿ªActivity Stack
+     * å…¨å±€äº‹ä»¶ç›‘å¬
+     * å› ä¸ºå¯èƒ½ä¼šæœ‰UIé¡µé¢å…ˆå¤„ç†åˆ°è¿™ä¸ªæ¶ˆæ¯ï¼Œæ‰€ä»¥ä¸€èˆ¬å¦‚æœUIé¡µé¢å·²ç»å¤„ç†ï¼Œè¿™é‡Œå°±ä¸éœ€è¦å†æ¬¡å¤„ç†
+     * activityList.size() <= 0 æ„å‘³ç€æ‰€æœ‰é¡µé¢éƒ½å·²ç»åœ¨åå°è¿è¡Œï¼Œæˆ–è€…å·²ç»ç¦»å¼€Activity Stack
      */
-//    protected void initEventListener() {
-//        eventListener = new EMEventListener() {
-//
-//            @Override
-//            public void onEvent(EMNotifierEvent event) {
-//
-//                switch (event.getEvent()) {
-//                    case EventNewMessage:
-//                    {
-//                        EMMessage message = (EMMessage)event.getData();
-//                        EMLog.d(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
-//
-//                        //Ó¦ÓÃÔÚºóÌ¨£¬²»ĞèÒªË¢ĞÂUI,Í¨ÖªÀ¸ÌáÊ¾ĞÂÏûÏ¢
+    protected void initEventListener() {
+        eventListener = new EMEventListener() {
+
+            @Override
+            public void onEvent(EMNotifierEvent event) {
+
+                switch (event.getEvent()) {
+                    case EventNewMessage:
+                    {
+                        EMMessage message = (EMMessage)event.getData();
+                        Log.e(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
+
+                        //åº”ç”¨åœ¨åå°ï¼Œä¸éœ€è¦åˆ·æ–°UI,é€šçŸ¥æ æç¤ºæ–°æ¶ˆæ¯
 //                        if(activityList.size() <= 0){
 //                            HXSDKHelper.getInstance().getNotifier().onNewMsg(message);
 //                        }
-//
-//                        break;
-//                    }
-//                    // below is just giving a example to show a cmd toast, the app should not follow this
-//                    // so be careful of this
-//                    case EventNewCMDMessage:
-//                    {
-//                        EMMessage message = (EMMessage)event.getData();
-//                        EMLog.d(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
-//
-//                        EMLog.d(TAG, "ÊÕµ½Í¸´«ÏûÏ¢");
-//                        //»ñÈ¡ÏûÏ¢body
-//                        CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
-//                        final String action = cmdMsgBody.action;//»ñÈ¡×Ô¶¨Òåaction
-//
-//                        //»ñÈ¡À©Õ¹ÊôĞÔ ´Ë´¦Ê¡ÂÔ
-//                        //message.getStringAttribute("");
-//                        EMLog.d(TAG, String.format("Í¸´«ÏûÏ¢£ºaction:%s,message:%s", action,message.toString()));
-//                        final String str = appContext.getString(R.string.receive_the_passthrough);
-//
-//                        final String CMD_TOAST_BROADCAST = "easemob.demo.cmd.toast";
-//                        IntentFilter cmdFilter = new IntentFilter(CMD_TOAST_BROADCAST);
-//
-//                        //×¢²áÍ¨»°¹ã²¥½ÓÊÕÕß
-//                        appContext.registerReceiver(new BroadcastReceiver(){
-//
-//                            @Override
-//                            public void onReceive(Context context, Intent intent) {
-//                                // TODO Auto-generated method stub
-//                                Toast.makeText(appContext, intent.getStringExtra("cmd_value"), Toast.LENGTH_SHORT).show();
-//                            }
-//
-//                        }, cmdFilter);
-//
-//
-//                        Intent broadcastIntent = new Intent(CMD_TOAST_BROADCAST);
-//                        broadcastIntent.putExtra("cmd_value", str+action);
-//                        appContext.sendBroadcast(broadcastIntent, null);
-//
-//                        break;
-//                    }
-//                    // add other events in case you are interested in
-//                    default:
-//                        break;
-//                }
-//
-//            }
-//        };
-//
-//        EMChatManager.getInstance().registerEventListener(eventListener);
-//    }
+                        HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+
+                        break;
+                    }
+                    // below is just giving a example to show a cmd toast, the app should not follow this
+                    // so be careful of this
+                    case EventNewCMDMessage:
+                    {
+                        EMMessage message = (EMMessage)event.getData();
+                        EMLog.d(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
+
+                        EMLog.d(TAG, "æ”¶åˆ°é€ä¼ æ¶ˆæ¯");
+                        //è·å–æ¶ˆæ¯body
+                        CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
+                        final String action = cmdMsgBody.action;//è·å–è‡ªå®šä¹‰action
+
+                        //è·å–æ‰©å±•å±æ€§ æ­¤å¤„çœç•¥
+                        //message.getStringAttribute("");
+                        EMLog.d(TAG, String.format("é€ä¼ æ¶ˆæ¯ï¼šaction:%s,message:%s", action,message.toString()));
+                        final String str = "Receive the passthrough:action";
+
+                        final String CMD_TOAST_BROADCAST = "easemob.demo.cmd.toast";
+                        IntentFilter cmdFilter = new IntentFilter(CMD_TOAST_BROADCAST);
+
+                        //æ³¨å†Œé€šè¯å¹¿æ’­æ¥æ”¶è€…
+                        appContext.registerReceiver(new BroadcastReceiver(){
+
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                // TODO Auto-generated method stub
+                                Toast.makeText(appContext, intent.getStringExtra("cmd_value"), Toast.LENGTH_SHORT).show();
+                            }
+
+                        }, cmdFilter);
+
+
+                        Intent broadcastIntent = new Intent(CMD_TOAST_BROADCAST);
+                        broadcastIntent.putExtra("cmd_value", str+action);
+                        appContext.sendBroadcast(broadcastIntent, null);
+
+                        break;
+                    }
+                    // add other events in case you are interested in
+                    default:
+                        break;
+                }
+
+            }
+        };
+
+        EMChatManager.getInstance().registerEventListener(eventListener);
+    }
 
     /**
-     * ×Ô¶¨ÒåÍ¨ÖªÀ¸ÌáÊ¾ÄÚÈİ
+     * è‡ªå®šä¹‰é€šçŸ¥æ æç¤ºå†…å®¹
      * @return
      */
-//    @Override
-//    protected HXNotificationInfoProvider getNotificationListener() {
-//        //¿ÉÒÔ¸²¸ÇÄ¬ÈÏµÄÉèÖÃ
-//        return new HXNotificationInfoProvider() {
-//
-//            @Override
-//            public String getTitle(EMMessage message) {
-//                //ĞŞ¸Ä±êÌâ,ÕâÀïÊ¹ÓÃÄ¬ÈÏ
-//                return null;
-//            }
-//
-//            @Override
-//            public int getSmallIcon(EMMessage message) {
-//                //ÉèÖÃĞ¡Í¼±ê£¬ÕâÀïÎªÄ¬ÈÏ
-//                return 0;
-//            }
-//
-//            @Override
-//            public String getDisplayedText(EMMessage message) {
-//                // ÉèÖÃ×´Ì¬À¸µÄÏûÏ¢ÌáÊ¾£¬¿ÉÒÔ¸ù¾İmessageµÄÀàĞÍ×öÏàÓ¦ÌáÊ¾
+    @Override
+    protected HXNotifier.HXNotificationInfoProvider getNotificationListener() {
+        //ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½Ä¬ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½
+        return new HXNotifier.HXNotificationInfoProvider() {
+
+            @Override
+            public String getTitle(EMMessage message) {
+                //ä¿®æ”¹æ ‡é¢˜,è¿™é‡Œä½¿ç”¨é»˜è®¤
+                return null;
+            }
+
+            @Override
+            public int getSmallIcon(EMMessage message) {
+                //è®¾ç½®å°å›¾æ ‡ï¼Œè¿™é‡Œä¸ºé»˜è®¤
+                return 0;
+            }
+
+            @Override
+            public String getDisplayedText(EMMessage message) {
+//                // ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½messageï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ê¾
 //                String ticker = CommonUtils.getMessageDigest(message, appContext);
 //                if(message.getType() == EMMessage.Type.TXT){
-//                    ticker = ticker.replaceAll("\\[.{2,3}\\]", "[±íÇé]");
+//                    ticker = ticker.replaceAll("\\[.{2,3}\\]", "[ï¿½ï¿½ï¿½ï¿½]");
 //                }
 //
 //                return message.getFrom() + ": " + ticker;
-//            }
-//
-//            @Override
-//            public String getLatestText(EMMessage message, int fromUsersNum, int messageNum) {
-//                return null;
-//                // return fromUsersNum + "¸ö»ùÓÑ£¬·¢À´ÁË" + messageNum + "ÌõÏûÏ¢";
-//            }
-//
-//            @Override
-//            public Intent getLaunchIntent(EMMessage message) {
-//                //ÉèÖÃµã»÷Í¨ÖªÀ¸Ìø×ªÊÂ¼ş
-//                Intent intent = new Intent(appContext, ChatActivity.class);
+                return message.getFrom() + ": ";
+            }
+
+            @Override
+            public String getLatestText(EMMessage message, int fromUsersNum, int messageNum) {
+                return null;
+                // return fromUsersNum + "ï¿½ï¿½ï¿½ï¿½ï¿½Ñ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" + messageNum + "ï¿½ï¿½ï¿½ï¿½Ï¢";
+            }
+
+            @Override
+            public Intent getLaunchIntent(EMMessage message) {
+//                //ï¿½ï¿½ï¿½Ãµï¿½ï¿½Í¨Öªï¿½ï¿½ï¿½ï¿½×ªï¿½Â¼ï¿½
+                Intent intent = new Intent(appContext, Activity.class);
 //                EMMessage.ChatType chatType = message.getChatType();
-//                if (chatType == EMMessage.ChatType.Chat) { // µ¥ÁÄĞÅÏ¢
+//                if (chatType == EMMessage.ChatType.Chat) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //                    intent.putExtra("userId", message.getFrom());
 //                    intent.putExtra("chatType", ChatActivity.CHATTYPE_SINGLE);
-//                } else { // ÈºÁÄĞÅÏ¢
-//                    // message.getTo()ÎªÈºÁÄid
+//                } else { // Èºï¿½ï¿½ï¿½ï¿½Ï¢
+//                    // message.getTo()ÎªÈºï¿½ï¿½id
 //                    intent.putExtra("groupId", message.getTo());
 //                    intent.putExtra("chatType", ChatActivity.CHATTYPE_GROUP);
 //                }
-//                return intent;
-//            }
-//        };
-//    }
+                return intent;
+            }
+        };
+    }
 
 
 
@@ -224,16 +230,17 @@ public class DemoHXSDKHelper extends HXSDKHelper{
     }
 
     @Override
-//    public HXNotifier createNotifier(){
-//        return new HXNotifier(){
-//            public synchronized void onNewMsg(final EMMessage message) {
-//                if(EMChatManager.getInstance().isSlientMessage(message)){
-//                    return;
-//                }
-//
-//                String chatUsename = null;
-//                List<String> notNotifyIds = null;
-//                // »ñÈ¡ÉèÖÃµÄ²»ÌáÊ¾ĞÂÏûÏ¢µÄÓÃ»§»òÕßÈº×éids
+    public HXNotifier createNotifier(){
+        return new HXNotifier(){
+            public synchronized void onNewMsg(final EMMessage message) {
+                Log.e(TAG, "hasmsg");
+                if(EMChatManager.getInstance().isSlientMessage(message)){
+                    return;
+                }
+                Log.e(TAG, "hasmsg");
+                String chatUsename = null;
+                List<String> notNotifyIds = null;
+//                // è·å–è®¾ç½®çš„ä¸æç¤ºæ–°æ¶ˆæ¯çš„ç”¨æˆ·æˆ–è€…ç¾¤ç»„ids
 //                if (message.getChatType() == EMMessage.ChatType.Chat) {
 //                    chatUsename = message.getFrom();
 //                    notNotifyIds = ((DemoHXSDKModel) hxModel).getDisabledGroups();
@@ -241,22 +248,23 @@ public class DemoHXSDKHelper extends HXSDKHelper{
 //                    chatUsename = message.getTo();
 //                    notNotifyIds = ((DemoHXSDKModel) hxModel).getDisabledIds();
 //                }
-//
-//                if (notNotifyIds == null || !notNotifyIds.contains(chatUsename)) {
-//                    // ÅĞ¶ÏappÊÇ·ñÔÚºóÌ¨
-//                    if (!EasyUtils.isAppRunningForeground(appContext)) {
-//                        EMLog.d(TAG, "app is running in backgroud");
-//                        sendNotification(message, false);
-//                    } else {
-//                        sendNotification(message, true);
-//
-//                    }
-//
-//                    viberateAndPlayTone(message);
-//                }
-//            }
-//        };
-//    }
+
+                if (notNotifyIds == null || !notNotifyIds.contains(chatUsename)) {
+                    // åˆ¤æ–­appæ˜¯å¦åœ¨åå°
+                    if (!EasyUtils.isAppRunningForeground(appContext)) {
+                        Log.e(TAG, "app is running in backgroud");
+                        sendNotification(message, false);
+                    } else {
+                        Log.e(TAG, "app is running in foreroud");
+                        sendNotification(message, true);
+
+                    }
+
+                    viberateAndPlayTone(message);
+                }
+            }
+        };
+    }
 
     /**
      * get demo HX SDK Model
@@ -281,7 +289,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
     }
 
     /**
-     * »ñÈ¡ÄÚ´æÖĞºÃÓÑuser list
+     * ï¿½ï¿½È¡ï¿½Ú´ï¿½ï¿½Ğºï¿½ï¿½ï¿½user list
      *
      * @return
      */
@@ -294,7 +302,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
 //    }
 
     /**
-     * ÉèÖÃºÃÓÑuser listµ½ÄÚ´æÖĞ
+     * ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½user listï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½
      *
      * @param contactList
      */

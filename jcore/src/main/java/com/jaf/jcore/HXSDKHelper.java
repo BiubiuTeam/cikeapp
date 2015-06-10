@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.easemob.EMConnectionListener;
+import com.easemob.EMError;
 import com.easemob.chat.EMChat;
 import com.easemob.chat.EMChatConfig;
 import com.easemob.chat.EMChatManager;
@@ -20,22 +22,27 @@ public abstract class HXSDKHelper {
     private static final String TAG = "HXSDKHelper";
 
     /**
+     * MyConnectionListener
+     */
+    protected EMConnectionListener connectionListener = null;
+
+    /**
      * the notifier
      */
-//    protected HXNotifier notifier = null;
+    protected HXNotifier notifier = null;
 
     /**
      * subclass can override this api to return the customer notifier
      *
      * @return
      */
-//    protected HXNotifier createNotifier(){
-//        return new HXNotifier();
-//    }
-//
-//    public HXNotifier getNotifier(){
-//        return notifier;
-//    }
+    protected HXNotifier createNotifier(){
+        return new HXNotifier();
+    }
+
+    public HXNotifier getNotifier(){
+        return notifier;
+    }
 
     /**
      * application context
@@ -76,11 +83,11 @@ public abstract class HXSDKHelper {
      *
      * @return boolean true if caller can continue to call HuanXin related APIs after calling onInit, otherwise false.
      *
-     * »·ĞÅ³õÊ¼»¯SDK°ïÖúº¯Êı
-     * ·µ»ØtrueÈç¹ûÕıÈ·³õÊ¼»¯£¬·ñÔòfalse£¬Èç¹û·µ»ØÎªfalse£¬ÇëÔÚºóĞøµÄµ÷ÓÃÖĞ²»Òªµ÷ÓÃÈÎºÎºÍ»·ĞÅÏà¹ØµÄ´úÂë
+     * ï¿½ï¿½ï¿½Å³ï¿½Ê¼ï¿½ï¿½SDKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * ï¿½ï¿½ï¿½ï¿½trueï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½falseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªfalseï¿½ï¿½ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½Ğ²ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ÎºÎºÍ»ï¿½ï¿½ï¿½ï¿½ï¿½ØµÄ´ï¿½ï¿½ï¿½
      *
      * for example:
-     * Àı×Ó£º
+     * ï¿½ï¿½ï¿½Ó£ï¿½
      *
      * public class DemoHXSDKHelper extends HXSDKHelper
      *
@@ -109,21 +116,21 @@ public abstract class HXSDKHelper {
 
         Log.d(TAG, "process app name : " + processAppName);
 
-        // Èç¹ûappÆôÓÃÁËÔ¶³ÌµÄservice£¬´Ëapplication:onCreate»á±»µ÷ÓÃ2´Î
-        // ÎªÁË·ÀÖ¹»·ĞÅSDK±»³õÊ¼»¯2´Î£¬¼Ó´ËÅĞ¶Ï»á±£Ö¤SDK±»³õÊ¼»¯1´Î
-        // Ä¬ÈÏµÄapp»áÔÚÒÔ°üÃûÎªÄ¬ÈÏµÄprocess nameÏÂÔËĞĞ£¬Èç¹û²éµ½µÄprocess name²»ÊÇappµÄprocess name¾ÍÁ¢¼´·µ»Ø
+        // ï¿½ï¿½ï¿½appï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½Ìµï¿½serviceï¿½ï¿½ï¿½ï¿½application:onCreateï¿½á±»ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½
+        // Îªï¿½Ë·ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½SDKï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½2ï¿½Î£ï¿½ï¿½Ó´ï¿½ï¿½Ğ¶Ï»á±£Ö¤SDKï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½1ï¿½ï¿½
+        // Ä¬ï¿½Ïµï¿½appï¿½ï¿½ï¿½ï¿½ï¿½Ô°ï¿½ï¿½ï¿½ÎªÄ¬ï¿½Ïµï¿½process nameï¿½ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½ï¿½ï¿½ï¿½éµ½ï¿½ï¿½process nameï¿½ï¿½ï¿½ï¿½appï¿½ï¿½process nameï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (processAppName == null || !processAppName.equalsIgnoreCase(hxModel.getAppProcessName())) {
             Log.e(TAG, "enter the service process!");
 
-            // Ôò´Ëapplication::onCreate ÊÇ±»service µ÷ÓÃµÄ£¬Ö±½Ó·µ»Ø
+            // ï¿½ï¿½ï¿½application::onCreate ï¿½Ç±ï¿½service ï¿½ï¿½ï¿½ÃµÄ£ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½
             return false;
         }
 
-        // ³õÊ¼»¯»·ĞÅSDK,Ò»¶¨ÒªÏÈµ÷ÓÃinit()
+        // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SDK,Ò»ï¿½ï¿½Òªï¿½Èµï¿½ï¿½ï¿½init()
         EMChat.getInstance().init(context);
 
-        // ÉèÖÃsandbox²âÊÔ»·¾³
-        // ½¨Òé¿ª·¢Õß¿ª·¢Ê±ÉèÖÃ´ËÄ£Ê½
+        // ï¿½ï¿½ï¿½ï¿½sandboxï¿½ï¿½ï¿½Ô»ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½é¿ªï¿½ï¿½ï¿½ß¿ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ã´ï¿½Ä£Ê½
         if(hxModel.isSandboxMode()){
             EMChat.getInstance().setEnv(EMChatConfig.EMEnvMode.EMSandboxMode);
         }
@@ -136,7 +143,7 @@ public abstract class HXSDKHelper {
         Log.d(TAG, "initialize EMChat SDK");
 
         initHXOptions();
-        //initListener();
+        initListener();
         sdkInited = true;
         return true;
     }
@@ -177,26 +184,121 @@ public abstract class HXSDKHelper {
     protected void initHXOptions(){
         Log.d(TAG, "init HuanXin Options");
 
-        // »ñÈ¡µ½EMChatOptions¶ÔÏó
+        // ï¿½ï¿½È¡ï¿½ï¿½EMChatOptionsï¿½ï¿½ï¿½ï¿½
         EMChatOptions options = EMChatManager.getInstance().getChatOptions();
-        // Ä¬ÈÏÌí¼ÓºÃÓÑÊ±£¬ÊÇ²»ĞèÒªÑéÖ¤µÄ£¬¸Ä³ÉĞèÒªÑéÖ¤
+        // Ä¬ï¿½ï¿½ï¿½ï¿½Óºï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ç²ï¿½ï¿½ï¿½Òªï¿½ï¿½Ö¤ï¿½Ä£ï¿½ï¿½Ä³ï¿½ï¿½ï¿½Òªï¿½ï¿½Ö¤
         options.setAcceptInvitationAlways(hxModel.getAcceptInvitationAlways());
-        // Ä¬ÈÏ»·ĞÅÊÇ²»Î¬»¤ºÃÓÑ¹ØÏµÁĞ±íµÄ£¬Èç¹ûappÒÀÀµ»·ĞÅµÄºÃÓÑ¹ØÏµ£¬°ÑÕâ¸öÊôĞÔÉèÖÃÎªtrue
+        // Ä¬ï¿½Ï»ï¿½ï¿½ï¿½ï¿½Ç²ï¿½Î¬ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½Ïµï¿½Ğ±ï¿½Ä£ï¿½ï¿½ï¿½ï¿½appï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÅµÄºï¿½ï¿½Ñ¹ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªtrue
         options.setUseRoster(hxModel.getUseHXRoster());
-        // ÉèÖÃÊÇ·ñĞèÒªÒÑ¶Á»ØÖ´
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½Ñ¶ï¿½ï¿½ï¿½Ö´
         options.setRequireAck(hxModel.getRequireReadAck());
-        // ÉèÖÃÊÇ·ñĞèÒªÒÑËÍ´ï»ØÖ´
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Í´ï¿½ï¿½Ö´
         options.setRequireDeliveryAck(hxModel.getRequireDeliveryAck());
-        // ÉèÖÃ´Ódb³õÊ¼»¯¼ÓÔØÊ±, Ã¿¸öconversationĞèÒª¼ÓÔØmsgµÄ¸öÊı
+        // ï¿½ï¿½ï¿½Ã´ï¿½dbï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±, Ã¿ï¿½ï¿½conversationï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½msgï¿½Ä¸ï¿½ï¿½ï¿½
         options.setNumberOfMessagesLoaded(1);
 
-//        notifier = createNotifier();
-//        notifier.init(appContext);
+        options.setNotifyBySoundAndVibrate(true); //é»˜è®¤ä¸ºtrue å¼€å¯æ–°æ¶ˆæ¯æé†’
+        options.setNoticeBySound(true); //é»˜è®¤ä¸ºtrue å¼€å¯å£°éŸ³æé†’
+        options.setNoticedByVibrate(true); //é»˜è®¤ä¸ºtrue å¼€å¯éœ‡åŠ¨æé†’
+        options.setUseSpeaker(true); //é»˜è®¤ä¸ºtrue å¼€å¯æ‰¬å£°å™¨æ’­æ”¾
+        options.setShowNotificationInBackgroud(true); //é»˜è®¤ä¸ºtrue
+        options.setAcceptInvitationAlways(true); //é»˜è®¤æ·»åŠ å¥½å‹æ—¶ä¸ºtrueï¼Œæ˜¯ä¸éœ€è¦éªŒè¯çš„ï¼Œæ”¹æˆéœ€è¦éªŒè¯ä¸ºfalse)
+        //è®¾ç½®è‡ªå®šä¹‰çš„æ–‡å­—æç¤º
+//        options.setNotifyText(new OnMessageNotifyListener() {
 //
-//        notifier.setNotificationInfoProvider(getNotificationListener());
+//            @Override
+//            public String onNewMessageNotify(EMMessage message) {
+//                //å¯ä»¥æ ¹æ®messageçš„ç±»å‹æç¤ºä¸åŒæ–‡å­—ï¼Œè¿™é‡Œä¸ºä¸€ä¸ªç®€å•çš„ç¤ºä¾‹
+//                return "ä½ çš„å¥½åŸºå‹" + message.getFrom() + "å‘æ¥äº†ä¸€æ¡æ¶ˆæ¯å“¦";
+//            }
+//
+//            @Override
+//            public String onLatestMessageNotify(EMMessage message, int fromUsersNum, int messageNum) {
+//                return fromUsersNum + "ä¸ªåŸºå‹ï¼Œå‘æ¥äº†" + messageNum + "æ¡æ¶ˆæ¯";
+//            }
+//
+//            @Override
+//            public String onSetNotificationTitle(EMMessage emMessage) {
+//                return null;
+//            }
+//
+//            @Override
+//            public int onSetSmallIcon(EMMessage emMessage) {
+//                return 0;
+//            }
+//        });
+
+        notifier = createNotifier();
+        notifier.init(appContext);
+
+        notifier.setNotificationInfoProvider(getNotificationListener());
     }
 
     public static HXSDKHelper getInstance(){
         return me;
     }
+
+    /**
+     * æ£€æŸ¥æ˜¯å¦å·²ç»ç™»å½•è¿‡
+     * @return
+     */
+    public boolean isLogined(){
+        return EMChat.getInstance().isLoggedIn();
+    }
+
+    protected HXNotifier.HXNotificationInfoProvider getNotificationListener(){
+        return null;
+    }
+
+    /**
+     * init HuanXin listeners
+     */
+    protected void initListener(){
+        Log.d(TAG, "init listener");
+
+        // create the global connection listener
+        connectionListener = new EMConnectionListener() {
+            @Override
+            public void onDisconnected(int error) {
+                if (error == EMError.USER_REMOVED) {
+                    onCurrentAccountRemoved();
+                }else if (error == EMError.CONNECTION_CONFLICT) {
+                    onConnectionConflict();
+                }else{
+                    onConnectionDisconnected(error);
+                }
+            }
+
+            @Override
+            public void onConnected() {
+                onConnectionConnected();
+            }
+        };
+
+        //æ³¨å†Œè¿æ¥ç›‘å¬
+        EMChatManager.getInstance().addConnectionListener(connectionListener);
+    }
+
+    /**
+     * the developer can override this function to handle connection conflict error
+     */
+    protected void onConnectionConflict(){}
+
+
+    /**
+     * the developer can override this function to handle user is removed error
+     */
+    protected void onCurrentAccountRemoved(){}
+
+
+    /**
+     * handle the connection connected
+     */
+    protected void onConnectionConnected(){}
+
+    /**
+     * handle the connection disconnect
+     * @param error see {@link EMError}
+     */
+    protected void onConnectionDisconnected(int error){}
 }

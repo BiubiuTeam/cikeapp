@@ -1,7 +1,7 @@
 package com.jaf.jcore;
 
 import android.content.Context;
-import android.util.Log;
+import android.content.Intent;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
@@ -11,6 +11,11 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.easemob.chat.EMChat;
+import com.easemob.chat.EMChatManager;
+import com.easemob.chat.EMChatOptions;
+import com.easemob.chat.EMMessage;
+import com.easemob.chat.OnMessageNotifyListener;
+import com.easemob.chat.OnNotificationClickListener;
 
 /**
  * Created by vida2009 on 2015/5/19.
@@ -25,6 +30,8 @@ public class Application extends android.app.Application {
     private static Context context;
     public static LocationClient MLOCATIONCLIENT;
     public MyLocationListener mMyLocationListener;
+
+    public int isFirstCheckUnread = 1;
 
     @Override
     public void onCreate() {
@@ -66,6 +73,37 @@ public class Application extends android.app.Application {
 
         hxSDKHelper.onInit(applicationContext);
 
+        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
+//        chatOptions.setNotifyBySoundAndVibrate(true); //默认为true 开启新消息提醒
+//        chatOptions.setNoticeBySound(true); //默认为true 开启声音提醒
+//        chatOptions.setNoticedByVibrate(true); //默认为true 开启震动提醒
+//        chatOptions.setUseSpeaker(true); //默认为true 开启扬声器播放
+//        chatOptions.setShowNotificationInBackgroud(true); //默认为true
+//        chatOptions.setAcceptInvitationAlways(true); //默认添加好友时为true，是不需要验证的，改成需要验证为false)
+//        //设置自定义的文字提示
+//        chatOptions.setNotifyText(new OnMessageNotifyListener() {
+//
+//            @Override
+//            public String onNewMessageNotify(EMMessage message) {
+//                //可以根据message的类型提示不同文字，这里为一个简单的示例
+//                return "你的好基友" + message.getFrom() + "发来了一条消息哦";
+//            }
+//
+//            @Override
+//            public String onLatestMessageNotify(EMMessage message, int fromUsersNum, int messageNum) {
+//                return fromUsersNum + "个基友，发来了" + messageNum + "条消息";
+//            }
+//
+//            @Override
+//            public String onSetNotificationTitle(EMMessage emMessage) {
+//                return null;
+//            }
+//
+//            @Override
+//            public int onSetSmallIcon(EMMessage emMessage) {
+//                return 0;
+//            }
+//        });
 
         //百度地图相关
         MLOCATIONCLIENT = new LocationClient(this.getApplicationContext());

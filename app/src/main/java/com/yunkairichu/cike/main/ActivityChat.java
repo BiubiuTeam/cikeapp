@@ -6,14 +6,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -30,13 +28,9 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
@@ -51,6 +45,8 @@ import android.widget.Toast;
 
 import com.easemob.EMCallBack;
 import com.easemob.EMError;
+import com.easemob.EMEventListener;
+import com.easemob.EMNotifierEvent;
 import com.easemob.chat.CmdMessageBody;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
@@ -62,6 +58,8 @@ import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.PathUtil;
 import com.easemob.util.VoiceRecorder;
 import com.jaf.jcore.Application;
+import com.jaf.jcore.DemoHXSDKHelper;
+import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
@@ -88,7 +86,7 @@ import java.util.List;
 /**
  * Created by liuxiaobo on 15/5/12.
  */
-public class ActivityChat extends Activity {
+public class ActivityChat extends Activity implements EMEventListener {
     //本类常量
     private static final int REQUEST_CODE_EMPTY_HISTORY = 2;
     public static final int REQUEST_CODE_CONTEXT_MENU = 3;
@@ -182,6 +180,7 @@ public class ActivityChat extends Activity {
     protected FaceRelativeLayout faceLayout=null;    //底下拉出的黑框
     private RelativeLayout edittext_layout;
 //    private Dialog mDialog = null;
+    private Dialog mDialog;
     private Bitmap bigBitmap;                //进来时的大图
     //private LinearLayout btnContainer;
     //private ViewPager expressionViewpager;
@@ -419,7 +418,7 @@ public class ActivityChat extends Activity {
 
             @Override
             public void onClick(View v) {
-                ToolLog.dbg("myId2:"+ToolDevice.getId(Application.getInstance().getApplicationContext())+" baseID2:"+baseResponseTitleInfo.getDvcId());
+                ToolLog.dbg("myId2:" + ToolDevice.getId(Application.getInstance().getApplicationContext()) + " baseID2:" + baseResponseTitleInfo.getDvcId());
                 if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
                     forceQuit(0);
                 } else {
@@ -452,6 +451,11 @@ public class ActivityChat extends Activity {
                 }
             }
         });
+
+        /////////////////////////////////////////////////////推送相关////////////////////////////////////////////////
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
 
         setUpView();
 
@@ -586,83 +590,34 @@ public class ActivityChat extends Activity {
 //        }
     }
 
-    //初始化弹出窗口
-//    public void initmPopupWindowView() {
-//
-//        // // 获取自定义布局文件pop.xml的视图
-//        View customView = getLayoutInflater().inflate(R.layout.menu_take_picture,
-//                null, false);
-//        // 创建PopupWindow实例,200,150分别是宽度和高度
-//        popupWindow = new PopupWindow(customView,600,350);
-//        // 设置动画效果 [R.style.AnimationFade 是自己事先定义好的]
-//        //popupWindow.setAnimationStyle(R.style.anim_take_pic);
-//        // 自定义view添加触摸事件
-//        customView.setOnTouchListener(new View.OnTouchListener() {
-//
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (popupWindow != null && popupWindow.isShowing()) {
-//                    popupWindow.dismiss();
-//                    popupWindow = null;
-//                }
-//
-//                return false;
-//            }
-//        });
-//
-//        /** 在这里可以实现自定义视图的功能 */
-//        btnPicMenuTakePic = (Button) customView.findViewById(R.id.btn_picmenu_takepic);
-//        btnPicMenuFromloc = (Button) customView.findViewById(R.id.btn_picmenu_fromloc);
-//        btnPicMenuCancel = (Button) customView.findViewById(R.id.btn_picmenu_cancel);
-//
-//        btnPicMenuTakePic.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                if (!CommonUtils.isExitsSdcard()) {
-//                    String st = getResources().getString(R.string.sd_card_does_not_exist);
-//                    Toast.makeText(getApplicationContext(), st, Toast.LENGTH_SHORT).show();
-//                    return;
-//                }
-//
-//                cameraFile = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
-//                        + System.currentTimeMillis() + ".jpg");
-//                cameraFile.getParentFile().mkdirs();
-//                startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraFile)),
-//                        REQUEST_CODE_CAMERA);
-//            }
-//        });
-//
-//        btnPicMenuFromloc.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent;
-//                if (Build.VERSION.SDK_INT < 19) {
-//                    intent = new Intent(Intent.ACTION_GET_CONTENT);
-//                    intent.setType("image/*");
-//
-//                } else {
-//                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//                }
-//                startActivityForResult(intent, REQUEST_CODE_LOCAL);
-//            }
-//        });
-//
-//        btnPicMenuCancel.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                if (popupWindow != null&& popupWindow.isShowing()) {
-//                    popupWindow.dismiss();
-//                    return;
-//                }
-//            }
-//        });
-//    }
+    @Override
+    protected void onResume() {
+        Log.i("ChatActivity", "onResume");
+        super.onResume();
+        adapter.refresh();
 
-    private Dialog mDialog;
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+        sdkHelper.pushActivity(this);
+        // register the event listener when enter the foreground
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
+    }
 
+    @Override
+    protected void onStop(){
+        Log.i("ChatActivity", "onStop");
+
+        // unregister this event listener when this activity enters the background
+        EMChatManager.getInstance().unregisterEventListener(this);
+
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+
+        // 把此activity 从foreground activity 列表里移除
+        sdkHelper.popActivity(this);
+
+        super.onStop();
+    }
 
     private void popupReport() {
         View v = getLayoutInflater().inflate(R.layout.popup_report,
@@ -1070,7 +1025,7 @@ public class ActivityChat extends Activity {
 /////////////////////////////////////接收侦听相关///////////////////////////////////////////
 
     /**
-     * 消息广播接收者
+     * 消息广播接收者（第一种接收方式）
      *
      */
     private class NewMessageBroadcastReceiver extends BroadcastReceiver {
@@ -1134,6 +1089,50 @@ public class ActivityChat extends Activity {
             Intent intent = new Intent();
             sendBroadcast(intent);// 该函数用于发送广播
             finish();
+        }
+    }
+
+    /**
+     * 事件监听（第二种接收方式）
+     *
+     * see {@link EMNotifierEvent}
+     */
+    @Override
+    public void onEvent(EMNotifierEvent event) {
+        switch (event.getEvent()) {
+            case EventNewMessage:
+            {
+                //获取到message
+                EMMessage message = (EMMessage) event.getData();
+                String username = null;
+                //单聊消息
+                username = message.getFrom();
+
+                int iTitleId = 0;
+                ToolLog.dbg(message.getBody().toString());
+                try {
+                    iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+                } catch (EaseMobException e) {
+                    e.printStackTrace();
+                }
+                ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
+                //如果是当前会话的消息，刷新聊天页面
+                if(username.equals(toChatUsername) && iTitleId == baseResponseTitleInfo.getSortId()){
+                    ToolLog.dbg("equal");
+                    refreshUIWithNewMessage();
+                    //声音和震动提示有新消息
+                    //HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+                }else{
+                    //如果消息不是和当前聊天ID的消息
+                    //HXSDKHelper.getInstance().getNotifier().onNewMsg(message);
+                    ToolLog.dbg("not equal");
+                    HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+                }
+
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -1519,8 +1518,25 @@ public class ActivityChat extends Activity {
         finish();
         overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
     }
-    
-/************************************emoji keyboard******************************/
+
+    private void refreshUI(){
+        runOnUiThread(new Runnable() {
+            public void run() {
+                adapter.refresh();
+            }
+        });
+    }
+
+    private void refreshUIWithNewMessage(){
+        runOnUiThread(new Runnable() {
+            public void run() {
+                adapter.refreshSelectLast();
+            }
+        });
+    }
+    ////////////////////////////////////表情相关函数/////////////////////////////////////////
+
+    /************************************emoji keyboard******************************/
     private void setFaceLayoutExpandState(boolean isexpand) {
         if (isexpand == false) {
             faceLayout.hideFaceView();
@@ -1613,7 +1629,7 @@ public class ActivityChat extends Activity {
         Matrix m = new Matrix();
         m.postScale(-1, 1);   //镜像水平翻转
         Bitmap new2 = Bitmap.createBitmap(a, 0, 0, w, h, m, true);
-        cv.drawBitmap(new2, new Rect(0, 0, new2.getWidth(), new2.getHeight()),new Rect(0, 0, w, h), null);
+        cv.drawBitmap(new2, new Rect(0, 0, new2.getWidth(), new2.getHeight()), new Rect(0, 0, w, h), null);
         return newb;
     }
 }

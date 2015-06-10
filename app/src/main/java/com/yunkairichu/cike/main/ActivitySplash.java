@@ -49,6 +49,22 @@ public class ActivitySplash extends BindableActivity {
     private void start() {
         mHandler.removeCallbacks(mDelayStart);
 
+//        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
+//        //设置notification点击listener
+//        chatOptions.setOnNotificationClickListener(new OnNotificationClickListener() {
+//
+//            @Override
+//            public Intent onNotificationClick(EMMessage message) {
+//                Intent intent = new Intent(Application.getInstance(), ActivityChat.class);
+//                EMMessage.ChatType chatType = message.getChatType();
+//                if (chatType == EMMessage.ChatType.Chat) { //单聊信息
+//                    intent.putExtra("titleInfo", null);
+//                    intent.putExtra("resSearchTitle",null);
+//                }
+//                return intent;
+//            }
+//        });
+
         checkRegist();
 //        overridePendingTransition(android.R.anim.fade_in,0);
     }

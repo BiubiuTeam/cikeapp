@@ -9,8 +9,9 @@ public class ChatListItemModel {
     public boolean isFemale;
     public boolean isLocalTmp;
     public BaseResponseUserChainInfo baseResponseUserChainInfo;
+    public int unReadCnt;
 
-    public ChatListItemModel(boolean isLocalTmp, BaseResponseUserChainInfo baseResponseUserChainInfo){
+    public ChatListItemModel(boolean isLocalTmp, BaseResponseUserChainInfo baseResponseUserChainInfo, int unReadCnt){
         if(baseResponseUserChainInfo!=null){
             int userConfig = baseResponseUserChainInfo.getTitleInfo().getUserConfig();
             int sex = (userConfig & 1)>>0;
@@ -20,5 +21,6 @@ public class ChatListItemModel {
         }
         this.isLocalTmp = isLocalTmp;
         this.baseResponseUserChainInfo = baseResponseUserChainInfo;
+        this.unReadCnt = unReadCnt;
     }
 }

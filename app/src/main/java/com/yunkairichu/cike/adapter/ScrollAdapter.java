@@ -61,6 +61,7 @@ public class ScrollAdapter extends BaseAdapter {
                     if (model.isLocalTmp){
                         return;
                     }
+                    ((ChatListItemModel)((MyHalfItem) v).itemModel).unReadCnt = 0;
                     activity.clickAvatarAtIndex(model,clickView.position);
                 }
             });
@@ -73,7 +74,21 @@ public class ScrollAdapter extends BaseAdapter {
 
         boolean isLocal = itemModel.isLocalTmp;
         boolean isFemale = itemModel.isFemale;
-        currentView.setModelWithGendarAndHeartbeat(isLocal,isFemale,true);
+        if (isLocal) {
+            //transparent image source
+            ((MyHalfItem) view).setImageResource(R.drawable.transparent_avatar);
+        } else{
+            if (isFemale)
+                ((MyHalfItem) view).setImageResource(R.drawable.female_avatar);
+            else
+                ((MyHalfItem) view).setImageResource(R.drawable.male_avatar);
+        }
+        if(itemModel.unReadCnt>0){
+            currentView.setModelWithGendarAndHeartbeat(isLocal, isFemale, true);
+        } else {
+            currentView.setModelWithGendarAndHeartbeat(isLocal,isFemale,false);
+        }
+
 
         return currentView;
     }

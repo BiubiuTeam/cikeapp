@@ -43,6 +43,7 @@
     <string name="takepicture">拍摄一张照片</string>
     <string name="choosepicture">从相册中挑选</string>
     <string name="whichstatus">你此刻的状态是？</string>
+    <string name="receive_the_passthrough">Receive the passthrough:action：</string>
 
     <item type="id" name="tag_image"></item>
     <item type="id" name="tag_txt"></item>

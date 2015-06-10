@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,6 +18,15 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.easemob.EMEventListener;
+import com.easemob.EMNotifierEvent;
+import com.easemob.chat.EMChatManager;
+import com.easemob.chat.EMConversation;
+import com.easemob.chat.EMMessage;
+import com.easemob.exceptions.EaseMobException;
+import com.jaf.jcore.Application;
+import com.jaf.jcore.DemoHXSDKHelper;
+import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
@@ -28,6 +38,7 @@ import com.yunkairichu.cike.bean.ResponseUserChainPull;
 import com.yunkairichu.cike.widget.ChatListItemModel;
 import com.yunkairichu.cike.widget.InfoImageView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -43,7 +54,7 @@ import java.util.List;
 /**
  * Created by liuxiaobo on 15/6/1.
  */
-public class ActivityChatview extends Activity {
+public class ActivityChatview extends Activity implements EMEventListener {
     //本类常量
     public static final int REQUEST_CODE_CHAIN_TO_SCHAT = 102;
 
@@ -127,19 +138,64 @@ public class ActivityChatview extends Activity {
             }
         });
 
+        //////////////////////////////////////////////////推送相关//////////////////////////////////////////////////////
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
+
         listOfModels = new ArrayList<ChatListItemModel>();
         scrollAdapter = new ScrollAdapter(this, listOfModels);
         listView.setAdapter(scrollAdapter);
         initList();
 
-        userChainPull(Constant.IDTYPE_GETOLD, 0);
+        //一直检测吧
+        userChainPull(Constant.IDTYPE_GETOLD, 0, Application.getInstance().isFirstCheckUnread);
+        //Application.getInstance().isFirstCheckUnread = 0;
+    }
 
-//        //data source
-//        List<Object> listOfData = new ArrayList<Object>();
-//        for(int i = 0; i < 6; i++){
-//            listOfData.add(new Object());
-//        }
-//        this.updateListViewWithDataList(listOfData);
+    /**
+     * 事件监听（第二种接收方式）
+     *
+     * see {@link EMNotifierEvent}
+     */
+    @Override
+    public void onEvent(EMNotifierEvent event) {
+        switch (event.getEvent()) {
+            case EventNewMessage:
+            {
+                //获取到message
+                EMMessage message = (EMMessage) event.getData();
+                String username = null;
+                //单聊消息
+                username = message.getFrom();
+
+                int iTitleId = 0;
+                ToolLog.dbg(message.getBody().toString());
+                try {
+                    iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+                } catch (EaseMobException e) {
+                    e.printStackTrace();
+                }
+                int i = 0;
+                for(i = 0;i<listOfModels.size();i++){
+                    if(listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getTitleId() == iTitleId){
+                        listOfModels.get(i).unReadCnt = 1;
+                        scrollAdapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+                //新关系链
+                if(i==listOfModels.size()){
+
+                }
+                ToolLog.dbg("chatview");
+                HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     /////////////////////////////////////////////////////事件响应//////////////////////////////
@@ -211,7 +267,7 @@ public class ActivityChatview extends Activity {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        scrollAdapter.notifyDataSetChanged();
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_CHAIN_TO_SCHAT){
                 ToolLog.dbg("back chain");
@@ -284,7 +340,7 @@ public class ActivityChatview extends Activity {
 
     /////////////////////////////////////////////////拉取关系链列表/////////////////////////////////////////
     public void initList(){
-        ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
+        ChatListItemModel localTmpModel = new ChatListItemModel(true, null, 0);
         listOfModels.add(localTmpModel);
         listOfModels.add(localTmpModel);
 
@@ -293,7 +349,7 @@ public class ActivityChatview extends Activity {
         scrollAdapter.notifyDataSetChanged();
     }
 
-    public void userChainPull(final int idType, int lastId) {
+    public void userChainPull(final int idType, int lastId, final int isCheckUnread) {
         Http http = new Http();
         JSONObject jo = JsonPack.buildUserChainPull(idType, lastId);
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
@@ -307,11 +363,24 @@ public class ActivityChatview extends Activity {
 
                 //入列表
                 setResponseUserChainPull(JacksonWrapper.json2Bean(response, ResponseUserChainPull.class));
+                JSONObject checkUnreadJson = new JSONObject();
                 if (idType == 1) {
                     int i;
                     for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
+                        int unReadCnt = 0;
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
-                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
+                        if (isCheckUnread == 1) {
+                            try {
+                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                                    checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
+                                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
+                                    unReadCnt = conversation.getUnreadMsgCount();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo, unReadCnt);
                         int j = listOfModels.size();
                         listOfModels.add(j - 2, model);
                         listLastId = baseResponseUserChainInfo.getSortId();
@@ -319,8 +388,21 @@ public class ActivityChatview extends Activity {
                 } else if (idType == 2) {
                     int i;
                     for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
+                        int unReadCnt = 0;
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
-                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
+                        if (isCheckUnread == 1) {
+                            try {
+                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                                    checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
+                                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
+                                    unReadCnt = conversation.getUnreadMsgCount();
+                                    ToolLog.dbg("unread:" + String.valueOf(unReadCnt));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo, unReadCnt);
                         listOfModels.add(0 + 2, model);
                         listFirstId = baseResponseUserChainInfo.getSortId();
                     }
@@ -362,5 +444,34 @@ public class ActivityChatview extends Activity {
         //ToolLog.dbg("fiCompressCnt:" + String.valueOf(bitmap.getByteCount()));
         //return bitmap;
         return baos;
+    }
+
+    /////////////////////////////////////////辅助函数/////////////////////////////////////////////
+    @Override
+    protected void onResume() {
+        Log.i("ChatActivity", "onResume");
+        super.onResume();
+
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+        sdkHelper.pushActivity(this);
+        // register the event listener when enter the foreground
+        EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
+                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventReadAck});
+    }
+
+    @Override
+    protected void onStop(){
+        Log.i("ChatActivity", "onStop");
+
+        // unregister this event listener when this activity enters the background
+        EMChatManager.getInstance().unregisterEventListener(this);
+
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
+
+        // 把此activity 从foreground activity 列表里移除
+        sdkHelper.popActivity(this);
+
+        super.onStop();
     }
 }
