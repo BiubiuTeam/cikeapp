@@ -16,4 +16,5 @@ public class Constant {
     public static final int IMPEACH_TITLE = 1;
     public static final int IDTYPE_GETOLD = 1;
     public static final int IDTYPE_GETNEW = 2;
+    public static final int MAX_CHAIN_PULL_TIME = 20;
 }

@@ -314,6 +314,15 @@ public class ActivityChat extends Activity implements EMEventListener {
             timeline_text.setText("还有" + String.valueOf(mHour) + "小时" + String.valueOf(mMinuts) + "分钟会话销毁");
         }
 
+        if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
+            tvSelfChat.setVisibility(View.VISIBLE);
+            buttonSetModeVoice.setVisibility(View.GONE);
+            mEditTextContent.setVisibility(View.GONE);
+            iv_emoticons_normal.setVisibility(View.GONE);
+            iv_emoticons_checked.setVisibility(View.GONE);
+            btnPicture.setVisibility(View.GONE);
+        }
+
         roleTV.setText(roleText);
         regionTV.setText(regionText);
         edittext_layout.requestFocus();
@@ -355,7 +364,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         btnPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mDialog != null&& mDialog.isShowing()) {
+                if (mDialog != null && mDialog.isShowing()) {
                     mDialog.dismiss();
                     return;
                 } else {
@@ -419,7 +428,7 @@ public class ActivityChat extends Activity implements EMEventListener {
             @Override
             public void onClick(View v) {
                 ToolLog.dbg("myId2:" + ToolDevice.getId(Application.getInstance().getApplicationContext()) + " baseID2:" + baseResponseTitleInfo.getDvcId());
-                if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
+                if (baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))) {
                     forceQuit(0);
                 } else {
                     int height, width;
@@ -456,6 +465,9 @@ public class ActivityChat extends Activity implements EMEventListener {
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
                 , EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
+
+        String key = String.valueOf(baseResponseTitleInfo.getSortId()) + baseResponseTitleInfo.getDvcId();
+        ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 0);
 
         setUpView();
 
@@ -1109,12 +1121,15 @@ public class ActivityChat extends Activity implements EMEventListener {
                 username = message.getFrom();
 
                 int iTitleId = 0;
+                String toDeviceId = "";
                 ToolLog.dbg(message.getBody().toString());
                 try {
                     iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+                    toDeviceId = message.getStringAttribute("from");
                 } catch (EaseMobException e) {
                     e.printStackTrace();
                 }
+                String key = String.valueOf(iTitleId)+toDeviceId;
                 ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
                 //如果是当前会话的消息，刷新聊天页面
                 if(username.equals(toChatUsername) && iTitleId == baseResponseTitleInfo.getSortId()){
@@ -1126,6 +1141,7 @@ public class ActivityChat extends Activity implements EMEventListener {
                     //如果消息不是和当前聊天ID的消息
                     //HXSDKHelper.getInstance().getNotifier().onNewMsg(message);
                     ToolLog.dbg("not equal");
+                    ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 1);
                     HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
                 }
 

@@ -45,6 +45,7 @@ public class ActivityBeforeSearch extends Activity {
 
         button = (Button) findViewById(R.id.bigbutton);
 
+        ToolPushNewMsgInfo.getInstance().initTitleNewMsg();
         HXLogin();
 
         button.setOnClickListener(new View.OnClickListener() {

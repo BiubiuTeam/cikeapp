@@ -22,10 +22,8 @@ import android.widget.Toast;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChatManager;
-import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMMessage;
 import com.easemob.exceptions.EaseMobException;
-import com.jaf.jcore.Application;
 import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
@@ -39,7 +37,6 @@ import com.yunkairichu.cike.bean.ResponseUserChainPull;
 import com.yunkairichu.cike.widget.ChatListItemModel;
 import com.yunkairichu.cike.widget.InfoImageView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -69,10 +66,13 @@ public class ActivityChatview extends Activity implements EMEventListener {
     private LinearLayout topLayout = null;
     private RelativeLayout topLeftLayout = null;
     private List<ChatListItemModel> listOfModels = null;
+    private List<ChatListItemModel> listOfModelsBack = null;
     private ResponseUserChainPull responseUserChainPull = null;
     private long listLastId = 0;
     private long listFirstId = 0;
     private ScrollAdapter scrollAdapter = null;
+    private int lastPostion = 0;
+    private int userChainPullTime = 0;
 
     private static int listViewHeight = 0;
     /** Called when the activity is first created. */
@@ -97,7 +97,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
         emptyView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         RelativeLayout.LayoutParams emptyLayout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
 //        emptyLayout.addRule(RelativeLayout.CENTER_IN_PARENT);
-        emptyLayout.setMargins(20,0,20,0);
+        emptyLayout.setMargins(20, 0, 20, 0);
         chatview.addView(emptyView, emptyLayout);
 
         //ui instance
@@ -156,16 +156,17 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 , EMNotifierEvent.Event.EventReadAck});
 
         listOfModels = new ArrayList<ChatListItemModel>();
+        listOfModelsBack = new ArrayList<ChatListItemModel>();
         scrollAdapter = new ScrollAdapter(this, listOfModels);
         listView.setAdapter(scrollAdapter);
-        initList();
+        scrollAdapter.notifyDataSetChanged();
 
-        //一直检测吧
-        userChainPull(Constant.IDTYPE_GETOLD, 0, Application.getInstance().isFirstCheckUnread);
-        //Application.getInstance().isFirstCheckUnread = 0;
-
-        boolean hasChain = (scrollAdapter.getCount() > 4);
-        ActivityChatview.this.setEmptyViewHidden(hasChain);
+        listOfModelsBack.clear();
+        lastPostion = 0;
+        userChainPullTime = 0;
+        userChainPull(Constant.IDTYPE_GETOLD, 0);
+//        boolean hasChain = (scrollAdapter.getCount() > 4);
+//        ActivityChatview.this.setEmptyViewHidden(hasChain);
     }
 
     /**
@@ -185,29 +186,42 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 username = message.getFrom();
 
                 int iTitleId = 0;
+                String toDeviceId = "";
                 ToolLog.dbg(message.getBody().toString());
                 try {
                     iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
-                } catch (EaseMobException e) {
+                    toDeviceId = message.getStringAttribute("from");
+        }catch (EaseMobException e) {
                     e.printStackTrace();
                 }
+                String key = String.valueOf(iTitleId)+toDeviceId;
+                ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 1);
+
+//                ToolLog.dbg("titleId:" + String.valueOf(iTitleId) + " values:" + String.valueOf(ToolPushNewMsgInfo.getInstance().getTitleNewMsgFlagValue(String.valueOf(iTitleId))));
+//                ToolLog.dbg("new chatview");
+                HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
                 int i = 0;
-                for(i = 0;i<listOfModels.size();i++){
-                    if(listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getTitleId() == iTitleId){
-                        listOfModels.get(i).unReadCnt = 1;
-                        scrollAdapter.notifyDataSetChanged();
-                        boolean hasChain = (scrollAdapter.getCount() > 4);
-                        ActivityChatview.this.setEmptyViewHidden(hasChain);
+//                ToolLog.dbg("renewiSize:"+String.valueOf(listOfModels.size()));
+//                ToolLog.dbg("renewiTitleId:"+String.valueOf(iTitleId)+" renewtoDeviceId:"+toDeviceId);
+                for (i = 0; i < listOfModels.size(); i++) {
+                    //ToolLog.dbg("renewiTitleId2:"+String.valueOf(listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getTitleId())+" renewtoDeviceId2:"+listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getDvcId());
+                    if(listOfModels.get(i).baseResponseUserChainInfo == null){
+                        continue;
+                    }
+                    if (listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getTitleId() == iTitleId
+                            && listOfModels.get(i).baseResponseUserChainInfo.getTitleInfo().getDvcId().equals(toDeviceId)) {
                         break;
                     }
                 }
                 //新关系链
-                if(i==listOfModels.size()){
-
+                if (i == listOfModels.size()) {
+//                    ToolLog.dbg("renew:"+String.valueOf(listFirstId));
+                    userChainPull(Constant.IDTYPE_GETOLD, 0);
                 }
-                ToolLog.dbg("chatview");
-                HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
-
+//                ToolLog.dbg("chatview");
+                scrollAdapter.refresh();
+                boolean hasChain = (scrollAdapter.getCount() > 4);
+                ActivityChatview.this.setEmptyViewHidden(hasChain);
                 break;
             }
             default:
@@ -215,7 +229,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
         }
     }
 
-    /////////////////////////////////////////////////////事件响应//////////////////////////////
+    /////////////////////////////////////////////////////事件响应 及 逻辑//////////////////////////////
     public void clickAvatarAtIndex(ChatListItemModel model,int index){
         if (model == null || model.isLocalTmp){
             return;
@@ -249,14 +263,6 @@ public class ActivityChatview extends Activity implements EMEventListener {
         //show up the image base on data content you set
         Resources res = getResources();
         if(model.isLocalTmp == false) {
-//            if (model.isFemale) {
-//                Bitmap bmp = BitmapFactory.decodeResource(res, R.drawable.female_avatar);
-//                detailImage.setImageBitmap(bmp);
-//            } else {
-//                Bitmap bmp = BitmapFactory.decodeResource(res, R.drawable.male_avatar);
-//                detailImage.setImageBitmap(bmp);
-//            }
-
             if(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleType() == 3){
                 getBitmap(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleCont(), index);
             } else {
@@ -274,8 +280,8 @@ public class ActivityChatview extends Activity implements EMEventListener {
     }
 
     public void centeralListViewAtIndex(int index){
-        ChatListItemModel model = scrollAdapter.getItem(index+2);
-        this.clickAvatarAtIndex(model,index+2);
+        ChatListItemModel model = scrollAdapter.getItem(index + 2);
+        this.clickAvatarAtIndex(model, index + 2);
     }
 
     public void setEmptyViewHidden(boolean hidden){
@@ -288,6 +294,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
             chatview.bringChildToFront(emptyView);
         }
     }
+
     ///////////////////////////////////////大事件响应/////////////////////////////////////
 
     /**
@@ -295,9 +302,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        scrollAdapter.notifyDataSetChanged();
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_CHAIN_TO_SCHAT){
+                listOfModelsBack.clear();
+                lastPostion = 0;
+                userChainPullTime = 0;
+                userChainPull(Constant.IDTYPE_GETOLD, 0);
                 ToolLog.dbg("back chain");
             }
         }
@@ -367,17 +377,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
     }
 
     /////////////////////////////////////////////////拉取关系链列表/////////////////////////////////////////
-    public void initList(){
-        ChatListItemModel localTmpModel = new ChatListItemModel(true, null, 0);
-        listOfModels.add(localTmpModel);
-        listOfModels.add(localTmpModel);
-
-        listOfModels.add(localTmpModel);
-        listOfModels.add(localTmpModel);
-        scrollAdapter.notifyDataSetChanged();
-    }
-
-    public void userChainPull(final int idType, int lastId, final int isCheckUnread) {
+    public void userChainPull(final int idType, final long lastId) {
         Http http = new Http();
         JSONObject jo = JsonPack.buildUserChainPull(idType, lastId);
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
@@ -391,60 +391,91 @@ public class ActivityChatview extends Activity implements EMEventListener {
 
                 //入列表
                 setResponseUserChainPull(JacksonWrapper.json2Bean(response, ResponseUserChainPull.class));
-                JSONObject checkUnreadJson = new JSONObject();
                 if (idType == 1) {
                     int i;
+                    if (lastPostion == 0) {
+                        ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
+                        listOfModelsBack.add(lastPostion, localTmpModel);
+                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        lastPostion = 2;
+                    }
                     for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
-                        int unReadCnt = 0;
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
-                        if (isCheckUnread == 1) {
-                            try {
-                                if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
-                                    checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
-                                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
-                                    unReadCnt = conversation.getUnreadMsgCount();
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo, unReadCnt);
-                        int j = listOfModels.size();
-                        listOfModels.add(j - 2, model);
+                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
+                        listOfModelsBack.add(lastPostion, model);
+                        lastPostion++;
                         listLastId = baseResponseUserChainInfo.getSortId();
+                        if(i==0&&lastId==0){
+                            listFirstId = baseResponseUserChainInfo.getSortId();
+                        }
+                    }
+                    userChainPullTime++;
+//                    ToolLog.dbg("listLastId:" + String.valueOf(listLastId));
+//                    ToolLog.dbg("responseUserChainPullSize:" + String.valueOf(responseUserChainPull.getReturnData().getContData().size()));
+//                    ToolLog.dbg("userChainPullTime:" + String.valueOf(userChainPullTime));
+//                    ToolLog.dbg("lastPostion:" + String.valueOf(lastPostion));
+                    if (responseUserChainPull.getReturnData().getContData().size() > 0 && userChainPullTime < Constant.MAX_CHAIN_PULL_TIME) {
+                        userChainPull(Constant.IDTYPE_GETOLD, listLastId);
+                    } else {
+                        ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
+                        listOfModelsBack.add(lastPostion, localTmpModel);
+                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        listOfModelsReflash();
+                        if(detailImage.getVisibility() != View.VISIBLE){
+                            ActivityChatview.this.centeralListViewAtIndex(0);
+                        }
+                        boolean hasChain = (scrollAdapter.getCount() > 4);
+                        ActivityChatview.this.setEmptyViewHidden(hasChain);
                     }
                 } else if (idType == 2) {
                     int i;
-                    for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
-                        int unReadCnt = 0;
-                        BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
-                        if (isCheckUnread == 1) {
-                            try {
-                                if (checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == null || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
-                                    checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
-                                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
-                                    unReadCnt = conversation.getUnreadMsgCount();
-                                    ToolLog.dbg("unread:" + String.valueOf(unReadCnt));
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo, unReadCnt);
-                        listOfModels.add(0 + 2, model);
-                        listFirstId = baseResponseUserChainInfo.getSortId();
+                    //ToolLog.dbg("listFirstId:" + String.valueOf(listFirstId));
+                    List<ChatListItemModel> listOfModelsTmp = new ArrayList<ChatListItemModel>();
+                    listOfModelsTmp.clear();
+                    for(int j=2; j<listOfModels.size()-2; j++){
+                        listOfModelsTmp.add(j - 2, listOfModels.get(j));
                     }
+                    ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
+                    listOfModels.clear();
+                    listOfModels.add(0, localTmpModel);
+                    listOfModels.add(1, localTmpModel);
+                    int j = 2;
+                    for (i = responseUserChainPull.getReturnData().getContData().size() - 1; i >= 0; i--) {
+                        BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
+                        ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
+                        listOfModels.add(j, model);
+                        if (i == responseUserChainPull.getReturnData().getContData().size() - 1) {
+                            listFirstId = baseResponseUserChainInfo.getSortId();
+                        }
+                        j++;
+                    }
+                    for (i = 0; i < listOfModelsTmp.size(); i++) {
+                        listOfModels.add(j, listOfModelsTmp.get(i));
+                        j++;
+                    }
+                    listOfModelsTmp.clear();
+                    listOfModels.add(j, localTmpModel);
+                    listOfModels.add(j + 1, localTmpModel);
+                    scrollAdapter.refresh();
+                    if(detailImage.getVisibility() != View.VISIBLE){
+                        ActivityChatview.this.centeralListViewAtIndex(0);
+                    }
+                    boolean hasChain = (scrollAdapter.getCount() > 4);
+                    ActivityChatview.this.setEmptyViewHidden(hasChain);
                 }
-                ToolLog.dbg("UserChainNum:" + responseUserChainPull.getReturnData().getContData().size());
-                scrollAdapter.notifyDataSetChanged();
-
-                if(detailImage.getVisibility() != View.VISIBLE){
-                    ActivityChatview.this.centeralListViewAtIndex(0);
-                }
-                boolean hasChain = (scrollAdapter.getCount() > 4);
-                ActivityChatview.this.setEmptyViewHidden(hasChain);
             }
         });
+    }
+
+    public void listOfModelsReflash(){
+        listOfModels.clear();
+        for(int i=0;i < listOfModelsBack.size();i++){
+            listOfModels.add(i,listOfModelsBack.get(i));
+        }
+        userChainPullTime = 0;
+        lastPostion = 0;
+        listOfModelsBack.clear();
+        scrollAdapter.notifyDataSetChanged();
     }
 
     public void getBitmap(String url, int index) {

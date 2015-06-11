@@ -38,10 +38,10 @@ public class HXNotifier {
     private final static String TAG = "notify";
     Ringtone ringtone = null;
 
-    protected final static String[] msg_eng = { "sent a message", "sent a picture", "sent a voice",
-            "sent location message", "sent a video", "sent a file", "%1 contacts sent %2 messages"
+    protected final static String[] msg_eng = { "you got a message", "you got sent a picture", "you got sent a voice",
+            "you got sent location message", "you got sent a video", "you got sent a file", "%1 contacts sent %2 messages"
     };
-    protected final static String[] msg_ch = { "发来一条消息", "发来一张图片", "发来一段语音", "发来位置信息", "发来一个视频", "发来一个文件",
+    protected final static String[] msg_ch = { "您收到一条消息", "您收到一张图片", "您收到一段语音", "您收到发来位置信息", "您收到一个视频", "您收到一个文件",
             "%1个联系人发来%2条消息"
     };
 
@@ -128,7 +128,7 @@ public class HXNotifier {
 
         }
 
-        viberateAndPlayTone(message);
+        //viberateAndPlayTone(message);
     }
 
     /**
@@ -139,7 +139,7 @@ public class HXNotifier {
     protected void sendNotification(EMMessage message, boolean isForeground) {
         String username = message.getFrom();
         try {
-            String notifyText = username + " ";
+            String notifyText = "";
             switch (message.getType()) {
                 case TXT:
                     notifyText += msgs[0];

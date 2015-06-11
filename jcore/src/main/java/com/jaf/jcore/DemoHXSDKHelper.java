@@ -71,7 +71,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
     protected void initListener(){
         super.initListener();
         //注册消息事件监听
-        //initEventListener();
+        initEventListener();
     }
 
     /**
@@ -92,10 +92,10 @@ public class DemoHXSDKHelper extends HXSDKHelper{
                         Log.e(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
 
                         //应用在后台，不需要刷新UI,通知栏提示新消息
-//                        if(activityList.size() <= 0){
-//                            HXSDKHelper.getInstance().getNotifier().onNewMsg(message);
-//                        }
-                        HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
+                        if(activityList.size() <= 0){
+                            HXSDKHelper.getInstance().getNotifier().onNewMsg(message);
+                        }
+                        //HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
 
                         break;
                     }
@@ -178,7 +178,8 @@ public class DemoHXSDKHelper extends HXSDKHelper{
 //                }
 //
 //                return message.getFrom() + ": " + ticker;
-                return message.getFrom() + ": ";
+                //return message.getFrom() + ": ";
+                return "您收到一条新消息";
             }
 
             @Override
@@ -260,7 +261,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
 
                     }
 
-                    viberateAndPlayTone(message);
+                    //viberateAndPlayTone(message);
                 }
             }
         };

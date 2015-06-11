@@ -116,8 +116,7 @@
                 android:id="@+id/self_chat_tv"
                 android:layout_width="match_parent"
                 android:layout_height="25dp"
-                android:layout_gravity="center"
-                android:layout_marginLeft="117dp"
+                android:gravity="center"
                 android:text="这条是您发的信息哦"
                 android:textColor="@color/color_white"
                 android:visibility="gone"/>

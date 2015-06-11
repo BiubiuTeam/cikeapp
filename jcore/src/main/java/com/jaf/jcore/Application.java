@@ -17,6 +17,8 @@ import com.easemob.chat.EMMessage;
 import com.easemob.chat.OnMessageNotifyListener;
 import com.easemob.chat.OnNotificationClickListener;
 
+import org.json.JSONObject;
+
 /**
  * Created by vida2009 on 2015/5/19.
  */
@@ -30,8 +32,7 @@ public class Application extends android.app.Application {
     private static Context context;
     public static LocationClient MLOCATIONCLIENT;
     public MyLocationListener mMyLocationListener;
-
-    public int isFirstCheckUnread = 1;
+    public JSONObject titleNewMsgFlag = new JSONObject();
 
     @Override
     public void onCreate() {

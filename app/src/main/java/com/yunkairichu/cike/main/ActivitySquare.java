@@ -42,8 +42,8 @@ import android.widget.Toast;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChatManager;
-import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMMessage;
+import com.easemob.exceptions.EaseMobException;
 import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
@@ -51,7 +51,6 @@ import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.jaf.jcore.ToolGetLocationInfo;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
-import com.yunkairichu.cike.bean.BaseResponseUserChainInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
@@ -254,7 +253,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 , EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
 
-        checkUnread();
+        if(ToolPushNewMsgInfo.getInstance().getTitleHasNewMsgCnt() > 0){
+            ActivitySquare.this.updateChatChainButtonBeating(true);
+        }
 
 ///////////////////////////////////////popupwindow相关 完//////////////////////////////////
 
@@ -379,15 +380,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         isOnCreated = 1;
     }
 
-    public void updateChatChainButtonBeating(boolean isBeating){
-        if (isBeating){
-            squareChainButton.setBackgroundResource(R.drawable.oval_button);
-            AnimationDrawable animationDrawable = (AnimationDrawable) squareChainButton.getBackground();
-            animationDrawable.start();
-        }else{
-            squareChainButton.setBackgroundResource(R.drawable.btn_chatlist_selector);
-        }
-    }
     /**
      * ***********************************事件响应׽***********************************************
      */
@@ -568,7 +560,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        //checkUnread();
+        if(ToolPushNewMsgInfo.getInstance().getTitleHasNewMsgCnt() > 0){
+            ActivitySquare.this.updateChatChainButtonBeating(true);
+        }
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
                 chooseStatusDialog.dismiss();
@@ -620,13 +614,37 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 String username = null;
                 //单聊消息
                 username = message.getFrom();
-                ToolLog.dbg("squreview");
-                ActivitySquare.this.updateChatChainButtonBeating(true);
+
+                int iTitleId = 0;
+                String toDeviceId = "";
+                ToolLog.dbg(message.getBody().toString());
+                try {
+                    iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+                    toDeviceId = message.getStringAttribute("from");
+                } catch (EaseMobException e) {
+                    e.printStackTrace();
+                }
+                String key = String.valueOf(iTitleId)+toDeviceId;
+                ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 1);
+
+                ToolLog.dbg("square shake");
+                ActivitySquare.this.refreshUIWithNewMessage(true);
                 HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
                 break;
             }
             default:
                 break;
+        }
+    }
+
+    //新消息提醒
+    public void updateChatChainButtonBeating(boolean isBeating){
+        if (isBeating){
+            squareChainButton.setBackgroundResource(R.drawable.oval_button);
+            AnimationDrawable animationDrawable = (AnimationDrawable) squareChainButton.getBackground();
+            animationDrawable.start();
+        }else{
+            squareChainButton.setBackgroundResource(R.drawable.btn_chatlist_selector);
         }
     }
 
@@ -897,32 +915,10 @@ public class ActivitySquare extends Activity implements EMEventListener {
         super.onStop();
     }
 
-    ///////////////////////////////////////检查是否有未读消息////////////////////////////////////
-    public void checkUnread(){
-        Http http = new Http();
-        JSONObject jo = JsonPack.buildUserChainPull(1, 0);
-        http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
-            @Override
-            public void onResponse(JSONObject response) {
-                super.onResponse(response);
-                if (response == null) {
-                    ToolLog.dbg("server error");
-                    return;
-                }
-
-                //入列表
-                setResponseUserChainPull(JacksonWrapper.json2Bean(response, ResponseUserChainPull.class));
-                int i;
-                for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
-                    BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
-                    EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
-                    int unReadCnt = conversation.getUnreadMsgCount();
-                    ToolLog.dbg("unread:"+String.valueOf(unReadCnt));
-                    if(unReadCnt > 0){
-                        Toast.makeText(ActivitySquare.this, "unread", Toast.LENGTH_SHORT);
-                        break;
-                    }
-                }
+    private void refreshUIWithNewMessage(final boolean isBeating){
+        runOnUiThread(new Runnable() {
+            public void run() {
+                ActivitySquare.this.updateChatChainButtonBeating(isBeating);
             }
         });
     }
