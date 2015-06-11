@@ -176,7 +176,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 try {
                     iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
                     toDeviceId = message.getStringAttribute("from");
-        }catch (EaseMobException e) {
+                }catch (EaseMobException e) {
                     e.printStackTrace();
                 }
                 String key = String.valueOf(iTitleId)+toDeviceId;

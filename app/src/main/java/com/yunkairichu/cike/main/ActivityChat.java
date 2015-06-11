@@ -181,7 +181,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     private ProgressBar timeline;            //时间线
     protected FaceRelativeLayout faceLayout=null;    //底下拉出的黑框
     private RelativeLayout edittext_layout;
-//    private Dialog mDialog = null;
+    //    private Dialog mDialog = null;
     private Dialog mDialog;
     private Bitmap bigBitmap;                //进来时的大图
     //private LinearLayout btnContainer;
@@ -478,7 +478,6 @@ public class ActivityChat extends Activity implements EMEventListener {
         /**mEditTextContent从未获得焦点到首次获得焦点时不会调用OnClickListener方法，所以应该改成OnTouchListener
          * 从而保证点mEditTextContent第一下就能够把表情界面关闭
          editText.setOnClickListener(new OnClickListener(){
-
         @Override
         public void onClick(View v) {
         // TODO Auto-generated method stub
@@ -488,7 +487,6 @@ public class ActivityChat extends Activity implements EMEventListener {
         expanded=false;
         System.out.println("WHYWHWYWHYW is Clicked");
         }
-
         });
          **/
 
@@ -792,7 +790,7 @@ public class ActivityChat extends Activity implements EMEventListener {
                     }
                 });
 
-        mDialog = PopupUtil.makePopup(this, v);
+        mDialog = PopupUtil.makeToast(this, v);
         mDialog.show();
     }
 
@@ -809,12 +807,12 @@ public class ActivityChat extends Activity implements EMEventListener {
                     }
                 });
 
-        mDialog = PopupUtil.makePopup(this, v);
+        mDialog = PopupUtil.makeToast(this, v);
         mDialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
         mDialog.show();
     }
 
-/*************************************主逻辑******************************************/
+    /*************************************主逻辑******************************************/
 
 /////////////////////////与本地后台对接的逻辑  加好友，举报/////////////////////////////////////
     public void addUserChain() {
@@ -1539,7 +1537,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         }
     }
 
-/************************************事件响应 完*************************************************/
+    /************************************事件响应 完*************************************************/
 
 ///////////////////////////////////////get set类函数/////////////////////////////////////
 
@@ -1555,7 +1553,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     public MessageAdapter getAdapter(){
         return adapter;
     }
-    
+
     ////////////////////////////////////辅助函数//////////////////////////////////////////////////
     public void forceQuit(int isForce){
         if(bigBitmap != null){

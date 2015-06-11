@@ -381,7 +381,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
     }
 
     /**
-     * ***********************************事件响应׽***********************************************
+     * ***********************************事件响应**********************************************
      */
     private void popupChooseStatus() {
         View v = getLayoutInflater().inflate(R.layout.status_picker,
