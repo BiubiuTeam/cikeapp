@@ -72,7 +72,7 @@ public class ToolPushNewMsgInfo {
                     BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                     try {
                         String key = String.valueOf(baseResponseUserChainInfo.getTitleInfo().getTitleId())+baseResponseUserChainInfo.getTitleInfo().getDvcId();
-                        if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.get(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                        if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
                             checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
                             EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
                             titleNewMsgFlag.put(key, conversation.getUnreadMsgCount());

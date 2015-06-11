@@ -31,6 +31,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
@@ -284,7 +286,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         ToolLog.dbg("hehe");
         big_image.setImageBitmap(bigBitmap);
         big_image_text.setText(baseResponseTitleInfo.getExtension().getText());
-        big_pic_flag = 0;
+        big_pic_flag = 1;
         //状态图标设置
         dToUserStatus = new Drawable[] { getResources().getDrawable(R.drawable.boring),
                 getResources().getDrawable(R.drawable.love), getResources().getDrawable(R.drawable.boring),
@@ -424,39 +426,13 @@ public class ActivityChat extends Activity implements EMEventListener {
         });
 
         big_image.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 ToolLog.dbg("myId2:" + ToolDevice.getId(Application.getInstance().getApplicationContext()) + " baseID2:" + baseResponseTitleInfo.getDvcId());
                 if (baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))) {
                     forceQuit(0);
                 } else {
-                    int height, width;
-                    if (big_pic_flag == 0) {
-                        if (boardHeight == 0 || boardHeight < v.getHeight())
-                            boardHeight = v.getHeight();
-                        if (boardWidth == 0 || boardWidth < v.getWidth()) boardWidth = v.getWidth();
-                        smboardHeight = boardHeight / 4;
-                        smboardWidth = boardWidth * 1 / 3;
-                        height = smboardHeight;
-                        width = smboardWidth;
-                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-                        layoutParams.setMargins(width * 2, 0, 0, 0);
-                        v.setLayoutParams(layoutParams);
-                        big_image_text.setVisibility(View.GONE);
-                        big_pic_flag = 1;
-                    } else {
-                        height = boardHeight;
-                        width = boardWidth;
-                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-                        layoutParams.setMargins(0, 0, 0, 0);
-                        v.setLayoutParams(layoutParams);
-                        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
-                        layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
-                        big_image_text.setVisibility(View.VISIBLE);
-                        big_image_text.setLayoutParams(layoutParams2);
-                        big_pic_flag = 0;
-                    }
+                    ActivityChat.this.setImageScaleBig(big_pic_flag == 0);
                 }
             }
         });
@@ -531,6 +507,68 @@ public class ActivityChat extends Activity implements EMEventListener {
         });
 
         //Toast.makeText(ActivityChat.this, "titleId:" + String.valueOf(baseResponseTitleInfo.getSortId()), Toast.LENGTH_SHORT).show();
+    }
+
+    public void setImageScaleBig(boolean scaleBig){
+        if(big_pic_flag == 1 && scaleBig || big_pic_flag == 0 && scaleBig == false){
+            return;
+        }
+
+        View v = big_image;
+        int height, width;
+        if (scaleBig == false) {
+            if (boardHeight == 0 || boardHeight < v.getHeight())
+                boardHeight = v.getHeight();
+            if (boardWidth == 0 || boardWidth < v.getWidth()) boardWidth = v.getWidth();
+            smboardHeight = boardHeight* 1/ 4;
+            smboardWidth = boardWidth * 1 / 3;
+            height = smboardHeight;
+            width = smboardWidth;
+
+//            //初始化 Translate动画
+//            TranslateAnimation translateAnimation = new TranslateAnimation(0.f, width * 2, 0.f,0.0f);
+//            //初始化 Alpha动画
+//            Animation scaleAnimation = new ScaleAnimation(1.f, 1.f/3.f,1f,1f/4.f);
+//            //动画集
+//            AnimationSet set = new AnimationSet(true);
+//            set.addAnimation(translateAnimation);
+//            set.addAnimation(scaleAnimation);
+//            //设置动画时间 (作用到每个动画)
+//            set.setDuration(300);
+//            set.setFillAfter(true);
+//            big_image.startAnimation(set);
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+            layoutParams.setMargins(width * 2, 0, 0, 0);
+            v.setLayoutParams(layoutParams);
+            big_image_text.setVisibility(View.GONE);
+            big_pic_flag = 0;
+        } else {
+            height = boardHeight;
+            width = boardWidth;
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+            layoutParams.setMargins(0, 0, 0, 0);
+
+//            //初始化 Translate动画
+//            TranslateAnimation translateAnimation = new TranslateAnimation(smboardWidth*2, 0.f, 0.f,0.0f);
+//            //初始化 Alpha动画
+//            Animation scaleAnimation = new ScaleAnimation(1.f, 3.f,1.f,4.f);
+//            //动画集
+//            AnimationSet set = new AnimationSet(true);
+//            set.addAnimation(translateAnimation);
+//            set.addAnimation(scaleAnimation);
+//            //设置动画时间 (作用到每个动画)
+//            set.setDuration(300);
+//            set.setFillAfter(true);
+//            big_image.startAnimation(set);
+
+            v.setLayoutParams(layoutParams);
+            RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
+            layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
+            big_image_text.setVisibility(View.VISIBLE);
+            big_image_text.setLayoutParams(layoutParams2);
+            big_pic_flag = 1;
+        }
     }
 
     private void setUpView() {

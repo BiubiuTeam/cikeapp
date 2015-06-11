@@ -125,21 +125,6 @@ public class ActivityChatview extends Activity implements EMEventListener {
         layoutParams.height = listViewHeight;
         topLayout.addView(listView, layoutParams);
 
-        detailImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //do anything you want with datacontent
-                InfoImageView iiv = (InfoImageView) v;
-                ChatListItemModel model = iiv.dataContent;
-
-                if (model.isFemale) {
-                    Toast.makeText(ActivityChatview.this, "Female Chatty", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ActivityChatview.this, "Male Chatty", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
         chatview.bringChildToFront(cancelButton);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -265,14 +250,6 @@ public class ActivityChatview extends Activity implements EMEventListener {
         if(model.isLocalTmp == false) {
             if(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleType() == 3){
                 getBitmap(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleCont(), index);
-            } else {
-                if (model.isFemale) {
-                    Bitmap bmp = BitmapFactory.decodeResource(res, R.drawable.female_avatar);
-                    detailImage.setImageBitmap(bmp);
-                } else {
-                    Bitmap bmp = BitmapFactory.decodeResource(res, R.drawable.male_avatar);
-                    detailImage.setImageBitmap(bmp);
-                }
             }
         }
 
