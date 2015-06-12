@@ -122,7 +122,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private TimerTask timerTask;
     private Timer timer2;
     private TimerTask timerTask2;
-    private Handler handler2;
     private int selectorStatus = 0;
     private int selectorScale = 0;
     private int selectorGender = 0;
@@ -265,97 +264,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 popupChooseStatus();
             }
         });
-
         isOnCreated = 0;
-
-        ///////////////////////////////////////动画  popupwindow的监控////////////////////////////////////
-        handler2 = new Handler() {
-            public void handleMessage(Message msg) {
-                if (msg.what == 1) {
-                    for(int i=0;i<50;i++){
-                        if(titleBitmap[i]!=null){
-                            ImageViewSquareItem ivsi = (ImageViewSquareItem) squareGridLayout.getChildAt(2*i);
-                            if(ivsi != null && ivsi.getWidth() >= 1 && ivsi.getHeight() >= 1) {
-                                if (titleBitmap[i].getWidth() - ivsi.getWidth() <= 0) {
-                                    ivsi.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                    Bitmap bitmapTmp = Bitmap.createBitmap(titleBitmap[i], 0, wpara[i], titleBitmap[i].getWidth(), ivsi.getHeight());
-                                    ivsi.setImageBitmap(bitmapTmp);
-                                    if (titleBitmap[i].getHeight() - ivsi.getHeight() > 0) {
-                                        if (wdirect[i] == 0) wpara[i]++;
-                                        else wpara[i]--;
-                                        if (wpara[i] == 0) wdirect[i] = 0;
-                                        if (wpara[i] + ivsi.getHeight() >= titleBitmap[i].getHeight())
-                                            wdirect[i] = 1;
-                                    } else {
-                                        wpara[i] = 0;
-                                        wdirect[i] = 0;
-                                    }
-                                } else {
-                                    ivsi.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                                    int bitMapHeightStart = titleBitmap[i].getHeight() / 2 - ivsi.getHeight() / 2;
-                                    Bitmap bitmapTmp = Bitmap.createBitmap(titleBitmap[i], wpara[i], bitMapHeightStart, ivsi.getWidth(), ivsi.getHeight());
-                                    ivsi.setImageBitmap(bitmapTmp);
-                                    if (titleBitmap[i].getWidth() - ivsi.getWidth() > 0) {
-                                        if (wdirect[i] == 0) wpara[i]++;
-                                        else wpara[i]--;
-                                        if (wpara[i] == 0) wdirect[i] = 0;
-                                        if (wpara[i] + ivsi.getWidth() >= titleBitmap[i].getWidth())
-                                            wdirect[i] = 1;
-                                    } else {
-                                        wpara[i] = 0;
-                                        wdirect[i] = 0;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (msg.what==2){
-                    if(menuWindowStatus == 1){
-                        if(menuWindow==null || !menuWindow.isShowing()){
-                            ToolLog.dbg("selectorFlag:" + String.valueOf(selectorFlag) + "searchFlag" + String.valueOf(searchFlag));
-                            if (searchFlag == 1 && selectorFlag == 1) {
-                                searchFlag = 0;
-                                selectorFlag = 0;
-                                clearTitleBitmap();
-                                squareScrollView.scrollTo(10, 10);
-                                responseSearchTitle = null;
-                                doTitleSearch();
-                            }
-
-                            ivTopic.setImageResource(R.drawable.look_into_black);
-                            ivTopic2.setImageResource(R.drawable.picker_arrow_black);
-                            tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
-                            if(selectorScale==1||selectorScale==2) {
-                                tvTopic.setText(ToolGetLocationInfo.getInstance().getLastCity() + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
-                            } else {
-                                tvTopic.setText(scale[selectorScale] + "." + statusName[selectorStatus] + "." + gender[selectorGender]);  //地图接入后要调
-                            }
-                            menuWindowStatus = 0;
-                        }
-                    }
-                }
-                super.handleMessage(msg);
-            };
-        };
-        ///////////////////////////////////////动画  popupwindow的监控 完////////////////////////////////////
-
-        ///////////////////////////////////////动画相关（现在禁用了定时器）///////////////////////////////////////////
-        clearTitleBitmap();
-
-//        timerTask = new TimerTask() {
-//            @Override
-//            public void run() {
-//                // 需要做的事:发送消息
-//                Message message = new Message();
-//                message.what = 1;
-//                handler2.sendMessage(message);
-//            }
-//        };
-
-        //timer.schedule(timerTask,0,80); // 1s后执行task,经过1s再次执行
-
-        ////////////////////////////////////////动画相关  完///////////////////////////////////////////////
 
         ////////////////////////////////////// popupwindow的监控 //////////////////////////////////
 
@@ -802,6 +711,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 }
             }
             ToolLog.dbg("AllHeight:"+String.valueOf(height)+" AllWidth:"+String.valueOf(width));
+            //TODO haowenliang here
             ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             iv.setTag(i);
             iv.setOnClickListener(new View.OnClickListener() {
@@ -876,7 +786,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             searchFlag = 1;
         }
 
-        ((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(titleBitmap[index]);
+        Bitmap tmpBit = titleBitmap[index];//.copy(titleBitmap[index].getConfig(),true);
+        ((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(tmpBit);
         ((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1)).setVisibility(View.VISIBLE);
     }
 
@@ -960,7 +871,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     // 需要做的事:发送消息
                     Message message = new Message();
                     message.what = 2;
-                    handler2.sendMessage(message);
                 }
             };
         }
