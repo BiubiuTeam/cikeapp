@@ -93,9 +93,9 @@
     <orderEntry type="library" exported="" name="1_nineoldandroids-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-22.0.0" level="project" />
-    <orderEntry type="library" exported="" name="BaiduLBS_Android" level="project" />
     <orderEntry type="library" exported="" name="easemobchat_2.1.8" level="project" />
     <orderEntry type="library" exported="" name="1_easemobchat_2.1.8" level="project" />
+    <orderEntry type="library" exported="" name="BaiduLBS_Android" level="project" />
     <orderEntry type="module" module-name="jcore" exported="" />
   </component>
 </module>

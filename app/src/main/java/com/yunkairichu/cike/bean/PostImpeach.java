@@ -7,7 +7,16 @@ public class PostImpeach extends BasePostField{
     private int contType;
     private long contId;
     private int reason;
+    private String toDvcId;
     private String reasonCont;
+
+    public String getToDvcId() {
+        return toDvcId;
+    }
+
+    public void setToDvcId(String toDvcId) {
+        this.toDvcId = toDvcId;
+    }
 
     public int getContType() {
         return contType;

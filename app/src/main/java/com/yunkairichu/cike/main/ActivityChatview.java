@@ -56,6 +56,8 @@ public class ActivityChatview extends Activity implements EMEventListener {
     //本类常量
     public static final int REQUEST_CODE_CHAIN_TO_SCHAT = 102;
 
+    public static final int RESULT_FORCE_REFLASH = 101;
+
     private Button cancelButton = null;
     private ImageView emptyView = null;
 
@@ -137,7 +139,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
 
         //////////////////////////////////////////////////推送相关//////////////////////////////////////////////////////
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
-                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventNewCMDMessage, EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
 
         listOfModels = new ArrayList<ChatListItemModel>();
@@ -287,6 +289,14 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 userChainPull(Constant.IDTYPE_GETOLD, 0);
                 ToolLog.dbg("back chain");
             }
+        } else if (resultCode == RESULT_FORCE_REFLASH) {
+            if(requestCode == REQUEST_CODE_CHAIN_TO_SCHAT){
+                listOfModelsBack.clear();
+                lastPostion = 0;
+                userChainPullTime = 0;
+                userChainPull(Constant.IDTYPE_GETOLD, 0);
+                ToolLog.dbg("back chain");
+            }
         }
     }
 
@@ -382,7 +392,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         listOfModelsBack.add(lastPostion, model);
                         lastPostion++;
                         listLastId = baseResponseUserChainInfo.getSortId();
-                        if(i==0&&lastId==0){
+                        if (i == 0 && lastId == 0) {
                             listFirstId = baseResponseUserChainInfo.getSortId();
                         }
                     }
@@ -398,7 +408,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         listOfModelsBack.add(lastPostion, localTmpModel);
                         listOfModelsBack.add(lastPostion + 1, localTmpModel);
                         listOfModelsReflash();
-                        if(detailImage.getVisibility() != View.VISIBLE){
+                        if (detailImage.getVisibility() != View.VISIBLE) {
                             ActivityChatview.this.centeralListViewAtIndex(0);
                         }
                         boolean hasChain = (scrollAdapter.getCount() > 4);
@@ -409,7 +419,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     //ToolLog.dbg("listFirstId:" + String.valueOf(listFirstId));
                     List<ChatListItemModel> listOfModelsTmp = new ArrayList<ChatListItemModel>();
                     listOfModelsTmp.clear();
-                    for(int j=2; j<listOfModels.size()-2; j++){
+                    for (int j = 2; j < listOfModels.size() - 2; j++) {
                         listOfModelsTmp.add(j - 2, listOfModels.get(j));
                     }
                     ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
@@ -434,7 +444,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     listOfModels.add(j, localTmpModel);
                     listOfModels.add(j + 1, localTmpModel);
                     scrollAdapter.refresh();
-                    if(detailImage.getVisibility() != View.VISIBLE){
+                    if (detailImage.getVisibility() != View.VISIBLE) {
                         ActivityChatview.this.centeralListViewAtIndex(0);
                     }
                     boolean hasChain = (scrollAdapter.getCount() > 4);

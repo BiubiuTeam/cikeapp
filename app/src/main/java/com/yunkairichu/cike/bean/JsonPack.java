@@ -116,12 +116,13 @@ public class JsonPack implements JsonConstant{
         return JacksonWrapper.bean2Json(pr);
     }
 
-    public static JSONObject buildImpeach(int contType, long contId, int reason, String resonCont) {
+    public static JSONObject buildImpeach(int contType, long contId, int reason, String resonCont, String toDvcId) {
         PostImpeach pr = new PostImpeach();
         pr.setCmd(CMD.IMPEACH);
         pr.setAppVersion(VER);
         pr.setPlatform(PLATFORM);
         pr.setDvcId(ToolDevice.getId(Application.getInstance().getApplicationContext()));
+        pr.setToDvcId(toDvcId);
         pr.setContType(contType);
         pr.setContId(contId);
         pr.setReason(reason);

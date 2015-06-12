@@ -1,21 +1,10 @@
 package com.yunkairichu.cike.widget;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextUtils;
-import android.text.style.ImageSpan;
-import android.util.Log;
-
 import com.yunkairichu.cike.main.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by haowenliang on 15/6/9.
@@ -106,5 +95,15 @@ public class FaceConversionUtil {
             }
         }
         return list;
+    }
+
+    //facename转flyId
+    public int faceNameToFlyId(String facename){
+        for(int i=faceName.length-1; i>=0; i--){
+            if(faceName[i].equals(facename)){
+                return flyFaceId[i];
+            }
+        }
+        return 0;
     }
 }

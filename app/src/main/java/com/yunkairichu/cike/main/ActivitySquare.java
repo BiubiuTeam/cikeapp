@@ -250,7 +250,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
         //////////////////////////////////////////////////推送相关//////////////////////////////////////////////////////
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
-                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventNewCMDMessage, EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
 
         if(ToolPushNewMsgInfo.getInstance().getTitleHasNewMsgCnt() > 0){

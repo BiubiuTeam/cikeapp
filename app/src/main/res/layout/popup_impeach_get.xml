@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:background="#e0ffffff"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_centerHorizontal="true"
+    android:layout_weight="2">
+
+    <TextView
+        android:id="@+id/btnImpeachGetText"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="15dp"
+        android:text="你已经被对方举报，无法再进行会话或信息查看" />
+
+    <Button
+        android:id="@+id/btnImpeachGet"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/btnImpeachResultText"
+        android:textSize="15dp"
+        android:text="确定" />
+
+</RelativeLayout>

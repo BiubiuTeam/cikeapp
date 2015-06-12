@@ -2,10 +2,8 @@ package com.yunkairichu.cike.main;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,8 +29,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
@@ -50,6 +46,7 @@ import com.easemob.EMError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.CmdMessageBody;
+import com.easemob.chat.EMChat;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMMessage;
@@ -76,6 +73,7 @@ import com.yunkairichu.cike.bean.ResponseUserChainInsert;
 import com.yunkairichu.cike.utils.CommonUtils;
 import com.yunkairichu.cike.utils.PopupUtil;
 import com.yunkairichu.cike.widget.ChatEmoji;
+import com.yunkairichu.cike.widget.FaceConversionUtil;
 import com.yunkairichu.cike.widget.FaceRelativeLayout;
 import com.yunkairichu.cike.widget.PasteEditText;
 
@@ -202,7 +200,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     private ResponseUserChainInsert responseUserChainInsert;
     private ResponseImpeach responseImpeach;
     private int chatType;
-    private NewMessageBroadcastReceiver receiver; //接收器
+   // private NewMessageBroadcastReceiver receiver; //接收器
     private PowerManager.WakeLock wakeLock;       //电源管理器
     private int boardHeight = 0;  //大图标高
     private int boardWidth = 0;  //大图标宽
@@ -439,8 +437,9 @@ public class ActivityChat extends Activity implements EMEventListener {
 
         /////////////////////////////////////////////////////推送相关////////////////////////////////////////////////
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
-                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventDeliveryAck, EMNotifierEvent.Event.EventNewCMDMessage
                 , EMNotifierEvent.Event.EventReadAck});
+        EMChat.getInstance().setAppInited();
 
         String key = String.valueOf(baseResponseTitleInfo.getSortId()) + baseResponseTitleInfo.getDvcId();
         ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 0);
@@ -620,11 +619,11 @@ public class ActivityChat extends Activity implements EMEventListener {
         });
 
         // 注册接收消息广播
-        receiver = new NewMessageBroadcastReceiver();
-        IntentFilter intentFilter = new IntentFilter(EMChatManager.getInstance().getNewMessageBroadcastAction());
-        // 设置广播的优先级别大于Mainacitivity,这样如果消息来的时候正好在chat页面，直接显示消息，而不是提示消息未读
-        intentFilter.setPriority(5);
-        registerReceiver(receiver, intentFilter);
+//        receiver = new NewMessageBroadcastReceiver();
+//        IntentFilter intentFilter = new IntentFilter(EMChatManager.getInstance().getNewMessageBroadcastAction());
+//        // 设置广播的优先级别大于Mainacitivity,这样如果消息来的时候正好在chat页面，直接显示消息，而不是提示消息未读
+//        intentFilter.setPriority(5);
+//        registerReceiver(receiver, intentFilter);
 
         // 监听当前会话的群聊解散被T事件
 //        groupListener = new GroupListener();
@@ -648,8 +647,9 @@ public class ActivityChat extends Activity implements EMEventListener {
         sdkHelper.pushActivity(this);
         // register the event listener when enter the foreground
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
-                , EMNotifierEvent.Event.EventDeliveryAck
+                , EMNotifierEvent.Event.EventNewCMDMessage, EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
+        EMChat.getInstance().setAppInited();
     }
 
     @Override
@@ -688,7 +688,7 @@ public class ActivityChat extends Activity implements EMEventListener {
                     @Override
                     public void onClick(View v) {
                         impeachReasonFlag = 2;
-                        impeachReasonCont = ((TextView)v).getText().toString();
+                        impeachReasonCont = ((TextView) v).getText().toString();
                         mDialog.dismiss();
                         popupImpeachConfirm();
                     }
@@ -700,7 +700,7 @@ public class ActivityChat extends Activity implements EMEventListener {
                     @Override
                     public void onClick(View v) {
                         impeachReasonFlag = 4;
-                        impeachReasonCont = ((TextView)v).getText().toString();
+                        impeachReasonCont = ((TextView) v).getText().toString();
                         mDialog.dismiss();
                         popupImpeachConfirm();
                     }
@@ -812,7 +812,26 @@ public class ActivityChat extends Activity implements EMEventListener {
         mDialog.show();
     }
 
-    /*************************************主逻辑******************************************/
+    private void popupImpeachGet() {
+        ToolLog.dbg("lalal");
+        View v = getLayoutInflater().inflate(R.layout.popup_impeach_get,
+                null);
+
+        v.findViewById(R.id.btnImpeachGet).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                        forceQuit(1);
+                    }
+                });
+
+        mDialog = PopupUtil.makePopup(this, v);
+        mDialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        mDialog.show();
+    }
+
+/*************************************主逻辑******************************************/
 
 /////////////////////////与本地后台对接的逻辑  加好友，举报/////////////////////////////////////
     public void addUserChain() {
@@ -837,7 +856,7 @@ public class ActivityChat extends Activity implements EMEventListener {
 
     public void sendImpeach(int contType, long contId, int reason, String resonCont) {
         Http http = new Http();
-        JSONObject jo = JsonPack.buildImpeach(contType, contId, reason, resonCont);
+        JSONObject jo = JsonPack.buildImpeach(contType, contId, reason, resonCont, toChatUsername);
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -849,6 +868,7 @@ public class ActivityChat extends Activity implements EMEventListener {
 
                 setResponseImpeach(JacksonWrapper.json2Bean(response, ResponseImpeach.class));
                 if (responseImpeach.getStatusCode() == 0) {
+                    sendImpeachCmd();
                     popupImpeachResult();
                 }
                 else{
@@ -1044,6 +1064,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         }
     }
 
+    //给对端发送结束对话命令
     private void sendImpeachCmd(){
         EMMessage cmdMsg = EMMessage.createSendMessage(EMMessage.Type.CMD);
 
@@ -1070,75 +1091,107 @@ public class ActivityChat extends Activity implements EMEventListener {
         });
     }
 
+    //给对端发送表情命令
+    private void sendEmotionCmd(String emotion){
+        EMMessage cmdMsg = EMMessage.createSendMessage(EMMessage.Type.CMD);
+
+        String action="sillychat#emoji";//action可以自定义，在广播接收时可以收到
+        CmdMessageBody cmdBody=new CmdMessageBody(action);
+        cmdMsg.setReceipt(toChatUsername);//发送给某个人
+        cmdMsg.setAttribute(action, emotion);//发送的表情号
+        cmdMsg.setAttribute("broadcast", String.valueOf(baseResponseTitleInfo.getSortId()));//聊天序列号
+        cmdMsg.setAttribute("from", ToolDevice.getId(Application.getInstance().getApplicationContext()).toLowerCase());//自己ID
+        cmdMsg.addBody(cmdBody);
+//        conversation.addMessage(cmdMsg);
+//        adapter.refreshSelectLast();
+//        setResult(RESULT_OK);
+        EMChatManager.getInstance().sendMessage(cmdMsg, new EMCallBack() {
+
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int code, String error) {
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+            }
+        });
+    }
+
 /////////////////////////////////////接收侦听相关///////////////////////////////////////////
 
     /**
      * 消息广播接收者（第一种接收方式）
      *
      */
-    private class NewMessageBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String username = intent.getStringExtra("from");
-            String msgid = intent.getStringExtra("msgid");
-
-            // 收到这个广播的时候，message已经在db和内存里了，可以通过id获取mesage对象
-            EMMessage message = EMChatManager.getInstance().getMessage(msgid);
-
-            EMMessage messageEx = intent.getParcelableExtra("message");
-            if(messageEx!=null) {
-                CmdMessageBody cmdMessageBody = (CmdMessageBody) messageEx.getBody();
-                String action = cmdMessageBody.action;
-                if (action.equals("sillychat#report")) {
-                    int iTitleId = 0;
-                    try {
-                        iTitleId = Integer.parseInt(messageEx.getStringAttribute("broadcast"));
-                    } catch (EaseMobException e) {
-                        e.printStackTrace();
-                    }
-
-                    ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
-                    if (iTitleId == baseResponseTitleInfo.getSortId()) {
-                        forceQuit(1);
-                        return;
-                    }
-                }
-            }
-
-            // 如果是群聊消息，获取到group id
-            if (message.getChatType() == EMMessage.ChatType.GroupChat) {
-                username = message.getTo();
-            }
-            if (!username.equals(toChatUsername)) {
-                // 消息不是发给当前会话，return
-                return;
-            }
-            // conversation =
-            // EMChatManager.getInstance().getConversation(toChatUsername);
-            // 通知adapter有新消息，更新ui
-
-            adapter.refresh();
-            listView.setSelection(listView.getCount() - 1);
-
-//            unregisterReceiver(this); // 这句话必须要写要不会报错，不写虽然能关闭，会报一堆错
-//            ((Activity) context).finish();
-        }
-
-        public void onResume() {
-            // 注册接收消息广播
-            receiver = new NewMessageBroadcastReceiver();
-            IntentFilter intentFilter = new IntentFilter(EMChatManager.getInstance().getNewMessageBroadcastAction());
-            // 设置广播的优先级别大于Mainacitivity,这样如果消息来的时候正好在chat页面，直接显示消息，而不是提示消息未读
-            intentFilter.setPriority(5);
-            registerReceiver(receiver, intentFilter);
-        }
-
-        public void close() {
-            Intent intent = new Intent();
-            sendBroadcast(intent);// 该函数用于发送广播
-            finish();
-        }
-    }
+//    private class NewMessageBroadcastReceiver extends BroadcastReceiver {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String username = intent.getStringExtra("from");
+//            String msgid = intent.getStringExtra("msgid");
+//            ToolLog.dbg("action:");
+//            // 收到这个广播的时候，message已经在db和内存里了，可以通过id获取mesage对象
+//            EMMessage message = EMChatManager.getInstance().getMessage(msgid);
+//
+//            EMMessage messageEx = intent.getParcelableExtra("message");
+//            //获取消息body
+//            CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
+//            String aciton = cmdMsgBody.action;//获取自定义action
+//            if(aciton.equals("sillychat#report")){
+//                int iTitleId = 0;
+//                String toDeviceId = "";
+//                ToolLog.dbg(message.getBody().toString());
+//                try {
+//                    iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+//                    toDeviceId = message.getStringAttribute("from");
+//                    ToolLog.dbg("toDeviceId:"+toDeviceId);
+//                } catch (EaseMobException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                ToolLog.dbg("FFFFFFFFiTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
+//                if(toDeviceId.equals(toChatUsername) && iTitleId == baseResponseTitleInfo.getSortId()){
+//                    popupImpeachGet();
+//                }
+//            }
+//
+//            // 如果是群聊消息，获取到group id
+//            if (message.getChatType() == EMMessage.ChatType.GroupChat) {
+//                username = message.getTo();
+//            }
+//            if (!username.equals(toChatUsername)) {
+//                // 消息不是发给当前会话，return
+//                return;
+//            }
+//            // conversation =
+//            // EMChatManager.getInstance().getConversation(toChatUsername);
+//            // 通知adapter有新消息，更新ui
+//
+//            adapter.refresh();
+//            listView.setSelection(listView.getCount() - 1);
+//
+////            unregisterReceiver(this); // 这句话必须要写要不会报错，不写虽然能关闭，会报一堆错
+////            ((Activity) context).finish();
+//        }
+//
+//        public void onResume() {
+//            // 注册接收消息广播
+//            receiver = new NewMessageBroadcastReceiver();
+//            IntentFilter intentFilter = new IntentFilter(EMChatManager.getInstance().getNewMessageBroadcastAction());
+//            // 设置广播的优先级别大于Mainacitivity,这样如果消息来的时候正好在chat页面，直接显示消息，而不是提示消息未读
+//            intentFilter.setPriority(5);
+//            registerReceiver(receiver, intentFilter);
+//        }
+//
+//        public void close() {
+//            Intent intent = new Intent();
+//            sendBroadcast(intent);// 该函数用于发送广播
+//            finish();
+//        }
+//    }
 
     /**
      * 事件监听（第二种接收方式）
@@ -1180,7 +1233,49 @@ public class ActivityChat extends Activity implements EMEventListener {
                     ToolPushNewMsgInfo.getInstance().putTitleNewMsgFlagValue(key, 1);
                     HXSDKHelper.getInstance().getNotifier().viberateAndPlayTone(message);
                 }
+                break;
+            }
+            case EventNewCMDMessage:
+            {
+                EMMessage message = (EMMessage)event.getData();
+                String username = null;
+                username = message.getFrom();
 
+                //获取消息body
+                CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
+                final String action = cmdMsgBody.action;//获取自定义action
+                //ToolLog.dbg("action:"+action);
+
+                int iTitleId = 0;
+                String toDeviceId = "";
+                try {
+                    iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+                    toDeviceId = message.getStringAttribute("from");
+                } catch (EaseMobException e) {
+                    e.printStackTrace();
+                }
+
+//                ToolLog.dbg("toDeviceId:" + toDeviceId + " toChatUsername:" + toChatUsername);
+//                ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId));
+//                ToolLog.dbg(" LocTitleId:" + String.valueOf(baseResponseTitleInfo.getSortId()));
+                if(toDeviceId.equals(toChatUsername) && iTitleId == baseResponseTitleInfo.getSortId()){
+                    if(action.equals("sillychat#report")) {
+//                        ToolLog.dbg("in sillychat#report");
+                        refreshUIWithImpeachGet();
+                    } else if(action.equals("sillychat#emoji")) {
+                        String emotionName = "";
+                        int emotionId = 0;
+                        try {
+                            emotionName = message.getStringAttribute(action);
+
+                            emotionId = FaceConversionUtil.getInstace().faceNameToFlyId(emotionName);
+                        } catch (EaseMobException e) {
+                            e.printStackTrace();
+                        }
+//                        ToolLog.dbg("emojiId:" + String.valueOf(emotionId));
+                        refreshUIWithEmotionGet(emotionId);
+                    }
+                }
                 break;
             }
             default:
@@ -1349,7 +1444,6 @@ public class ActivityChat extends Activity implements EMEventListener {
                         Toast.makeText(ActivityChat.this, R.string.recoding_fail, Toast.LENGTH_SHORT).show();
                         return false;
                     }
-
                     return true;
                 case MotionEvent.ACTION_MOVE: {
                     if (event.getY() < 0) {
@@ -1370,7 +1464,6 @@ public class ActivityChat extends Activity implements EMEventListener {
                     if (event.getY() < 0) {
                         // discard the recorded audio.
                         voiceRecorder.discardRecording();
-
                     } else {
                         // stop recording and send voice file
                         String st1 = getResources().getString(R.string.Recording_without_permission);
@@ -1390,7 +1483,6 @@ public class ActivityChat extends Activity implements EMEventListener {
                             e.printStackTrace();
                             Toast.makeText(ActivityChat.this, st3, Toast.LENGTH_SHORT).show();
                         }
-
                     }
                     return true;
                 default:
@@ -1586,6 +1678,22 @@ public class ActivityChat extends Activity implements EMEventListener {
             }
         });
     }
+
+    private void refreshUIWithImpeachGet(){
+        runOnUiThread(new Runnable() {
+            public void run() {
+                ActivityChat.this.popupImpeachGet();
+            }
+        });
+    }
+
+    private void refreshUIWithEmotionGet(final int resourceId){
+        runOnUiThread(new Runnable() {
+            public void run() {
+                flyEmojiHandlerGet.postDelayed(new EmojiRunnable(resourceId, true), 0);
+            }
+        });
+    }
     ////////////////////////////////////表情相关函数/////////////////////////////////////////
 
     /************************************emoji keyboard******************************/
@@ -1602,10 +1710,12 @@ public class ActivityChat extends Activity implements EMEventListener {
     public void didClickToSendEmoji(ChatEmoji emoji){
         flyEmojiHandler.postDelayed(new EmojiRunnable(emoji.getFlyEmojiId(),false), 0);
         // logic send out from here
-
+        sendEmotionCmd(emoji.getFaceName());
     }
 
     private Handler flyEmojiHandler = new Handler();
+
+    public Handler flyEmojiHandlerGet = new Handler();
 
     public class EmojiRunnable implements Runnable
     {

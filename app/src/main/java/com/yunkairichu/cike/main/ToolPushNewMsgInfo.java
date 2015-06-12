@@ -72,7 +72,7 @@ public class ToolPushNewMsgInfo {
                     BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                     try {
                         String key = String.valueOf(baseResponseUserChainInfo.getTitleInfo().getTitleId())+baseResponseUserChainInfo.getTitleInfo().getDvcId();
-                        if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) == 0) {
+                        if (checkUnreadJson.isNull(baseResponseUserChainInfo.getTitleInfo().getDvcId()) || checkUnreadJson.getInt(baseResponseUserChainInfo.getTitleInfo().getDvcId()) <= 0) {
                             checkUnreadJson.put(baseResponseUserChainInfo.getTitleInfo().getDvcId(), 1);
                             EMConversation conversation = EMChatManager.getInstance().getConversation(baseResponseUserChainInfo.getTitleInfo().getDvcId());
                             titleNewMsgFlag.put(key, conversation.getUnreadMsgCount());
@@ -92,10 +92,10 @@ public class ToolPushNewMsgInfo {
     public int getTitleNewMsgFlagValue(String key){
         ToolLog.dbg("key:"+key);
         try {
-            if(titleNewMsgFlag.isNull(key) || (int)titleNewMsgFlag.get(key) <= 0) {
+            if(titleNewMsgFlag.isNull(key) || (int)titleNewMsgFlag.getInt(key) <= 0) {
                 return 0;
             } else {
-                return (int)titleNewMsgFlag.get(key);
+                return (int)titleNewMsgFlag.getInt(key);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -106,11 +106,11 @@ public class ToolPushNewMsgInfo {
     public void putTitleNewMsgFlagValue(String key, int value){
         try {
             if(value > 0) {
-                if (titleNewMsgFlag.isNull(key) || (int) titleNewMsgFlag.get(key) <= 0) {
+                if (titleNewMsgFlag.isNull(key) || titleNewMsgFlag.getInt(key) <= 0) {
                     titleHasNewMsgCnt++;
                 }
             } else {
-                if (titleNewMsgFlag.isNull(key) && (int) titleNewMsgFlag.get(key) > 0) {
+                if ((!titleNewMsgFlag.isNull(key)) && titleNewMsgFlag.getInt(key) > 0) {
                     if(titleHasNewMsgCnt>0){
                         titleHasNewMsgCnt--;
                     }

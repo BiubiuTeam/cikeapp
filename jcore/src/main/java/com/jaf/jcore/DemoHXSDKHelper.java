@@ -71,7 +71,7 @@ public class DemoHXSDKHelper extends HXSDKHelper{
     protected void initListener(){
         super.initListener();
         //注册消息事件监听
-        initEventListener();
+        //initEventListener();
     }
 
     /**
@@ -105,35 +105,35 @@ public class DemoHXSDKHelper extends HXSDKHelper{
                     {
                         EMMessage message = (EMMessage)event.getData();
                         EMLog.d(TAG, "receive the event : " + event.getEvent() + ",id : " + message.getMsgId());
-
-                        EMLog.d(TAG, "收到透传消息");
-                        //获取消息body
-                        CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
-                        final String action = cmdMsgBody.action;//获取自定义action
-
-                        //获取扩展属性 此处省略
-                        //message.getStringAttribute("");
-                        EMLog.d(TAG, String.format("透传消息：action:%s,message:%s", action,message.toString()));
-                        final String str = "Receive the passthrough:action";
-
-                        final String CMD_TOAST_BROADCAST = "easemob.demo.cmd.toast";
-                        IntentFilter cmdFilter = new IntentFilter(CMD_TOAST_BROADCAST);
-
-                        //注册通话广播接收者
-                        appContext.registerReceiver(new BroadcastReceiver(){
-
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                // TODO Auto-generated method stub
-                                Toast.makeText(appContext, intent.getStringExtra("cmd_value"), Toast.LENGTH_SHORT).show();
-                            }
-
-                        }, cmdFilter);
-
-
-                        Intent broadcastIntent = new Intent(CMD_TOAST_BROADCAST);
-                        broadcastIntent.putExtra("cmd_value", str+action);
-                        appContext.sendBroadcast(broadcastIntent, null);
+//
+//                        EMLog.d(TAG, "收到透传消息");
+//                        //获取消息body
+//                        CmdMessageBody cmdMsgBody = (CmdMessageBody) message.getBody();
+//                        final String action = cmdMsgBody.action;//获取自定义action
+//
+//                        //获取扩展属性 此处省略
+//                        //message.getStringAttribute("");
+//                        EMLog.d(TAG, String.format("透传消息：action:%s,message:%s", action,message.toString()));
+//                        final String str = "Receive the passthrough:action";
+//
+//                        final String CMD_TOAST_BROADCAST = "easemob.demo.cmd.toast";
+//                        IntentFilter cmdFilter = new IntentFilter(CMD_TOAST_BROADCAST);
+//
+//                        //注册通话广播接收者
+//                        appContext.registerReceiver(new BroadcastReceiver(){
+//
+//                            @Override
+//                            public void onReceive(Context context, Intent intent) {
+//                                // TODO Auto-generated method stub
+//                                Toast.makeText(appContext, intent.getStringExtra("cmd_value"), Toast.LENGTH_SHORT).show();
+//                            }
+//
+//                        }, cmdFilter);
+//
+//
+//                        Intent broadcastIntent = new Intent(CMD_TOAST_BROADCAST);
+//                        broadcastIntent.putExtra("cmd_value", str+action);
+//                        appContext.sendBroadcast(broadcastIntent, null);
 
                         break;
                     }
