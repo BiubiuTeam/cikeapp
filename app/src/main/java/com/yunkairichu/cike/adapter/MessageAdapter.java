@@ -2,10 +2,10 @@ package com.yunkairichu.cike.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -39,7 +39,6 @@ import com.yunkairichu.cike.main.Constant;
 import com.yunkairichu.cike.main.R;
 import com.yunkairichu.cike.main.ToolLog;
 import com.yunkairichu.cike.main.ToolShowBigImage;
-import com.yunkairichu.cike.task.LoadImageTask;
 import com.yunkairichu.cike.utils.ImageCache;
 import com.yunkairichu.cike.utils.ImageUtils;
 import com.yunkairichu.cike.utils.SmileUtils;
@@ -97,6 +96,7 @@ public class MessageAdapter extends BaseAdapter {
     private Map<String, Timer> timers = new Hashtable<String, Timer>();
 
     private Long titleId;
+    private String toChatUsername;
     private int imageHolder;
     private int txtHolder;
     private int voiceHolder;
@@ -113,6 +113,7 @@ public class MessageAdapter extends BaseAdapter {
         toolShowBigImage = new ToolShowBigImage(activity);
         this.conversation = EMChatManager.getInstance().getConversation(username);
         this.titleId = titleId;
+        this.toChatUsername = username;
         this.imageHolder = 0;
         this.txtHolder = 0;
         this.voiceHolder = 0;
@@ -469,32 +470,42 @@ public class MessageAdapter extends BaseAdapter {
 
         if (message.direct == EMMessage.Direct.SEND) {
             View statusView = convertView.findViewById(R.id.msg_status);
-            // �ط���ť����¼�
-//            statusView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//
-//                    // ��ʾ�ط���Ϣ���Զ���alertdialog
-//                    Intent intent = new Intent(activity, AlertDialog.class);
-//                    intent.putExtra("msg", activity.getString(R.string.confirm_resend));
-//                    intent.putExtra("title", activity.getString(R.string.resend));
-//                    intent.putExtra("cancel", true);
-//                    intent.putExtra("position", position);
-//                    if (message.getType() == EMMessage.Type.TXT)
-//                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_TEXT);
-//                    else if (message.getType() == EMMessage.Type.VOICE)
-//                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_VOICE);
-//                    else if (message.getType() == EMMessage.Type.IMAGE)
-//                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_PICTURE);
+            // 重发按钮点击事件
+            if(statusView!=null) {
+                statusView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        // 显示重发消息的自定义alertdialog
+//                        Intent intent = new Intent(activity, AlertDialog.class);
+//                        intent.putExtra("msg", activity.getString(R.string.confirm_resend));
+//                        intent.putExtra("title", activity.getString(R.string.resend));
+//                        intent.putExtra("cancel", true);
+//                        intent.putExtra("position", position);
+                        if (message.getType() == EMMessage.Type.TXT) {
+//                            activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_TEXT);
+                            ((ActivityChat) activity).setResendPos(position);
+                            ((ActivityChat) activity).resendMessage();
+                        }
+                        else if (message.getType() == EMMessage.Type.VOICE) {
+//                            activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_VOICE);
+                            ((ActivityChat) activity).setResendPos(position);
+                            ((ActivityChat) activity).resendMessage();
+                        }
+                        else if (message.getType() == EMMessage.Type.IMAGE) {
+//                            activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_PICTURE);
+                            ((ActivityChat) activity).setResendPos(position);
+                            ((ActivityChat) activity).resendMessage();
+                        }
 //                    else if (message.getType() == EMMessage.Type.LOCATION)
 //                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_LOCATION);
 //                    else if (message.getType() == EMMessage.Type.FILE)
 //                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_FILE);
 //                    else if (message.getType() == EMMessage.Type.VIDEO)
 //                        activity.startActivityForResult(intent, ActivityChat.REQUEST_CODE_VIDEO);
-//
-//                }
-//            });
+                    }
+                });
+            }
 
         } else {
 //            final String st = context.getResources().getString(R.string.Into_the_blacklist);
@@ -514,26 +525,40 @@ public class MessageAdapter extends BaseAdapter {
         }
 
         int iTitleId = 0;
+        String toDeviceId = "";
+        String receiptId = "";
         ToolLog.dbg(message.getBody().toString());
         try {
             iTitleId = Integer.parseInt(message.getStringAttribute("broadcast"));
+            toDeviceId = message.getStringAttribute("from");
+            receiptId = message.getTo();
         } catch (EaseMobException e) {
             e.printStackTrace();
         }
 
         ToolLog.dbg("iTitleId:" + String.valueOf(iTitleId) + " LocTitleId:" + String.valueOf(titleId));
-        if((long)iTitleId != titleId){
-            convertView = createViewByMessage(message, position, 1);
-            convertView.setVisibility(View.GONE);
-        }else{
-            convertView.setVisibility(View.VISIBLE);
+        ToolLog.dbg("toDeviceId:" + toDeviceId + " toChatUsername:" + toChatUsername);
+        if(message.direct == EMMessage.Direct.RECEIVE) {
+            if ((long) iTitleId != titleId || !toDeviceId.equals(toChatUsername)) {
+                convertView = createViewByMessage(message, position, 1);
+                convertView.setVisibility(View.GONE);
+            } else {
+                convertView.setVisibility(View.VISIBLE);
+            }
+        } else if(message.direct == EMMessage.Direct.SEND) {
+            if ((long) iTitleId != titleId || !receiptId.equals(toChatUsername)) {
+                convertView = createViewByMessage(message, position, 1);
+                convertView.setVisibility(View.GONE);
+            } else {
+                convertView.setVisibility(View.VISIBLE);
+            }
         }
 
         if((long)iTitleId == titleId) {
             TextView timestamp = (TextView) convertView.findViewById(R.id.timestamp);
             if (position == 0) {
-                timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
-                timestamp.setVisibility(View.VISIBLE);
+                if(timestamp!=null)timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
+                if(timestamp!=null)timestamp.setVisibility(View.VISIBLE);
             } else {
                 // ������Ϣʱ���������Գ�����ʾʱ��
 //                EMMessage prevMessage = null;
@@ -551,10 +576,10 @@ public class MessageAdapter extends BaseAdapter {
 //                }
                 EMMessage prevMessage = getItem(position - 1);
                 if (prevMessage != null && DateUtils.isCloseEnough(message.getMsgTime(), prevMessage.getMsgTime())) {
-                    timestamp.setVisibility(View.GONE);
+                    if(timestamp!=null)timestamp.setVisibility(View.GONE);
                 } else {
-                        timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
-                        timestamp.setVisibility(View.VISIBLE);
+                    if(timestamp!=null)timestamp.setText(DateUtils.getTimestampString(new Date(message.getMsgTime())));
+                    if(timestamp!=null)timestamp.setVisibility(View.VISIBLE);
                 }
             }
         }
@@ -603,16 +628,16 @@ public class MessageAdapter extends BaseAdapter {
         if (message.direct == EMMessage.Direct.SEND) {
             switch (message.status) {
                 case SUCCESS: // ���ͳɹ�
-                    holder.pb.setVisibility(View.GONE);
-                    holder.staus_iv.setVisibility(View.GONE);
+                    if(holder.pb != null)holder.pb.setVisibility(View.GONE);
+                    if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.GONE);
                     break;
                 case FAIL: // ����ʧ��
-                    holder.pb.setVisibility(View.GONE);
-                    holder.staus_iv.setVisibility(View.VISIBLE);
+                    if(holder.pb != null)holder.pb.setVisibility(View.GONE);
+                    if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.VISIBLE);
                     break;
                 case INPROGRESS: // ������
-                    holder.pb.setVisibility(View.VISIBLE);
-                    holder.staus_iv.setVisibility(View.GONE);
+                    if(holder.pb != null)holder.pb.setVisibility(View.VISIBLE);
+                    if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.GONE);
                     break;
                 default:
                     // ������Ϣ
@@ -686,15 +711,15 @@ public class MessageAdapter extends BaseAdapter {
             case SUCCESS:
                 if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
                 //holder.tv.setVisibility(View.GONE);
-                //holder.staus_iv.setVisibility(View.GONE);
+                if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.GONE);
                 break;
             case FAIL:
                 if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
                 //holder.tv.setVisibility(View.GONE);
-                //holder.staus_iv.setVisibility(View.VISIBLE);
+                if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.VISIBLE);
                 break;
             case INPROGRESS:
-                //holder.staus_iv.setVisibility(View.GONE);
+                if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.GONE);
                 if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
                 //holder.tv.setVisibility(View.VISIBLE);
                 if (timers.containsKey(message.getMsgId()))
@@ -721,16 +746,14 @@ public class MessageAdapter extends BaseAdapter {
                                     //holder.tv.setVisibility(View.GONE);
                                     // message.setSendingStatus(Message.SENDING_STATUS_FAIL);
                                     // message.setProgress(0);
-                                    //holder.staus_iv.setVisibility(View.VISIBLE);
+                                    if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.VISIBLE);
                                     Toast.makeText(activity,
                                             activity.getString(R.string.send_fail) + activity.getString(R.string.connect_failuer_toast), Toast.LENGTH_SHORT)
                                             .show();
                                     timer.cancel();
                                 }
-
                             }
                         });
-
                     }
                 }, 0, 500);
                 break;
@@ -961,16 +984,16 @@ public class MessageAdapter extends BaseAdapter {
         // until here, deal with send voice msg
         switch (message.status) {
             case SUCCESS:
-//                holder.pb.setVisibility(View.GONE);
-//                holder.staus_iv.setVisibility(View.GONE);
+                if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
+                if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.GONE);
                 break;
             case FAIL:
                 if(holder.pb!=null)holder.pb.setVisibility(View.GONE);
-                holder.staus_iv.setVisibility(View.VISIBLE);
+                if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.VISIBLE);
                 break;
             case INPROGRESS:
                 if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
-                holder.staus_iv.setVisibility(View.GONE);
+                if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.GONE);
                 break;
             default:
                 sendMsgInBackground(message, holder);
@@ -1132,11 +1155,11 @@ public class MessageAdapter extends BaseAdapter {
      *
      * @param message
      * @param holder
-     * @param position
+     * @p position
      */
     public void sendMsgInBackground(final EMMessage message, final ViewHolder holder) {
-        //holder.staus_iv.setVisibility(View.GONE);
-        //holder.pb.setVisibility(View.VISIBLE);
+        if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.GONE);
+        if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
 
         final long start = System.currentTimeMillis();
         // ����sdk�����첽���ͷ���
@@ -1223,8 +1246,8 @@ public class MessageAdapter extends BaseAdapter {
             String to = message.getTo();
 
             // before send, update ui
-            //holder.staus_iv.setVisibility(View.GONE);
-            holder.pb.setVisibility(View.VISIBLE);
+            if(holder.staus_iv!=null)holder.staus_iv.setVisibility(View.GONE);
+            if(holder.pb!=null)holder.pb.setVisibility(View.VISIBLE);
             //holder.tv.setVisibility(View.VISIBLE);
             //holder.tv.setText("0%");
 
@@ -1252,7 +1275,7 @@ public class MessageAdapter extends BaseAdapter {
                             holder.pb.setVisibility(View.GONE);
                             //holder.tv.setVisibility(View.GONE);
                             // message.setSendingStatus(Message.SENDING_STATUS_FAIL);
-                            //holder.staus_iv.setVisibility(View.VISIBLE);
+                            if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.VISIBLE);
                             Toast.makeText(activity,
                                     "fail1", Toast.LENGTH_SHORT).show();
                         }
@@ -1290,21 +1313,21 @@ public class MessageAdapter extends BaseAdapter {
                 }
                 System.out.println("message status : " + message.status);
                 if (message.status == EMMessage.Status.SUCCESS) {
-                    // if (message.getType() == EMMessage.Type.FILE) {
-                    // holder.pb.setVisibility(View.INVISIBLE);
-                    // holder.staus_iv.setVisibility(View.INVISIBLE);
-                    // } else {
-                    // holder.pb.setVisibility(View.GONE);
-                    // holder.staus_iv.setVisibility(View.GONE);
-                    // }
+                     if (message.getType() == EMMessage.Type.FILE) {
+                         if(holder.pb != null)holder.pb.setVisibility(View.INVISIBLE);
+                         if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.INVISIBLE);
+                     } else {
+                         if(holder.pb != null)holder.pb.setVisibility(View.GONE);
+                         if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.GONE);
+                     }
 
                 } else if (message.status == EMMessage.Status.FAIL) {
-                    // if (message.getType() == EMMessage.Type.FILE) {
-                    // holder.pb.setVisibility(View.INVISIBLE);
-                    // } else {
-                    // holder.pb.setVisibility(View.GONE);
-                    // }
-                    // holder.staus_iv.setVisibility(View.VISIBLE);
+                     if (message.getType() == EMMessage.Type.FILE) {
+                         if(holder.pb != null)holder.pb.setVisibility(View.INVISIBLE);
+                     } else {
+                         if(holder.pb != null)holder.pb.setVisibility(View.GONE);
+                     }
+                    if(holder.staus_iv != null)holder.staus_iv.setVisibility(View.VISIBLE);
                     Toast.makeText(activity, "fail3", Toast.LENGTH_SHORT)
                             .show();
                 }
@@ -1395,12 +1418,12 @@ public class MessageAdapter extends BaseAdapter {
     /**
      * չʾ��Ƶ����ͼ
      *
-     * @param localThumb
+     * @p localThumb
      *            ��������ͼ·��
-     * @param iv
-     * @param thumbnailUrl
+     * @p iv
+     * @p thumbnailUrl
      *            Զ������ͼ·��
-     * @param message
+     * @p message
      */
 //    private void showVideoThumbView(String localThumb, ImageView iv, String thumbnailUrl, final EMMessage message) {
 //        // first check if the thumbnail image already loaded into cache

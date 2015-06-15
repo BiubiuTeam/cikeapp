@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <animation-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:drawable="@drawable/paopao6_copy_1"
+        android:drawable="@drawable/paopao0"
         android:duration="500" />
     <item
-        android:drawable="@drawable/paopao6_copy_2"
+        android:drawable="@drawable/paopao1"
         android:duration="500" />
     <item
-        android:drawable="@drawable/paopao6_copy_3"
+        android:drawable="@drawable/paopao2"
         android:duration="500" />
     <item
-        android:drawable="@drawable/paopao6_copy_4"
+        android:drawable="@drawable/paopao3"
         android:duration="500" />
     <item
-        android:drawable="@drawable/paopao6_copy_5"
+        android:drawable="@drawable/paopao4"
         android:duration="500" />
     <item
-        android:drawable="@drawable/paopao6_copy_6"
+        android:drawable="@drawable/paopao5"
+        android:duration="500" />
+    <item
+        android:drawable="@drawable/paopao6"
         android:duration="500" />
 </animation-list>

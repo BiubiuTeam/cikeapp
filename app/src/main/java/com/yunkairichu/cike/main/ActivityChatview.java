@@ -19,11 +19,13 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMMessage;
 import com.easemob.exceptions.EaseMobException;
+import com.jaf.jcore.Application;
 import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
@@ -234,6 +236,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 detailImage.dataContent.baseResponseUserChainInfo.getTitleInfo().setSortId(detailImage.dataContent.baseResponseUserChainInfo.getTitleInfo().getTitleId());
                 bundle.putSerializable("titleInfo", detailImage.dataContent.baseResponseUserChainInfo.getTitleInfo());
                 bundle.putSerializable("resSearchTitle", null);
+                bundle.putString("fromAct","ActivityChatview");
                 if(detailImageBitMap!=null) {
                     ToolLog.dbg("byteCnt:" + String.valueOf(detailImageBitMap.getByteCount()));
                     ByteArrayOutputStream baos = compressImage(detailImageBitMap);
@@ -310,10 +313,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
             Bundle data = msg.getData();
             Bitmap bitmap = (Bitmap) data.getParcelable("bitmap");
             int index = data.getInt("index");
-            ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
-            //titleBitmap[index] = compressImage(bitmap);
-            detailImageBitMap = bitmap;
-            detailImage.setImageBitmap(bitmap);
+            if(bitmap != null) {
+                ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
+                //titleBitmap[index] = compressImage(bitmap);
+                detailImageBitMap = bitmap;
+                detailImage.setImageBitmap(bitmap);
+            }
         }
     };
 
@@ -327,35 +332,45 @@ public class ActivityChatview extends Activity implements EMEventListener {
         }
 
         public void run() {
-            URL url = null;
-            ToolLog.dbg("BITMAP URL:"+myUrl);
-            try {
-                url = new URL(myUrl);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            HttpURLConnection conn = null;
-            try {
-                conn = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            conn.setConnectTimeout(5000 * 10);
-            try {
-                conn.setRequestMethod("GET");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
             Bitmap bitmap = null;
-            try {
-                if (conn.getResponseCode() == 200) {
-                    InputStream inputStream = conn.getInputStream();
-                    bitmap = BitmapFactory.decodeStream(inputStream);
+            //先从文件里找
+            String picName = myUrl.replace("http://biubiu.co/upload_src/", "");
+            //ToolLog.dbg("BITMAP NAME:" + picName);
+            bitmap = ToolFileRW.getInstance().loadBitmapFromFile(picName);
+            //如果bitmap为空，再发网络请求获取
+            if(bitmap == null) {
+                URL url = null;
+                //ToolLog.dbg("BITMAP URL:" + myUrl);
+                try {
+                    url = new URL(myUrl);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+                HttpURLConnection conn = null;
+                try {
+                    conn = (HttpURLConnection) url.openConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                conn.setConnectTimeout(5000 * 10);
+                try {
+                    conn.setRequestMethod("GET");
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    if (conn.getResponseCode() == 200) {
+                        InputStream inputStream = conn.getInputStream();
+                        bitmap = BitmapFactory.decodeStream(inputStream);
+                        //数据存文件
+                        ToolFileRW.getInstance().saveBitmapToFile(bitmap, picName);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            ToolLog.dbg("INDEX:"+index);
+
+            ToolLog.dbg("INDEX:" + index);
             Message msg = new Message();
             Bundle data = new Bundle();
             data.putParcelable("bitmap", bitmap);
@@ -381,6 +396,10 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 //入列表
                 setResponseUserChainPull(JacksonWrapper.json2Bean(response, ResponseUserChainPull.class));
                 if (idType == 1) {
+                    if(lastId == 0){
+                        ToolFileRW.getInstance().saveUserChainToFile(response, Constant.CIKEAPPUSERCHAINDATA);
+                    }
+
                     int i;
                     if (lastPostion == 0) {
                         ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
@@ -451,6 +470,47 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     }
                     boolean hasChain = (scrollAdapter.getCount() > 4);
                     ActivityChatview.this.setEmptyViewHidden(hasChain);
+                }
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                super.onErrorResponse(error);
+                userChainPullTime = 0;
+                lastPostion = 0;
+                listOfModelsBack.clear();
+
+                Toast.makeText(Application.getInstance().getApplicationContext(), "网络不给力，请稍后再试", Toast.LENGTH_SHORT).show();
+                ToolLog.dbg("BAD NETWORK:" + error.toString());
+                if (idType == 1) {
+                    JSONObject jo = null;
+                    jo = ToolFileRW.getInstance().loadUserChainFromFile(Constant.CIKEAPPUSERCHAINDATA);
+                    if (jo != null) {
+                        int i;
+                        setResponseUserChainPull(JacksonWrapper.json2Bean(jo, ResponseUserChainPull.class));
+                        ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
+                        listOfModelsBack.add(lastPostion, localTmpModel);
+                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        lastPostion = 2;
+                        for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
+                            BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
+                            ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
+                            listOfModelsBack.add(lastPostion, model);
+                            lastPostion++;
+                            listLastId = baseResponseUserChainInfo.getSortId();
+                            if (i == 0 && lastId == 0) {
+                                listFirstId = baseResponseUserChainInfo.getSortId();
+                            }
+                        }
+                        listOfModelsBack.add(lastPostion, localTmpModel);
+                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        listOfModelsReflash();
+                        if (detailImage.getVisibility() != View.VISIBLE) {
+                            ActivityChatview.this.centeralListViewAtIndex(0);
+                        }
+                        boolean hasChain = (scrollAdapter.getCount() > 4);
+                        ActivityChatview.this.setEmptyViewHidden(hasChain);
+                    }
                 }
             }
         });

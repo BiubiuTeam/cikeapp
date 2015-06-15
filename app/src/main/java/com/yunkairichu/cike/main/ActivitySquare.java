@@ -39,11 +39,13 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMMessage;
 import com.easemob.exceptions.EaseMobException;
+import com.jaf.jcore.Application;
 import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
@@ -95,7 +97,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private LinearLayout squareSelectButton;
     private ImageView squareBigPic;
     private ImageView squareBigPicBg;
-    private ImageView squareNothingPic;
     private ImageView squareNothingAnim;
     private TextView squareBigPicText;
     private Button sendChosStaBackButton;
@@ -174,7 +175,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         selectView = inflater.inflate(R.layout.view_square_selector, null);
         view = squareGridLayout.getChildAt(0);
         squareScrollView.setOnTouchListener(sqListener);
-        squareNothingPic = (ImageView) findViewById(R.id.square_nothing_pic);
         squareNothingAnim = (ImageView) findViewById(R.id.square_nothing_anim);
         animationDrawable=(AnimationDrawable) squareNothingAnim.getBackground();
 
@@ -183,7 +183,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         tvTopic = (TextView) findViewById(R.id.picker);
 
         ///////////////////////////////////////popupwindow相关//////////////////////////////////
-
         ArrayList<HashMap<String, Object>> statusNameList = new ArrayList<HashMap<String, Object>>();
         for (int i = 0; i <statusName.length ; i++) {
             HashMap<String, Object> map = new HashMap<String, Object>();
@@ -228,7 +227,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
             public void onClick(View v) {
                 Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
                 clearTitleBitmap();
-                cancelTimer2();
+                //squareScrollView.removeAllViews();
+                squareScrollView.setVisibility(View.GONE);
+//                cancelTimer2();
                 startActivityForResult(i, REQUEST_CODE_USER_CHAIN);
                 overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 ActivitySquare.this.updateChatChainButtonBeating(false);
@@ -269,7 +270,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
         ////////////////////////////////////// popupwindow的监控 //////////////////////////////////
 
-        startTimer2();
+//        startTimer2();
 
         ////////////////////////////////////// popupwindow的监控  完//////////////////////////////////
 
@@ -428,9 +429,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         return   bgdrawable;
     }
 
-
 //以下是vida的代码，保持不动即可
-
     /**
      * ***********************************侦听函数׽***********************************************
      */
@@ -441,15 +440,14 @@ public class ActivitySquare extends Activity implements EMEventListener {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
                     // ��������¼������������ݣ�����ScrollView�Ѿ������ײ�������һ�����
-                    if (/*sqListener != null
-                            && view != null
-                            &&*/ squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
+                    if (squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
                         if(squareBigPic.getVisibility() == View.GONE && squareBigPicText.getVisibility() == View.GONE && squareBigPicBg.getVisibility() == View.GONE) {
                             if (searchFlag == 1) {
                                 searchFlag = 0;
-                                clearTitleBitmap();
+                                //clearTitleBitmap();
+                                //squareGridLayout.removeAllViews();
                                 squareScrollView.scrollTo(10, 10);
-                                responseSearchTitle = null;
+                                //responseSearchTitle = null;
                                 doTitleSearch();
                             }
                         }
@@ -475,13 +473,17 @@ public class ActivitySquare extends Activity implements EMEventListener {
         }
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
+//                startTimer2();
                 chooseStatusDialog.dismiss();
+                squareScrollView.setVisibility(View.VISIBLE);
 
                 if(responseSearchTitle != null) {
+                    ToolLog.dbg("111");
                     squareNothingDisplay();
                     firReFlashSearchTitle();
                     getTitleBitmap();
                 } else{
+                    ToolLog.dbg("222");
                     if(searchFlag==1) {
                         responseSearchTitle = null;
                         searchFlag = 0;
@@ -490,13 +492,13 @@ public class ActivitySquare extends Activity implements EMEventListener {
                         doTitleSearch();
                     }
                 }
-                startTimer2();
                 ToolLog.dbg("start2");
             }
         } else if(resultCode == RESULT_FORCE_REFLASH){
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_CAMERA){
-                startTimer2();
+//                startTimer2();
                 chooseStatusDialog.dismiss();
+                squareScrollView.setVisibility(View.VISIBLE);
                 if(searchFlag==1) {
                     responseSearchTitle = null;
                     searchFlag = 0;
@@ -571,7 +573,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
             Bundle data = msg.getData();
             Bitmap bitmap = (Bitmap) data.getParcelable("bitmap");
             int index = data.getInt("index");
-            ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
+            //ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
             //titleBitmap[index] = compressImage(bitmap);
             titleBitmap[index] = bitmap;
             secReFlashSearchTitle(index);
@@ -588,6 +590,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         public void run() {
             bitmapNum = 0;
             tmpCnt = 0;
+
             for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
                 if (responseSearchTitle.getReturnData().getContData().get(i).getTitleType() == 2 || responseSearchTitle.getReturnData().getContData().get(i).getTitleType() == 3) {
                     bitmapNum++;
@@ -598,32 +601,42 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 if (baseResponseTitleInfo.getTitleType() != 2 && baseResponseTitleInfo.getTitleType() != 3) {
                     continue;
                 }
-                URL url = null;
-                try {
-                    url = new URL(baseResponseTitleInfo.getTitleCont());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                HttpURLConnection conn = null;
-                try {
-                    conn = (HttpURLConnection) url.openConnection();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                conn.setConnectTimeout(5000 * 10);
-                try {
-                    conn.setRequestMethod("GET");
-                } catch (ProtocolException e) {
-                    e.printStackTrace();
-                }
+
                 Bitmap bitmap = null;
-                try {
-                    if (conn.getResponseCode() == 200) {
-                        InputStream inputStream = conn.getInputStream();
-                        bitmap = BitmapFactory.decodeStream(inputStream);
+                //先从文件里找
+                String picName = baseResponseTitleInfo.getTitleCont().replace("http://biubiu.co/upload_src/", "");
+                bitmap = ToolFileRW.getInstance().loadBitmapFromFile(picName);
+                //如果bitmap为空，再发网络请求获取
+                if(bitmap == null) {
+                    ToolLog.dbg("图片不在，网络请求");
+                    URL url = null;
+                    try {
+                        url = new URL(baseResponseTitleInfo.getTitleCont());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    HttpURLConnection conn = null;
+                    try {
+                        conn = (HttpURLConnection) url.openConnection();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    conn.setConnectTimeout(5000 * 10);
+                    try {
+                        conn.setRequestMethod("GET");
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        if (conn.getResponseCode() == 200) {
+                            InputStream inputStream = conn.getInputStream();
+                            bitmap = BitmapFactory.decodeStream(inputStream);
+                            //数据存文件
+                            ToolFileRW.getInstance().saveBitmapToFile(bitmap, picName);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 Message msg = new Message();
@@ -651,7 +664,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
             ToolGetLocationInfo.getInstance().startLocation();
         }
         if(ToolGetLocationInfo.getInstance().getFailFlag()==1){
-            Toast.makeText(ActivitySquare.this,"网络不太好，请稍后再试",Toast.LENGTH_SHORT);
+            Toast.makeText(ActivitySquare.this,"网络不太好，请稍后再试",Toast.LENGTH_SHORT).show();
             return;
         }
         JSONObject jo = JsonPack.buildSearchTitle(filter, statusNameNum[selectorStatus],
@@ -672,6 +685,13 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 squareNothingDisplay();
                 firReFlashSearchTitle();
                 getTitleBitmap();
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                super.onErrorResponse(error);
+                Toast.makeText(Application.getInstance().getApplicationContext(), "网络不给力，请稍后再试", Toast.LENGTH_SHORT).show();
+                searchFlag = 1;
             }
         });
     }
@@ -702,6 +722,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         for (int i = 0; i < lineNum; i++) {
             linePos[i] = 0;
         }
+        clearTitleBitmap();
         squareGridLayout.removeAllViews();
         for (int i = 0; i < responseSearchTitle.getReturnData().getContData().size(); i++) {
             BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(i);
@@ -711,7 +732,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     if(linePos[j] < linePos[k]) k = j;
                 }
             }
-            ToolLog.dbg("AllHeight:"+String.valueOf(height)+" AllWidth:"+String.valueOf(width));
+            //ToolLog.dbg("AllHeight:"+String.valueOf(height)+" AllWidth:"+String.valueOf(width));
             //TODO haowenliang here
             ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             iv.setTag(i);
@@ -732,7 +753,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
                             i.putExtras(bundle);
 
                             clearTitleBitmap();
-                            cancelTimer2();
+                            //squareGridLayout.removeAllViews();
+                            squareScrollView.setVisibility(View.GONE);
+//                            cancelTimer2();
                             startActivityForResult(i, REQUEST_CODE_SINGLECHAT);
                             overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                         }
@@ -788,8 +811,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
         }
 
         Bitmap tmpBit = titleBitmap[index];//.copy(titleBitmap[index].getConfig(),true);
-        ((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(tmpBit);
-        ((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1)).setVisibility(View.VISIBLE);
+        if(((ImageViewSquareItem) squareGridLayout.getChildAt(2*index))!=null && tmpBit!=null)((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(tmpBit);
+        if(((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1))!=null)((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1)).setVisibility(View.VISIBLE);
     }
 
 /****************************************主逻辑 完********************************************************/
@@ -858,13 +881,11 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
     public void squareNothingDisplay(){
         if(responseSearchTitle.getReturnData().getContData() == null || responseSearchTitle.getReturnData().getContData().size() <= 0){
-            squareNothingPic.setVisibility(View.VISIBLE);
             squareNothingAnim.setVisibility(View.VISIBLE);
             animationDrawable.setOneShot(false);
             animationDrawable.start();
         } else {
             animationDrawable.stop();
-            squareNothingPic.setVisibility(View.GONE);
             squareNothingAnim.setVisibility(View.GONE);
         }
     }
@@ -883,7 +904,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
             };
         }
         //��ʼһ����ʱ����
-        if(timer2 != null && timerTask2 != null){timer2.schedule(timerTask2,2000,500);}// 1s后执行task,经过1s再次执行)
+        if(timer2 != null && timerTask2 != null){timer2.schedule(timerTask2, 2000, 500);}// 1s后执行task,经过1s再次执行)
     }
 
     public void cancelTimer2(){
@@ -913,6 +934,10 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
     public void setResponseUserChainPull(ResponseUserChainPull responseUserChainPull) {
         this.responseUserChainPull = responseUserChainPull;
+    }
+
+    public HorizontalScrollView getSquareScrollView(){
+        return squareScrollView;
     }
 
     /////////////////////////////////////////工具类///////////////////////////////////////////////

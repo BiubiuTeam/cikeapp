@@ -1,7 +1,6 @@
 package com.jaf.jcore;
 
 import android.content.Context;
-import android.content.Intent;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
@@ -13,9 +12,6 @@ import com.baidu.location.LocationClient;
 import com.easemob.chat.EMChat;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMChatOptions;
-import com.easemob.chat.EMMessage;
-import com.easemob.chat.OnMessageNotifyListener;
-import com.easemob.chat.OnNotificationClickListener;
 
 import org.json.JSONObject;
 
@@ -33,6 +29,7 @@ public class Application extends android.app.Application {
     public static LocationClient MLOCATIONCLIENT;
     public MyLocationListener mMyLocationListener;
     public JSONObject titleNewMsgFlag = new JSONObject();
+    public int splashConectTime = 0;
 
     @Override
     public void onCreate() {
@@ -133,7 +130,7 @@ public class Application extends android.app.Application {
     /**
      * �����û���
      *
-     * @param user
+     * @p user
      */
     public void setUserName(String username) {
         hxSDKHelper.setHXId(username);

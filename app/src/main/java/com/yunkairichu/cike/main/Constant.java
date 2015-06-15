@@ -11,6 +11,11 @@ public class Constant {
     public static final String ACCOUNT_REMOVED = "account_removed";
     public static final String TOCHATUSERNAME = "sillychat-860459f6-fa25-4eca-ac68-0e0b422f8ab2";
     public static final String UPLOADRESURL = "http://biubiu.co/upload.php";
+    public static final String CIKEAPPPATH = "/mnt/sdcard/cikeapp";
+    public static final String CIKEAPPPICPATH = "/mnt/sdcard/cikeapp/image";
+    public static final String CIKEAPPDATAPATH = "/mnt/sdcard/cikeapp/data";
+    public static final String CIKEAPPSQUAREDATA = "square.txt";
+    public static final String CIKEAPPUSERCHAINDATA = "userchain.txt";
 
     public static final int MAX_INPUT_TEXT_LENGTH = 30;
     public static final int IMPEACH_TITLE = 1;

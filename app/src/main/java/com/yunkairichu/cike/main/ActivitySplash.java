@@ -3,7 +3,10 @@ package com.yunkairichu.cike.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.Toast;
 
+import com.android.volley.VolleyError;
+import com.jaf.jcore.Application;
 import com.jaf.jcore.BindableActivity;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
@@ -84,6 +87,7 @@ public class ActivitySplash extends BindableActivity {
             @Override
             public void onResponse(JSONObject response) {
                 super.onResponse(response);
+                Application.getInstance().splashConectTime = 0;
                 if (response == null) {
                     ToolLog.dbg("server error");
                     return;
@@ -104,6 +108,32 @@ public class ActivitySplash extends BindableActivity {
                 startActivity(i);
                 overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 finish();
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                super.onErrorResponse(error);
+                Application.getInstance().splashConectTime++;
+                ToolLog.dbg("BAD NETWORK:" + error.toString());
+                if(Application.getInstance().splashConectTime<=10){
+                    if(Application.getInstance().splashConectTime % 3 == 1) {
+                        Toast.makeText(Application.getInstance().getApplicationContext(), "网络不给力，请稍等", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(Application.getInstance().getApplicationContext(), "无网络，请稍后再启动", Toast.LENGTH_SHORT).show();
+                }
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(Application.getInstance().splashConectTime<=10) {
+                            Intent i = new Intent(ActivitySplash.this, ActivitySplash.class);
+                            startActivity(i);
+                            overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+                            finish();
+                        }
+                    }
+                }, 2000);
             }
         });
     }

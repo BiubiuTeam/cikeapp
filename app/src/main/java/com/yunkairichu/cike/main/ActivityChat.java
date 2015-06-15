@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -150,7 +151,7 @@ public class ActivityChat extends Activity implements EMEventListener {
 
     /////////////////////Ui变量//////////////////////////////
     private PasteEditText mEditTextContent;
-    private Button btnSend;
+    private ImageView btnSend;
     private Button btnPicture;
     private Button buttonSetModeKeyboard;  //语音和键盘切换
     private Button buttonSetModeVoice;   //语音和键盘切换
@@ -185,6 +186,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     private Bitmap bigBitmap;                //进来时的大图
     //private LinearLayout btnContainer;
     //private ViewPager expressionViewpager;
+    private LayoutKeyboard rootLayout;
 
     /////////////////////数据及逻辑类变量////////////////////
     EMConversation conversation;
@@ -210,6 +212,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     private int big_pic_flag;  //大小图标标识
     private int impeachReasonFlag = 0;
     private String impeachReasonCont = "";
+    private int isOnCreated = 0;
 
     //定义大表情相关变量
     protected ImageView chatBottomLook=null;
@@ -246,7 +249,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         timeline_text = (TextView) findViewById(R.id.timeline_text);
         mEditTextContent = (PasteEditText) findViewById(R.id.et_sendmessage);
         btnPicture = (Button) findViewById(R.id.btn_add_picture);
-        btnSend = (Button) findViewById(R.id.btn_send);
+        btnSend = (ImageView) findViewById(R.id.btn_send);
         buttonSetModeKeyboard = (Button) findViewById(R.id.btn_set_mode_keyboard);
         buttonSetModeVoice = (Button) findViewById(R.id.btn_set_mode_voice);
         buttonPressToSpeak = findViewById(R.id.btn_press_to_speak);
@@ -261,6 +264,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         emojiIconContainer = (LinearLayout) findViewById(R.id.ll_face_container);
         loadmorePB = (ProgressBar) findViewById(R.id.chat_load_more);
         edittext_layout = (RelativeLayout) findViewById(R.id.edittext_layout);  //聊天编辑框
+        rootLayout = (LayoutKeyboard) findViewById(R.id.rootlayout);
         //btnContainer = (LinearLayout) findViewById(R.id.ll_btn_container); //emoji表情
         recordingContainer = findViewById(R.id.recording_container);
         chatType = 1;//暂时默认是单聊
@@ -286,6 +290,19 @@ public class ActivityChat extends Activity implements EMEventListener {
         big_image.setImageBitmap(bigBitmap);
         big_image_text.setText(baseResponseTitleInfo.getExtension().getText());
         big_pic_flag = 1;
+        //加多个逻辑，从关系链进来不展示大图
+        if(bundle.getString("fromAct")!=null && !bundle.getString("fromAct").isEmpty() && bundle.getString("fromAct").equals("ActivityChatview")){
+            ViewTreeObserver vto2 = big_image.getViewTreeObserver();
+            vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if(isOnCreated==0) {
+                        setImageScaleBig(false);
+                        isOnCreated=1;
+                    }
+                }
+            });
+        }
         //状态图标设置
         dToUserStatus = new Drawable[] { getResources().getDrawable(R.drawable.boring),
                 getResources().getDrawable(R.drawable.love), getResources().getDrawable(R.drawable.boring),
@@ -431,8 +448,23 @@ public class ActivityChat extends Activity implements EMEventListener {
                 if (baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))) {
                     forceQuit(0);
                 } else {
+                    ToolLog.dbg("big_pic_flag:"+String.valueOf(big_pic_flag));
                     ActivityChat.this.setImageScaleBig(big_pic_flag == 0);
                 }
+            }
+        });
+
+        rootLayout.setOnSoftKeyboardListener(new LayoutKeyboard.OnSoftKeyboardListener() {
+            @Override
+            public void onShown() {
+                // Do something here
+                ToolLog.dbg("yes");
+                setImageScaleBig(false);
+            }
+            @Override
+            public void onHidden() {
+                // Do something here
+                ToolLog.dbg("no");
             }
         });
 
@@ -503,70 +535,6 @@ public class ActivityChat extends Activity implements EMEventListener {
                 return false;
             }
         });
-
-        //Toast.makeText(ActivityChat.this, "titleId:" + String.valueOf(baseResponseTitleInfo.getSortId()), Toast.LENGTH_SHORT).show();
-    }
-
-    public void setImageScaleBig(boolean scaleBig){
-        if(big_pic_flag == 1 && scaleBig || big_pic_flag == 0 && scaleBig == false){
-            return;
-        }
-
-        View v = big_image;
-        int height, width;
-        if (scaleBig == false) {
-            if (boardHeight == 0 || boardHeight < v.getHeight())
-                boardHeight = v.getHeight();
-            if (boardWidth == 0 || boardWidth < v.getWidth()) boardWidth = v.getWidth();
-            smboardHeight = boardHeight* 1/ 4;
-            smboardWidth = boardWidth * 1 / 3;
-            height = smboardHeight;
-            width = smboardWidth;
-
-//            //初始化 Translate动画
-//            TranslateAnimation translateAnimation = new TranslateAnimation(0.f, width * 2, 0.f,0.0f);
-//            //初始化 Alpha动画
-//            Animation scaleAnimation = new ScaleAnimation(1.f, 1.f/3.f,1f,1f/4.f);
-//            //动画集
-//            AnimationSet set = new AnimationSet(true);
-//            set.addAnimation(translateAnimation);
-//            set.addAnimation(scaleAnimation);
-//            //设置动画时间 (作用到每个动画)
-//            set.setDuration(300);
-//            set.setFillAfter(true);
-//            big_image.startAnimation(set);
-
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-            layoutParams.setMargins(width * 2, 0, 0, 0);
-            v.setLayoutParams(layoutParams);
-            big_image_text.setVisibility(View.GONE);
-            big_pic_flag = 0;
-        } else {
-            height = boardHeight;
-            width = boardWidth;
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-            layoutParams.setMargins(0, 0, 0, 0);
-
-//            //初始化 Translate动画
-//            TranslateAnimation translateAnimation = new TranslateAnimation(smboardWidth*2, 0.f, 0.f,0.0f);
-//            //初始化 Alpha动画
-//            Animation scaleAnimation = new ScaleAnimation(1.f, 3.f,1.f,4.f);
-//            //动画集
-//            AnimationSet set = new AnimationSet(true);
-//            set.addAnimation(translateAnimation);
-//            set.addAnimation(scaleAnimation);
-//            //设置动画时间 (作用到每个动画)
-//            set.setDuration(300);
-//            set.setFillAfter(true);
-//            big_image.startAnimation(set);
-
-            v.setLayoutParams(layoutParams);
-            RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
-            layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
-            big_image_text.setVisibility(View.VISIBLE);
-            big_image_text.setLayoutParams(layoutParams2);
-            big_pic_flag = 1;
-        }
     }
 
     private void setUpView() {
@@ -822,7 +790,6 @@ public class ActivityChat extends Activity implements EMEventListener {
     }
 
     private void popupImpeachGet() {
-        ToolLog.dbg("lalal");
         View v = getLayoutInflater().inflate(R.layout.popup_impeach_get,
                 null);
 
@@ -835,7 +802,7 @@ public class ActivityChat extends Activity implements EMEventListener {
                     }
                 });
 
-        mDialog = PopupUtil.makePopup(this, v);
+        mDialog = PopupUtil.makeToast(this, v);
         mDialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
         mDialog.show();
     }
@@ -885,6 +852,69 @@ public class ActivityChat extends Activity implements EMEventListener {
                 }
             }
         });
+    }
+
+    /////////////////////////主图大小逻辑///////////////////////////
+    public void setImageScaleBig(boolean scaleBig){
+        if(big_pic_flag == 1 && scaleBig || big_pic_flag == 0 && scaleBig == false){
+            return;
+        }
+ToolLog.dbg("scale:"+String.valueOf(scaleBig));
+        View v = big_image;
+        int height, width;
+        if (scaleBig == false) {
+            if (boardHeight == 0 || boardHeight < v.getHeight())
+                boardHeight = v.getHeight();
+            if (boardWidth == 0 || boardWidth < v.getWidth()) boardWidth = v.getWidth();
+            smboardHeight = boardHeight* 1/ 4;
+            smboardWidth = boardWidth * 1 / 3;
+            height = smboardHeight;
+            width = smboardWidth;
+
+//            //初始化 Translate动画
+//            TranslateAnimation translateAnimation = new TranslateAnimation(0.f, width * 2, 0.f,0.0f);
+//            //初始化 Alpha动画
+//            Animation scaleAnimation = new ScaleAnimation(1.f, 1.f/3.f,1f,1f/4.f);
+//            //动画集
+//            AnimationSet set = new AnimationSet(true);
+//            set.addAnimation(translateAnimation);
+//            set.addAnimation(scaleAnimation);
+//            //设置动画时间 (作用到每个动画)
+//            set.setDuration(300);
+//            set.setFillAfter(true);
+//            big_image.startAnimation(set);
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+            layoutParams.setMargins(width * 2, 0, 0, 0);
+            v.setLayoutParams(layoutParams);
+            big_image_text.setVisibility(View.GONE);
+            big_pic_flag = 0;
+        } else {
+            height = boardHeight;
+            width = boardWidth;
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+            layoutParams.setMargins(0, 0, 0, 0);
+
+//            //初始化 Translate动画
+//            TranslateAnimation translateAnimation = new TranslateAnimation(smboardWidth*2, 0.f, 0.f,0.0f);
+//            //初始化 Alpha动画
+//            Animation scaleAnimation = new ScaleAnimation(1.f, 3.f,1.f,4.f);
+//            //动画集
+//            AnimationSet set = new AnimationSet(true);
+//            set.addAnimation(translateAnimation);
+//            set.addAnimation(scaleAnimation);
+//            //设置动画时间 (作用到每个动画)
+//            set.setDuration(300);
+//            set.setFillAfter(true);
+//            big_image.startAnimation(set);
+
+            v.setLayoutParams(layoutParams);
+            RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
+            layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
+            big_image_text.setVisibility(View.VISIBLE);
+            big_image_text.setLayoutParams(layoutParams2);
+            big_pic_flag = 1;
+        }
     }
 
 /////////////////////////////////////文本 图片 语音发送///////////////////////////
@@ -1071,6 +1101,22 @@ public class ActivityChat extends Activity implements EMEventListener {
             }
             sendPicture(file.getAbsolutePath());
         }
+    }
+
+    /**
+     * 重发消息
+     */
+    public void resendMessage() {
+        EMMessage msg = null;
+        msg = conversation.getMessage(resendPos);
+        // msg.setBackSend(true);
+        msg.status = EMMessage.Status.CREATE;
+
+        adapter.refreshSeekTo(resendPos);
+    }
+
+    public void setResendPos(int position){
+        resendPos = position;
     }
 
     //给对端发送结束对话命令
@@ -1615,7 +1661,7 @@ public class ActivityChat extends Activity implements EMEventListener {
             } else if (requestCode == REQUEST_CODE_TEXT || requestCode == REQUEST_CODE_VOICE
                     || requestCode == REQUEST_CODE_PICTURE || requestCode == REQUEST_CODE_LOCATION
                     || requestCode == REQUEST_CODE_VIDEO || requestCode == REQUEST_CODE_FILE) {
-//                resendMessage();
+                resendMessage();
             } else if (requestCode == REQUEST_CODE_COPY_AND_PASTE) {
 //                // 粘贴
 //                if (!TextUtils.isEmpty(clipboard.getText())) {
