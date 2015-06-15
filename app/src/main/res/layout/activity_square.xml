@@ -23,11 +23,15 @@
         android:id="@+id/square_nothing_anim"
         />
 
-    <HorizontalScrollView
-        android:layout_above="@+id/bigbutton_add"
+    <!-- The PullToRefreshScrollView replaces a standard PullToRefreshScrollView widget. -->
+    <com.handmark.pulltorefresh.library.PullToRefreshHorizontalScrollView
+        xmlns:ptr="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/pull_refresh_horizontalscrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/squereHScrollView"
+        ptr:ptrAnimationStyle="flip"
+        ptr:ptrMode="pullFromEnd"
+        android:layout_above="@+id/bigbutton_add"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="90dp"
@@ -40,8 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
         </GridLayout>
-
-    </HorizontalScrollView>
+    </com.handmark.pulltorefresh.library.PullToRefreshHorizontalScrollView>
 
     <RelativeLayout
         android:id="@+id/abovepopup"

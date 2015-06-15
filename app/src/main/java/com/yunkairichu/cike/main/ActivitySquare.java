@@ -16,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -45,6 +46,8 @@ import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMMessage;
 import com.easemob.exceptions.EaseMobException;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshHorizontalScrollView;
 import com.jaf.jcore.Application;
 import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.HXSDKHelper;
@@ -90,8 +93,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     public static final int RESULT_CODE_COPY = 1;
 
     //ui变量
-    private HorizontalScrollView squareScrollView;
-    private GridLayout squareGridLayout;
     private View view;
     private View selectView;
     private LinearLayout squareSelectButton;
@@ -118,7 +119,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private int searchFlag = 1;
     private File cameraFile;
     private ResponseSearchTitle responseSearchTitle;
-    private SquareOnTouchListener sqListener = new SquareOnTouchListener();
     private int isOnCreated;
     //private Timer timer;
     private TimerTask timerTask;
@@ -155,6 +155,11 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
     //////////////////////////////////////////初始化//////////////////////////////////////////////////
 
+    //haowenliang
+    private PullToRefreshHorizontalScrollView mPullRefreshScrollView;
+    private HorizontalScrollView squareScrollView;
+    private GridLayout squareGridLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,8 +167,18 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
         chooseStatusDialog = new MyDialog(this);
 //        dropDownDialog = new MySwitchDialog(this);
-        squareScrollView = (HorizontalScrollView) findViewById(R.id.squereHScrollView);
+
+        //haowenliang
+        mPullRefreshScrollView = (PullToRefreshHorizontalScrollView) findViewById(R.id.pull_refresh_horizontalscrollview);
+        mPullRefreshScrollView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener<HorizontalScrollView>() {
+            @Override
+            public void onRefresh(PullToRefreshBase<HorizontalScrollView> refreshView) {
+                new GetSquareDataTask().execute();
+            }
+        });
+        squareScrollView  = mPullRefreshScrollView.getRefreshableView();
         squareGridLayout = (GridLayout) findViewById(R.id.squereGridLayout);
+
         squareSelectButton = (LinearLayout) findViewById(R.id.status_picker);
         squareSelectButton.setClickable(true);
         squareChainButton = (Button) findViewById(R.id.squareUserChainButton);
@@ -174,7 +189,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         LayoutInflater inflater = getLayoutInflater();
         selectView = inflater.inflate(R.layout.view_square_selector, null);
         view = squareGridLayout.getChildAt(0);
-        squareScrollView.setOnTouchListener(sqListener);
         squareNothingAnim = (ImageView) findViewById(R.id.square_nothing_anim);
         animationDrawable=(AnimationDrawable) squareNothingAnim.getBackground();
 
@@ -429,38 +443,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         return   bgdrawable;
     }
 
-//以下是vida的代码，保持不动即可
-    /**
-     * ***********************************侦听函数׽***********************************************
-     */
-
-    class SquareOnTouchListener implements View.OnTouchListener {
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_UP:
-                    // ��������¼������������ݣ�����ScrollView�Ѿ������ײ�������һ�����
-                    if (squareScrollView.getChildAt(0).getMeasuredWidth() <= view.getWidth() + view.getScrollX()) {
-                        if(squareBigPic.getVisibility() == View.GONE && squareBigPicText.getVisibility() == View.GONE && squareBigPicBg.getVisibility() == View.GONE) {
-                            if (searchFlag == 1) {
-                                searchFlag = 0;
-                                //clearTitleBitmap();
-                                //squareGridLayout.removeAllViews();
-                                squareScrollView.scrollTo(10, 10);
-                                //responseSearchTitle = null;
-                                doTitleSearch();
-                            }
-                        }
-                        return true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        }
-    }
-
 ///////////////////////////////////////大事件响应/////////////////////////////////////
 
     /**
@@ -664,6 +646,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
             ToolGetLocationInfo.getInstance().startLocation();
         }
         if(ToolGetLocationInfo.getInstance().getFailFlag()==1){
+            updatePullRefreshViewOnUiThread(false);
             Toast.makeText(ActivitySquare.this,"网络不太好，请稍后再试",Toast.LENGTH_SHORT).show();
             return;
         }
@@ -673,6 +656,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             @Override
             public void onResponse(JSONObject response) {
                 super.onResponse(response);
+                updatePullRefreshViewOnUiThread(true);
+
                 if (response == null) {
                     ToolLog.dbg("server error");
                     return;
@@ -690,6 +675,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             @Override
             public void onErrorResponse(VolleyError error) {
                 super.onErrorResponse(error);
+                updatePullRefreshViewOnUiThread(false);
+
                 Toast.makeText(Application.getInstance().getApplicationContext(), "网络不给力，请稍后再试", Toast.LENGTH_SHORT).show();
                 searchFlag = 1;
             }
@@ -986,4 +973,36 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
 /****************************************工具类 完********************************************************/
 
+    private class GetSquareDataTask extends AsyncTask<Void, Void, String[]> {
+        @Override
+        protected String[] doInBackground(Void... params) {
+            // Simulates a background job.
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            // Do some stuff here
+            doTitleSearch();
+            super.onPostExecute(result);
+        }
+    }
+
+    private static boolean squareDataScrollToTop = false;
+    public void updatePullRefreshViewOnUiThread(boolean scrollToTop) {
+        squareDataScrollToTop = scrollToTop;
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                //更新UI
+                if(squareDataScrollToTop)
+                    squareScrollView.smoothScrollTo(0,0);
+                mPullRefreshScrollView.onRefreshComplete();
+            }
+        });
+    }
 }
