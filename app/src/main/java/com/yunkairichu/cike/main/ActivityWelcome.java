@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.umeng.analytics.MobclickAgent;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +35,17 @@ public class ActivityWelcome extends Activity{
 
     private GestureDetector mGestureDetector;
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +86,7 @@ public class ActivityWelcome extends Activity{
                 switch (ea) {
                     case MotionEvent.ACTION_DOWN:
                         cancelTimer();
-                        lastX = (int) event.getRawX();// »ñÈ¡´¥ÃþÊÂ¼þ´¥ÃþÎ»ÖÃµÄÔ­Ê¼X×ø±ê
+                        lastX = (int) event.getRawX();// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ãµï¿½Ô­Ê¼Xï¿½ï¿½ï¿½
                         lastY = (int) event.getRawY();
                         initX = lastX;
                         initY = lastY;
@@ -128,7 +141,7 @@ public class ActivityWelcome extends Activity{
                 }
             };
         }
-        //¿ªÊ¼Ò»¸ö¶¨Ê±ÈÎÎñ
+        //ï¿½ï¿½Ê¼Ò»ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
         if(timer != null && timerTask != null){timer.schedule(timerTask, 800, 400);}
     }
 

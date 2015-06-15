@@ -15,6 +15,7 @@ import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.jaf.jcore.ToolGetLocationInfo;
+import com.umeng.analytics.MobclickAgent;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseRegister;
@@ -32,6 +33,18 @@ public class ActivityRole extends Activity {
     private ResponseRegister responseRegister = new ResponseRegister();
     private int userConfig = 0;
     private int isException = 0;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

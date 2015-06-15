@@ -29,6 +29,8 @@ import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.analytics.MobclickAgentJSInterface;
 import com.yunkairichu.cike.adapter.ScrollAdapter;
 import com.yunkairichu.cike.bean.BaseResponseUserChainInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
@@ -503,6 +505,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
     protected void onResume() {
         Log.i("ChatActivity", "onResume");
         super.onResume();
+        MobclickAgent.onResume(this);
 
         DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
         sdkHelper.pushActivity(this);
@@ -510,6 +513,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
         EMChatManager.getInstance().registerEventListener(this, new EMNotifierEvent.Event[]{EMNotifierEvent.Event.EventNewMessage
                 , EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override

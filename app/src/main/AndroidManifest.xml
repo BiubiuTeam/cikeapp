@@ -176,6 +176,8 @@
         <activity android:name=".ActivityChatview"
             android:screenOrientation="portrait">
         </activity>
-
+        <!--haowen umeng-->
+        <meta-data android:value="557e453e67e58e56d30029f7" android:name="UMENG_APPKEY"></meta-data>
+        <meta-data android:value="Channel ID" android:name="UMENG_CHANNEL"/>
     </application>
 </manifest>

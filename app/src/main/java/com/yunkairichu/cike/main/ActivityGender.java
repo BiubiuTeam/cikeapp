@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 
+import com.umeng.analytics.MobclickAgent;
+
 /**
  * Created by liuxiaobo on 15/5/9.
  * Modified by vida on 2015/5/10
@@ -15,6 +17,18 @@ public class ActivityGender extends Activity {
 
     private Button buttonMale;
     private Button buttonFemale;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,5 +67,7 @@ public class ActivityGender extends Activity {
                 finish();
             }
         });
+
+
     }
 }

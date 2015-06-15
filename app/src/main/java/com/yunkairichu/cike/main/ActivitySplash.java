@@ -8,6 +8,7 @@ import com.jaf.jcore.BindableActivity;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
+import com.umeng.analytics.MobclickAgent;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseUserInfoLoad;
@@ -54,14 +55,22 @@ public class ActivitySplash extends BindableActivity {
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        MobclickAgent.setDebugMode(true);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
 //        JPushInterface.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPause(this);
 //        JPushInterface.onPause(this);
     }
 

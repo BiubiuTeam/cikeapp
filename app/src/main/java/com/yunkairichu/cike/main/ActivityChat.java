@@ -62,6 +62,7 @@ import com.jaf.jcore.HXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
+import com.umeng.analytics.MobclickAgent;
 import com.yunkairichu.cike.adapter.MessageAdapter;
 import com.yunkairichu.cike.adapter.VoicePlayClickListener;
 import com.yunkairichu.cike.bean.BaseResponseTitleInfo;
@@ -641,6 +642,8 @@ public class ActivityChat extends Activity implements EMEventListener {
     protected void onResume() {
         Log.i("ChatActivity", "onResume");
         super.onResume();
+        MobclickAgent.onResume(this);
+
         adapter.refresh();
 
         DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
@@ -650,6 +653,12 @@ public class ActivityChat extends Activity implements EMEventListener {
                 , EMNotifierEvent.Event.EventNewCMDMessage, EMNotifierEvent.Event.EventDeliveryAck
                 , EMNotifierEvent.Event.EventReadAck});
         EMChat.getInstance().setAppInited();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override
