@@ -57,7 +57,7 @@ public class FlipLoadingLayout extends LoadingLayout {
 
 	@Override
 	protected void onLoadingDrawableSet(Drawable imageDrawable) {
-		if (null != imageDrawable) {
+		if (null != imageDrawable && false) {
 			final int dHeight = imageDrawable.getIntrinsicHeight();
 			final int dWidth = imageDrawable.getIntrinsicWidth();
 
@@ -90,7 +90,7 @@ public class FlipLoadingLayout extends LoadingLayout {
 	@Override
 	protected void pullToRefreshImpl() {
 		// Only start reset Animation, we've previously show the rotate anim
-		if (mRotateAnimation == mHeaderImage.getAnimation()) {
+		if (mRotateAnimation == mHeaderImage.getAnimation() && false) {
 			mHeaderImage.startAnimation(mResetRotateAnimation);
 		}
 	}
@@ -99,19 +99,25 @@ public class FlipLoadingLayout extends LoadingLayout {
 	protected void refreshingImpl() {
 		mHeaderImage.clearAnimation();
 		mHeaderImage.setVisibility(View.INVISIBLE);
-		mHeaderProgress.setVisibility(View.VISIBLE);
+//		mHeaderProgress.setVisibility(View.VISIBLE);
+        mHeaderProgress.setVisibility(View.INVISIBLE);
+
+        mRefreshLayout.startFaceAnimate(true);
 	}
 
 	@Override
 	protected void releaseToRefreshImpl() {
-		mHeaderImage.startAnimation(mRotateAnimation);
+//		mHeaderImage.startAnimation(mRotateAnimation);
 	}
 
 	@Override
 	protected void resetImpl() {
 		mHeaderImage.clearAnimation();
 		mHeaderProgress.setVisibility(View.GONE);
-		mHeaderImage.setVisibility(View.VISIBLE);
+//		mHeaderImage.setVisibility(View.VISIBLE);
+        mHeaderImage.setVisibility(View.INVISIBLE);
+
+        mRefreshLayout.stopFaceAnimate(true);
 	}
 
 	@Override

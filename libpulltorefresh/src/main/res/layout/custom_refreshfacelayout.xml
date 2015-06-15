@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.handmark.pulltorefresh.library.RefreshFaceLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/refreshFacelayout"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/refreshFace0"
+            android:layout_marginTop="10dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:scaleType="centerInside"
+            />
+
+        <ImageView
+            android:id="@+id/refreshFace1"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/refreshFace0"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:scaleType="centerInside"
+            />
+
+        <ImageView
+            android:id="@+id/refreshFace2"
+            android:layout_below="@id/refreshFace1"
+            android:layout_marginTop="10dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:scaleType="centerInside"
+            />
+
+        <ImageView
+            android:id="@+id/refreshFace3"
+            android:layout_below="@id/refreshFace2"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:scaleType="centerInside"
+            />
+
+        <TextView
+            android:id="@+id/refreshInfoLabel"
+            android:layout_toRightOf="@id/refreshFace0"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true"
+            android:textColor="#4a90e2"
+            android:textSize="48px"
+            android:text="松\n手\n换\n一\n批"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+</com.handmark.pulltorefresh.library.RefreshFaceLayout>

@@ -39,6 +39,7 @@ import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Orientation;
 import com.handmark.pulltorefresh.library.R;
+import com.handmark.pulltorefresh.library.RefreshFaceLayout;
 
 @SuppressLint("ViewConstructor")
 public abstract class LoadingLayout extends FrameLayout implements ILoadingLayout {
@@ -51,6 +52,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 
 	protected final ImageView mHeaderImage;
 	protected final ProgressBar mHeaderProgress;
+    protected final RefreshFaceLayout mRefreshLayout;
 
 	private boolean mUseIntrinsicAnimation;
 
@@ -82,6 +84,8 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 		mInnerLayout = (FrameLayout) findViewById(R.id.fl_inner);
 		mHeaderText = (TextView) mInnerLayout.findViewById(R.id.pull_to_refresh_text);
 		mHeaderProgress = (ProgressBar) mInnerLayout.findViewById(R.id.pull_to_refresh_progress);
+        mRefreshLayout = (RefreshFaceLayout)mInnerLayout.findViewById(R.id.refreshFacelayout);
+
 		mSubHeaderText = (TextView) mInnerLayout.findViewById(R.id.pull_to_refresh_sub_text);
 		mHeaderImage = (ImageView) mInnerLayout.findViewById(R.id.pull_to_refresh_image);
 
@@ -208,6 +212,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 		}
 		if (View.VISIBLE == mHeaderProgress.getVisibility()) {
 			mHeaderProgress.setVisibility(View.INVISIBLE);
+            mRefreshLayout.stopFaceAnimate(true);
 		}
 		if (View.VISIBLE == mHeaderImage.getVisibility()) {
 			mHeaderImage.setVisibility(View.INVISIBLE);
@@ -262,7 +267,8 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 		if (null != mHeaderText) {
 			mHeaderText.setText(mPullLabel);
 		}
-		mHeaderImage.setVisibility(View.VISIBLE);
+//		mHeaderImage.setVisibility(View.VISIBLE);
+        mHeaderImage.setVisibility(View.INVISIBLE);
 
 		if (mUseIntrinsicAnimation) {
 			((AnimationDrawable) mHeaderImage.getDrawable()).stop();
@@ -316,10 +322,12 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 			mHeaderText.setVisibility(View.VISIBLE);
 		}
 		if (View.INVISIBLE == mHeaderProgress.getVisibility()) {
-			mHeaderProgress.setVisibility(View.VISIBLE);
+//			mHeaderProgress.setVisibility(View.VISIBLE);
+            mHeaderProgress.setVisibility(View.INVISIBLE);
 		}
 		if (View.INVISIBLE == mHeaderImage.getVisibility()) {
-			mHeaderImage.setVisibility(View.VISIBLE);
+//			mHeaderImage.setVisibility(View.VISIBLE);
+            mHeaderImage.setVisibility(View.INVISIBLE);
 		}
 		if (View.INVISIBLE == mSubHeaderText.getVisibility()) {
 			mSubHeaderText.setVisibility(View.VISIBLE);

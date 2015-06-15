@@ -56,6 +56,7 @@ public class RotateLoadingLayout extends LoadingLayout {
 	}
 
 	public void onLoadingDrawableSet(Drawable imageDrawable) {
+        if (true)return;
 		if (null != imageDrawable) {
 			mRotationPivotX = Math.round(imageDrawable.getIntrinsicWidth() / 2f);
 			mRotationPivotY = Math.round(imageDrawable.getIntrinsicHeight() / 2f);
@@ -63,6 +64,7 @@ public class RotateLoadingLayout extends LoadingLayout {
 	}
 
 	protected void onPullImpl(float scaleOfLayout) {
+        if (true)return;
 		float angle;
 		if (mRotateDrawableWhilePulling) {
 			angle = scaleOfLayout * 90f;
@@ -76,16 +78,19 @@ public class RotateLoadingLayout extends LoadingLayout {
 
 	@Override
 	protected void refreshingImpl() {
+        if (true)return;
 		mHeaderImage.startAnimation(mRotateAnimation);
 	}
 
 	@Override
 	protected void resetImpl() {
+        if (true)return;
 		mHeaderImage.clearAnimation();
 		resetImageRotation();
 	}
 
 	private void resetImageRotation() {
+        if (true)return;
 		if (null != mHeaderImageMatrix) {
 			mHeaderImageMatrix.reset();
 			mHeaderImage.setImageMatrix(mHeaderImageMatrix);

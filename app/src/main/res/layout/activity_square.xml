@@ -31,6 +31,7 @@
         android:layout_height="match_parent"
         ptr:ptrAnimationStyle="flip"
         ptr:ptrMode="pullFromEnd"
+        android:overScrollMode="never"
         android:layout_above="@+id/bigbutton_add"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
