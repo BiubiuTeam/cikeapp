@@ -34,20 +34,19 @@ public class MyHalfItem extends ImageView{
 
     public float getIndent(float distance){
         float x_vertex = maxIndent();
-        distance = distance + ITEM_DEFAULT_HEIGHT;
 
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+//        distance = distance - ITEM_DEFAULT_HEIGHT;
         float y_vertex = displayMetrics.heightPixels  / displayMetrics.density;
         double a = (0 - x_vertex) / ( Math.pow(( 0 - y_vertex), 2) ) ;
         float indent = (float)  -(a * Math.pow((distance - y_vertex), 2) + x_vertex/2);
-                //+ displayMetrics.widthPixels / displayMetrics.density;
         return indent;
     }
 
     public float maxIndent()
     {
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
-        return displayMetrics.widthPixels/(2*displayMetrics.density);
+        return displayMetrics.widthPixels/(3*displayMetrics.density);
     }
 
     public void setModelWithGendarAndHeartbeat(boolean isLocal, boolean isFemale ,boolean heartbeat){

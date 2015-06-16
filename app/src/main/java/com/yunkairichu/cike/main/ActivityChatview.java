@@ -58,6 +58,7 @@ import java.util.List;
  */
 public class ActivityChatview extends Activity implements EMEventListener {
     //本类常量
+    public static final int VISIBLE_LIST_CELL_COUNT = 7;
     public static final int REQUEST_CODE_CHAIN_TO_SCHAT = 102;
 
     public static final int RESULT_FORCE_REFLASH = 101;
@@ -112,12 +113,15 @@ public class ActivityChatview extends Activity implements EMEventListener {
         listView.setOverScrollMode(2);//OVER_SCROLL_NEVER = 2
         listView.setVerticalScrollBarEnabled(false);
         listView.setHorizontalScrollBarEnabled(false);
-        listView.setDividerHeight((int) ToolDevice.dp2px(30));
-
-        listViewHeight = MyHalfItem.ITEM_DEFAULT_HEIGHT * 5 + listView.getDividerHeight()*(5-1);
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        listViewHeight = MyHalfItem.ITEM_DEFAULT_HEIGHT * VISIBLE_LIST_CELL_COUNT;
+        int leftHeight = dm.heightPixels - listViewHeight;
+        int dividerHeight = leftHeight/(VISIBLE_LIST_CELL_COUNT - 1);
+        listView.setDividerHeight(dividerHeight);
+        listViewHeight = listViewHeight + dividerHeight*(VISIBLE_LIST_CELL_COUNT - 1);
 
         LinearLayout.LayoutParams topInfoP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         topInfoP.height = listViewHeight;
@@ -260,12 +264,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
             }
         }
 
-        listView.setSelection(index - 2);
+        listView.setSelection(index - VISIBLE_LIST_CELL_COUNT/2);
     }
 
     public void centeralListViewAtIndex(int index){
-        ChatListItemModel model = scrollAdapter.getItem(index + 2);
-        this.clickAvatarAtIndex(model, index + 2);
+        ChatListItemModel model = scrollAdapter.getItem(index + VISIBLE_LIST_CELL_COUNT/2);
+        this.clickAvatarAtIndex(model, index + VISIBLE_LIST_CELL_COUNT/2);
     }
 
     public void setEmptyViewHidden(boolean hidden){
@@ -402,10 +406,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
 
                     int i;
                     if (lastPostion == 0) {
+                        int tmpCount = VISIBLE_LIST_CELL_COUNT/2;
                         ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
-                        listOfModelsBack.add(lastPostion, localTmpModel);
-                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
-                        lastPostion = 2;
+                        for(int k = 0; k < tmpCount; k++){
+                            listOfModelsBack.add(k+lastPostion, localTmpModel);
+                        }
+                        lastPostion = tmpCount;
                     }
                     for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
@@ -418,21 +424,20 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         }
                     }
                     userChainPullTime++;
-//                    ToolLog.dbg("listLastId:" + String.valueOf(listLastId));
-//                    ToolLog.dbg("responseUserChainPullSize:" + String.valueOf(responseUserChainPull.getReturnData().getContData().size()));
-//                    ToolLog.dbg("userChainPullTime:" + String.valueOf(userChainPullTime));
-//                    ToolLog.dbg("lastPostion:" + String.valueOf(lastPostion));
                     if (responseUserChainPull.getReturnData().getContData().size() > 0 && userChainPullTime < Constant.MAX_CHAIN_PULL_TIME) {
                         userChainPull(Constant.IDTYPE_GETOLD, listLastId);
                     } else {
+                        int tmpCount = VISIBLE_LIST_CELL_COUNT/2;
                         ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
-                        listOfModelsBack.add(lastPostion, localTmpModel);
-                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        for (int tk = 0; tk < tmpCount; tk++){
+                            listOfModelsBack.add(lastPostion+tk, localTmpModel);
+                        }
+
                         listOfModelsReflash();
                         if (detailImage.getVisibility() != View.VISIBLE) {
                             ActivityChatview.this.centeralListViewAtIndex(0);
                         }
-                        boolean hasChain = (scrollAdapter.getCount() > 4);
+                        boolean hasChain = (scrollAdapter.getCount() > 2*tmpCount);
                         ActivityChatview.this.setEmptyViewHidden(hasChain);
                     }
                 } else if (idType == 2) {
@@ -440,14 +445,17 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     //ToolLog.dbg("listFirstId:" + String.valueOf(listFirstId));
                     List<ChatListItemModel> listOfModelsTmp = new ArrayList<ChatListItemModel>();
                     listOfModelsTmp.clear();
-                    for (int j = 2; j < listOfModels.size() - 2; j++) {
-                        listOfModelsTmp.add(j - 2, listOfModels.get(j));
+                    int tmpCount = VISIBLE_LIST_CELL_COUNT/2;
+                    for (int j = tmpCount; j < listOfModels.size() - tmpCount; j++) {
+                        listOfModelsTmp.add(j - tmpCount, listOfModels.get(j));
                     }
                     ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
                     listOfModels.clear();
-                    listOfModels.add(0, localTmpModel);
-                    listOfModels.add(1, localTmpModel);
-                    int j = 2;
+                    for (int tk = 0; tk < tmpCount; tk++){
+                        listOfModelsBack.add(tk, localTmpModel);
+                    }
+
+                    int j = tmpCount;
                     for (i = responseUserChainPull.getReturnData().getContData().size() - 1; i >= 0; i--) {
                         BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                         ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
@@ -462,13 +470,15 @@ public class ActivityChatview extends Activity implements EMEventListener {
                         j++;
                     }
                     listOfModelsTmp.clear();
-                    listOfModels.add(j, localTmpModel);
-                    listOfModels.add(j + 1, localTmpModel);
+                    for (int bk = 0; bk < tmpCount; bk++){
+                        listOfModelsBack.add(bk+j, localTmpModel);
+                    }
+
                     scrollAdapter.refresh();
                     if (detailImage.getVisibility() != View.VISIBLE) {
                         ActivityChatview.this.centeralListViewAtIndex(0);
                     }
-                    boolean hasChain = (scrollAdapter.getCount() > 4);
+                    boolean hasChain = (scrollAdapter.getCount() > 2*tmpCount);
                     ActivityChatview.this.setEmptyViewHidden(hasChain);
                 }
             }
@@ -488,10 +498,13 @@ public class ActivityChatview extends Activity implements EMEventListener {
                     if (jo != null) {
                         int i;
                         setResponseUserChainPull(JacksonWrapper.json2Bean(jo, ResponseUserChainPull.class));
+                        int tmpCount = VISIBLE_LIST_CELL_COUNT/2;
                         ChatListItemModel localTmpModel = new ChatListItemModel(true, null);
-                        listOfModelsBack.add(lastPostion, localTmpModel);
-                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
-                        lastPostion = 2;
+                        for(int k = 0; k < tmpCount; k++){
+                            listOfModelsBack.add(k+lastPostion, localTmpModel);
+                        }
+                        lastPostion = tmpCount;
+
                         for (i = 0; i < responseUserChainPull.getReturnData().getContData().size(); i++) {
                             BaseResponseUserChainInfo baseResponseUserChainInfo = responseUserChainPull.getReturnData().getContData().get(i);
                             ChatListItemModel model = new ChatListItemModel(false, baseResponseUserChainInfo);
@@ -502,8 +515,9 @@ public class ActivityChatview extends Activity implements EMEventListener {
                                 listFirstId = baseResponseUserChainInfo.getSortId();
                             }
                         }
-                        listOfModelsBack.add(lastPostion, localTmpModel);
-                        listOfModelsBack.add(lastPostion + 1, localTmpModel);
+                        for (int bk = 0; bk < tmpCount; bk++){
+                            listOfModelsBack.add(bk+lastPostion, localTmpModel);
+                        }
                         listOfModelsReflash();
                         if (detailImage.getVisibility() != View.VISIBLE) {
                             ActivityChatview.this.centeralListViewAtIndex(0);
