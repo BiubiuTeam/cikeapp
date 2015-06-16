@@ -23,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/chat_topbar_horizontal_margin"
-                android:textColor="#ffffff"
+                android:textColor="@color/text_color"
                 android:layout_marginTop="@dimen/chat_topbar_top_margin"
                 android:textSize="@dimen/chat_menu"
                 android:text="@string/back"/>
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="@dimen/chat_topbar_horizontal_margin"
-                android:textColor="#ffffff"
+                android:textColor="@color/text_color"
                 android:layout_marginTop="@dimen/chat_topbar_top_margin"
                 android:textSize="@dimen/chat_menu"
                 android:text="@string/report"/>
@@ -126,7 +126,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/chatting_setmode_voice_btn"
+                android:background="@drawable/toolbar_voice_selector"
                 android:layout_gravity="center_vertical"
                 android:onClick="setModeVoice"
                 android:visibility="visible" />
@@ -136,7 +136,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/chatting_setmode_keyboard_btn"
+                android:background="@drawable/toolbar_keyboard_selector"
                 android:layout_gravity="center_vertical"
                 android:onClick="setModeKeyboard"
                 android:visibility="gone" />
@@ -197,43 +197,41 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp">
-    <ImageView
-        android:id="@+id/iv_emoticons_normal"
-        android:layout_width="25dip"
-        android:layout_height="25dip"
+        <ImageView
+            android:id="@+id/iv_emoticons_normal"
+            android:layout_width="25dip"
+            android:layout_height="25dip"
+            android:src="@drawable/toolbar_face_selector"
+            android:visibility="visible" />
 
-        android:src="@drawable/chatting_biaoqing_btn_normal"
-        android:visibility="visible" />
+        <ImageView
+            android:id="@+id/iv_emoticons_checked"
+            android:layout_width="25dip"
+            android:layout_height="25dip"
+            android:src="@drawable/toolbar_face_selector"
+            android:visibility="invisible" />
 
-    <ImageView
-        android:id="@+id/iv_emoticons_checked"
-        android:layout_width="25dip"
-        android:layout_height="25dip"
+        <Button
+            android:id="@+id/btn_add_picture"
+            android:layout_width="25dip"
+            android:layout_height="25dip"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/toolbar_picture_selector"
+            android:onClick="add_piture" />
 
-        android:src="@drawable/chatting_biaoqing_btn_click"
-        android:visibility="invisible" />
-
-    <Button
-        android:id="@+id/btn_add_picture"
-        android:layout_width="25dip"
-        android:layout_height="25dip"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/btn_add_picture"
-        android:onClick="add_piture" />
-
-    <ImageView
-        android:id="@+id/btn_send"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_marginRight="10dp"
-        android:src="@drawable/send_message_button"
-        android:scaleType="fitXY"
-        android:onClick="onClick"
-        android:textColor="#666666"
-        android:textSize="16sp"
-        android:visibility="gone" />
-        <!--android:text="@string/button_send"-->
-                <!--android:background="@drawable/btn_add_picture_click"-->
+        <ImageView
+            android:id="@+id/btn_send"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/send_message_button"
+            android:scaleType="fitXY"
+            android:onClick="onClick"
+            android:textColor="#666666"
+            android:textSize="16sp"
+            android:visibility="gone" />
+            <!--android:text="@string/button_send"-->
+                    <!--android:background="@drawable/btn_add_picture_click"-->
     </LinearLayout>
 
         </LinearLayout>

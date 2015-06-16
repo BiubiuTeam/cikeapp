@@ -7,7 +7,7 @@
 
     <Button
         android:id="@+id/bigbutton_add"
-        android:background="@drawable/add"
+        android:background="@drawable/bigbutton_selector"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginBottom="24dp"
