@@ -20,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.transition.Transition;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,6 +28,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -34,7 +37,6 @@ import android.widget.GridView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -62,6 +64,7 @@ import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainPull;
 import com.yunkairichu.cike.utils.PopupUtil;
+import com.yunkairichu.cike.widget.StatusSelectorLayout;
 
 import org.json.JSONObject;
 
@@ -73,10 +76,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by vida2009 on 2015/5/11.
@@ -93,8 +92,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     public static final int RESULT_CODE_COPY = 1;
 
     //ui变量
-    private View view;
-    private View selectView;
     private LinearLayout squareSelectButton;
     private ImageView squareBigPic;
     private ImageView squareBigPicBg;
@@ -106,7 +103,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private MyDialog chooseStatusDialog;
     private AnimationDrawable animationDrawable;
 //    private MySwitchDialog dropDownDialog;
-    private PopupWindow menuWindow;
     private ResponseUserChainPull responseUserChainPull;
 
     //数据与逻辑变量
@@ -120,45 +116,20 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private File cameraFile;
     private ResponseSearchTitle responseSearchTitle;
     private int isOnCreated;
-    //private Timer timer;
-    private TimerTask timerTask;
-    private Timer timer2;
-    private TimerTask timerTask2;
-    private int selectorStatus = 0;
-    private int selectorScale = 0;
-    private int selectorGender = 0;
-    private int selectorFlag = 0;
-    private SimpleAdapter simpleAdapter1;
-    private SimpleAdapter simpleAdapter2;
-    private SimpleAdapter simpleAdapter3;
-    private int menuWindowStatus = 0;
+
     private int titleItemLongShortClickFlag = 0;
 
-    //popup弹窗相关声明
-//    private RelativeLayout layoutHeader = null;
+    //haowenliang
     private TextView tvTopic = null;
     private ImageView ivTopic = null;
     private ImageView ivTopic2 = null;
+    private StatusSelectorLayout mStatusSelectorLayout;
 
-    private GridView gv1 = null;GridView gv2 = null;GridView gv3 = null;
-
-    private String[] statusName = new String[]{"全部","失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "健身", "吃大餐", "自拍"};
-    private String[] scale = new String[]{"全球","同城","身边"};
-    private String[] gender = new String[]{"所有人","男生","女生"};
-    private int[] statusNameNum = {0,1,2,3,4,5,6,8,9,10};
-    private int[] scaleNum = {0,1,1};
-    private int[] genderNum ={0,1,2};
-
-    HashMap<String,Integer> statusNameMap=null;
-    HashMap<String,Integer> scaleMap=null;
-    HashMap<String,Integer> genderMap=null;
-
-    //////////////////////////////////////////初始化//////////////////////////////////////////////////
-
-    //haowenliang
     private PullToRefreshHorizontalScrollView mPullRefreshScrollView;
     private HorizontalScrollView squareScrollView;
     private GridLayout squareGridLayout;
+
+    //////////////////////////////////////////初始化//////////////////////////////////////////////////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,49 +158,14 @@ public class ActivitySquare extends Activity implements EMEventListener {
         squareBigPicBg = (ImageView) findViewById(R.id.square_big_picture_bg);
         squareBigPicText = (TextView) findViewById(R.id.square_big_picture_text);
         LayoutInflater inflater = getLayoutInflater();
-        selectView = inflater.inflate(R.layout.view_square_selector, null);
-        view = squareGridLayout.getChildAt(0);
+
         squareNothingAnim = (ImageView) findViewById(R.id.square_nothing_anim);
         animationDrawable=(AnimationDrawable) squareNothingAnim.getBackground();
 
         ivTopic = (ImageView) findViewById(R.id.look_into);
         ivTopic2 = (ImageView) findViewById(R.id.picker_arrow);
         tvTopic = (TextView) findViewById(R.id.picker);
-
-        ///////////////////////////////////////popupwindow相关//////////////////////////////////
-        ArrayList<HashMap<String, Object>> statusNameList = new ArrayList<HashMap<String, Object>>();
-        for (int i = 0; i <statusName.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("status", statusName[i]);
-            statusNameList.add(map);
-        }
-
-        ArrayList<HashMap<String, Object>> scaleList = new ArrayList<HashMap<String, Object>>();
-        for (int i = 0; i <scale.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("scale", scale[i]);
-            scaleList.add(map);
-        }
-
-        ArrayList<HashMap<String, Object>> genderList = new ArrayList<HashMap<String, Object>>();
-        for (int i = 0; i <gender.length ; i++) {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("gender", gender[i]);
-            genderList.add(map);
-        }
-
-        // 设置GridView的数据源
-        simpleAdapter1 = new SimpleAdapter(this, scaleList,
-                R.layout.scale_item, new String[] { "scale" }, new int[] {
-                R.id.scale_item });
-
-        simpleAdapter2 = new SimpleAdapter(this, statusNameList,
-                R.layout.status_selector_item, new String[] { "status" }, new int[] {
-                R.id.status_text });
-
-        simpleAdapter3 = new SimpleAdapter(this, genderList,
-                R.layout.gender_item, new String[] { "gender" }, new int[] {
-                R.id.gender_item });
+        mStatusSelectorLayout = (StatusSelectorLayout)findViewById(R.id.status_selector_layout);
 
         Bundle bundle = this.getIntent().getExtras();
         responseSearchTitle = (ResponseSearchTitle) bundle.getSerializable("resSearchTitle");
@@ -239,11 +175,12 @@ public class ActivitySquare extends Activity implements EMEventListener {
         squareChainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ActivitySquare.this.hideSelectorView(false);
+
                 Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
                 clearTitleBitmap();
                 //squareScrollView.removeAllViews();
                 squareScrollView.setVisibility(View.GONE);
-//                cancelTimer2();
                 startActivityForResult(i, REQUEST_CODE_USER_CHAIN);
                 overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                 ActivitySquare.this.updateChatChainButtonBeating(false);
@@ -253,13 +190,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         squareSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (menuWindow != null && menuWindow.isShowing()) {
-                    menuWindow.dismiss();
-                    changeImage();
-                    return;
-                }
-                menuWindowShow();
-                changeImage();
+                convertSelectorView();
             }
         });
 
@@ -272,8 +203,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
             ActivitySquare.this.updateChatChainButtonBeating(true);
         }
 
-///////////////////////////////////////popupwindow相关 完//////////////////////////////////
-
         squarePubTiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -281,12 +210,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
             }
         });
         isOnCreated = 0;
-
-        ////////////////////////////////////// popupwindow的监控 //////////////////////////////////
-
-//        startTimer2();
-
-        ////////////////////////////////////// popupwindow的监控  完//////////////////////////////////
 
         if(responseSearchTitle != null) {
             squareNothingDisplay();
@@ -309,6 +232,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
      * ***********************************事件响应**********************************************
      */
     private void popupChooseStatus() {
+        this.hideSelectorView(true);
+
         View v = getLayoutInflater().inflate(R.layout.status_picker,
                 null);
 
@@ -323,126 +248,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         chooseStatusDialog.show();
     }
 
-    private void changeImage() {
-        if (menuWindow != null&& menuWindow.isShowing()) {
-            ivTopic.setImageResource(R.drawable.look_into_white);
-            ivTopic2.setImageResource(R.drawable.picker_arrow_white);
-            tvTopic.setTextColor(Color.argb(255, 255, 255, 255));
-            menuWindowStatus = 1;
-        }
-        else {
-            ivTopic.setImageResource(R.drawable.look_into_black);
-            ivTopic2.setImageResource(R.drawable.picker_arrow_black);
-            tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
-        }
-    }
-
-    /**
-     * 显示下拉菜单
-     */
-    private void menuWindowShow()
-    {
-        LayoutInflater layout = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        RelativeLayout view = (RelativeLayout) layout.inflate(
-                R.layout.status_selector, null);
-        gv1 = (GridView) view.findViewById(R.id.statusscale);
-        gv2 = (GridView) view.findViewById(R.id.statustype);
-        gv3 = (GridView) view.findViewById(R.id.usergender);
-
-        gv1.setAdapter(simpleAdapter1);
-        gv2.setAdapter(simpleAdapter2);
-        gv3.setAdapter(simpleAdapter3);
-
-        gv1.setSelector(new ColorDrawable(Color.TRANSPARENT));
-        gv2.setSelector(new ColorDrawable(Color.TRANSPARENT));
-        gv3.setSelector(new ColorDrawable(Color.TRANSPARENT));
-
-       //给查看区域的选项设置点击事件
-        gv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> contentView, View v,
-                                    int position, long id) {
-                ((TextView)gv1.getChildAt(selectorScale).findViewById(R.id.scale_item)).setTextColor(0xffffffff);
-                ToolLog.dbg("selectorScale:" + String.valueOf(selectorScale) + " position" + String.valueOf(position));
-                if(selectorScale != position){
-                    selectorFlag = 1;
-                }
-                selectorScale = position;
-                v.setSelected(true);
-                ((TextView)v.findViewById(R.id.scale_item)).setTextColor(0xff000000);
-            }
-        });
-
-        //给查看状态的选项设置点击事件
-        gv2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> contentView, View v,
-                                    int position, long id) {
-                ((TextView)gv2.getChildAt(selectorStatus).findViewById(R.id.status_text)).setTextColor(0xffffffff);
-                ToolLog.dbg("selectorStatus:"+String.valueOf(selectorStatus)+" position"+String.valueOf(position));
-                if(selectorStatus != position){
-                    selectorFlag = 1;
-                }
-                selectorStatus = position;
-                v.setSelected(true);
-                ((TextView)v.findViewById(R.id.status_text)).setTextColor(0xff000000);
-            }
-        });
-
-        //给查看性别的选项设置点击事件
-        gv3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> contentView, View v,
-                                    int position, long id) {
-                ((TextView)gv3.getChildAt(selectorGender).findViewById(R.id.gender_item)).setTextColor(0xffffffff);
-                ToolLog.dbg("selectorGender:" + String.valueOf(selectorGender) + " position" + String.valueOf(position));
-                if(selectorGender != position){
-                    selectorFlag = 1;
-                }
-                selectorGender = position;
-                v.setSelected(true);
-                ((TextView)v.findViewById(R.id.gender_item)).setTextColor(0xff000000);
-            }
-        });
-
-        menuWindow = new PopupWindow(view, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-//        menuWindow.setBackgroundDrawable(getDrawable());
-        menuWindow.setBackgroundDrawable(this.getResources().getDrawable(R.drawable.default_image));
-//        menuWindow.setAnimationStyle(R.style.pulldown_in_out);
-        menuWindow.showAtLocation(findViewById(R.id.square),
-                Gravity.NO_GRAVITY, 0, (int) ToolDevice.dp2px(100.0f));
-        menuWindow.setFocusable(true);
-        menuWindow.setTouchable(true);
-        menuWindow.setOutsideTouchable(true);
-        menuWindow.update();
-
-        menuWindow.setTouchInterceptor(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // TODO Auto-generated method stub
-                /**** 如果点击了popupwindow的外部，popupwindow也会消失 ****/
-                if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-                    menuWindow.dismiss();
-                    changeImage();
-                    //ToolLog.dbg("outside");
-                    return true;
-                }
-                //ToolLog.dbg("not-outside");
-                return false;
-            }
-        });
-    }
-
-    /**
-     * 给menWindow生成一个 透明的背景图片
-     * @return
-     */
-    private Drawable getDrawable(){
-        ShapeDrawable bgdrawable =new ShapeDrawable(new OvalShape());
-        bgdrawable.getPaint().setColor(getResources().getColor(android.R.color.transparent));
-//        bgdrawable.getPaint().setARGB(0xFF, 0xFF,0xFF,0xFF);
-        return   bgdrawable;
-    }
-
 ///////////////////////////////////////大事件响应/////////////////////////////////////
 
     /**
@@ -455,7 +260,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         }
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
-//                startTimer2();
                 chooseStatusDialog.dismiss();
                 squareScrollView.setVisibility(View.VISIBLE);
 
@@ -478,7 +282,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
             }
         } else if(resultCode == RESULT_FORCE_REFLASH){
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_CAMERA){
-//                startTimer2();
                 chooseStatusDialog.dismiss();
                 squareScrollView.setVisibility(View.VISIBLE);
                 if(searchFlag==1) {
@@ -638,10 +441,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
     /////////////////////////////////////////广场瀑布流////////////////////////////////////////
     public void doTitleSearch() {
         Http http = new Http();
-        int filter = 0;
-        filter |= (scaleNum[selectorScale]<<0);
-        filter |= (genderNum[selectorGender]<<1);
-        ToolLog.dbg("filter:"+String.valueOf(filter)+" tag:"+String.valueOf(statusNameNum[selectorStatus]));
+        int filter = mStatusSelectorLayout.getSelectedStatusFilter();
+        ToolLog.dbg("filter:"+String.valueOf(filter)+" tag:"+String.valueOf(mStatusSelectorLayout.getSelectorStatusNum()));
         if(System.currentTimeMillis()- ToolGetLocationInfo.getInstance().getLastRecTime()>600000){
             ToolGetLocationInfo.getInstance().startLocation();
         }
@@ -650,8 +451,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
             Toast.makeText(ActivitySquare.this,"网络不太好，请稍后再试",Toast.LENGTH_SHORT).show();
             return;
         }
-        JSONObject jo = JsonPack.buildSearchTitle(filter, statusNameNum[selectorStatus],
+        JSONObject jo = JsonPack.buildSearchTitle(filter, mStatusSelectorLayout.getSelectorStatusNum(),
                 ToolGetLocationInfo.getInstance().getLastLatitude(),ToolGetLocationInfo.getInstance().getLastLongitude(),ToolGetLocationInfo.getInstance().getLastCity());
+
         http.url(JsonConstant.CGI).JSON(jo).post(new HttpCallBack() {
             @Override
             public void onResponse(JSONObject response) {
@@ -726,6 +528,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    ActivitySquare.this.hideSelectorView(false);
+
                     if(titleItemLongShortClickFlag==0) {
                         Intent i = new Intent(ActivitySquare.this, ActivityChat.class);
                         Bundle bundle = new Bundle();
@@ -742,7 +546,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
                             clearTitleBitmap();
                             //squareGridLayout.removeAllViews();
                             squareScrollView.setVisibility(View.GONE);
-//                            cancelTimer2();
                             startActivityForResult(i, REQUEST_CODE_SINGLECHAT);
                             overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
                         }
@@ -755,6 +558,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             iv.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
+                    ActivitySquare.this.hideSelectorView(false);
+
                     int iTag = (int) view.getTag();
                     if (titleBitmap[iTag] == null) return false;
                     BaseResponseTitleInfo baseResponseTitleInfo = responseSearchTitle.getReturnData().getContData().get(iTag);
@@ -770,6 +575,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
             iv.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
+                    ActivitySquare.this.hideSelectorView(false);
+
                     if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
                             motionEvent.getAction() == MotionEvent.ACTION_CANCEL ||
                             motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE) {
@@ -877,35 +684,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
         }
     }
 
-    //////////////////////////////////////定时器///////////////////////////////////////////
-    public void startTimer2(){
-        if(timer2 == null){timer2 = new Timer();}
-        if(timerTask2 == null) {
-            timerTask2 = new TimerTask() {
-                @Override
-                public void run() {
-                    // 需要做的事:发送消息
-                    Message message = new Message();
-                    message.what = 2;
-                }
-            };
-        }
-        //��ʼһ����ʱ����
-        if(timer2 != null && timerTask2 != null){timer2.schedule(timerTask2, 2000, 500);}// 1s后执行task,经过1s再次执行)
-    }
-
-    public void cancelTimer2(){
-        if (timer2 != null) {
-            timer2.cancel();
-            timer2 = null;
-        }
-
-        if (timerTask2 != null) {
-            timerTask2.cancel();
-            timerTask2 = null;
-        }
-    }
-
 //////////////////////////////////////////get set类///////////////////////////////////////////
     public ResponseSearchTitle getResponseSearchTitle() {
         return responseSearchTitle;
@@ -973,6 +751,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
 /****************************************工具类 完********************************************************/
 
+    ///////////////////haowen for refresh loading effect 6.15//////////////////////
     private class GetSquareDataTask extends AsyncTask<Void, Void, String[]> {
         @Override
         protected String[] doInBackground(Void... params) {
@@ -1004,5 +783,90 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 mPullRefreshScrollView.onRefreshComplete();
             }
         });
+    }
+
+    ///////////////////haowen for selector view 6.16//////////////////////
+    private static boolean selectorState = false; //false for hidden, true for shown
+    public void hideSelectorView(boolean withAnimate)
+    {
+        if (selectorState == false)return;
+        selectorState = false;
+        if (withAnimate) {
+            //hidden with animation
+            float fromY = mStatusSelectorLayout.getX();
+            float toY = fromY - mStatusSelectorLayout.getHeight();
+            Animation translateAnimation = new TranslateAnimation(0.f, .0f, fromY, toY);
+            translateAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mStatusSelectorLayout.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            //设置动画时间
+            translateAnimation.setDuration(200);
+            mStatusSelectorLayout.startAnimation(translateAnimation);
+        }else{
+            mStatusSelectorLayout.setVisibility(View.INVISIBLE);
+        }
+        //change button info
+        changeImage();
+        //search opt
+        if(mStatusSelectorLayout.contentChanged()){
+            doTitleSearch();
+        }
+    }
+
+    public void showSelectorView(){
+        if (selectorState == true)return;
+        selectorState = true;
+        mStatusSelectorLayout.storeLastSelection();
+        mStatusSelectorLayout.setVisibility(View.VISIBLE);
+        //show up with animation
+        float toY = mStatusSelectorLayout.getX();
+        float fromY = toY - mStatusSelectorLayout.getHeight();
+        Animation translateAnimation = new TranslateAnimation(0.f, .0f,fromY,toY);
+        //设置动画时间
+        translateAnimation.setDuration(200);
+        mStatusSelectorLayout.startAnimation(translateAnimation);
+
+        changeImage();
+    }
+
+    public void convertSelectorView(){
+        if (selectorState == false){
+            showSelectorView();
+        }else{
+            hideSelectorView(true);
+        }
+    }
+
+    private void changeImage() {
+        tvTopic.setText(mStatusSelectorLayout.getSelectedStatusWord());
+
+        if (selectorState) {
+            ivTopic.setImageResource(R.drawable.look_into_white);
+            ivTopic2.setImageResource(R.drawable.picker_arrow_white);
+            tvTopic.setTextColor(Color.argb(255, 255, 255, 255));
+        } else {
+            ivTopic.setImageResource(R.drawable.look_into_black);
+            ivTopic2.setImageResource(R.drawable.picker_arrow_black);
+            tvTopic.setTextColor(Color.argb(255, 0, 0, 0));
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        this.hideSelectorView(true);
+        return super.onTouchEvent(event);
     }
 }

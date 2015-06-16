@@ -52,19 +52,36 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/content_picker"></include>
-        <Button
-            android:id="@+id/squareUserChainButton"
-            android:layout_width="@dimen/size_btn_chatlist"
-            android:layout_height="@dimen/size_btn_chatlist"
-            android:background="@drawable/btn_chatlist_selector"
-            android:layout_alignParentTop="true"
+        <include layout="@layout/status_selector"
+            android:id="@+id/status_selector_layout"
+            android:layout_below="@+id/topControlsHolder"
             android:layout_marginTop="10dp"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="18dp"
-            />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            ></include>
+
+        <RelativeLayout
+            android:id="@id/topControlsHolder"
+            android:background="#ffde32"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include layout="@layout/content_picker"></include>
+
+            <Button
+                android:id="@+id/squareUserChainButton"
+                android:layout_width="@dimen/size_btn_chatlist"
+                android:layout_height="@dimen/size_btn_chatlist"
+                android:background="@drawable/btn_chatlist_selector"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="18dp"
+                />
+         </RelativeLayout>
 
     </RelativeLayout>
+
 
     <include layout="@layout/view_square_bigpic"></include>
 
