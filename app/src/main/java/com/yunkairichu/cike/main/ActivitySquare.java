@@ -64,6 +64,7 @@ import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainPull;
 import com.yunkairichu.cike.utils.PopupUtil;
+import com.yunkairichu.cike.utils.UmlogEngine;
 import com.yunkairichu.cike.widget.StatusSelectorLayout;
 
 import org.json.JSONObject;
@@ -76,6 +77,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.HashMap;
 
 /**
  * Created by vida2009 on 2015/5/11.
@@ -175,6 +177,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
         squareChainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //haowen 6.17 数据上报
+                UmlogEngine.getInstance().onUmlogLogEvent(ActivitySquare.this, UmlogEngine.LogEvent.ViewChat);
+
                 ActivitySquare.this.hideSelectorView(false);
 
                 Intent i = new Intent(ActivitySquare.this, ActivityChatview.class);
@@ -440,6 +445,9 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
     /////////////////////////////////////////广场瀑布流////////////////////////////////////////
     public void doTitleSearch() {
+        //haowen 6.17 数据上报
+        UmlogEngine.getInstance().onUmlogLogEvent(this, UmlogEngine.LogEvent.Browse);
+
         Http http = new Http();
         int filter = mStatusSelectorLayout.getSelectedStatusFilter();
         ToolLog.dbg("filter:"+String.valueOf(filter)+" tag:"+String.valueOf(mStatusSelectorLayout.getSelectorStatusNum()));
@@ -522,12 +530,16 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 }
             }
             //ToolLog.dbg("AllHeight:"+String.valueOf(height)+" AllWidth:"+String.valueOf(width));
-            //TODO haowenliang here
             ImageViewSquareItem iv = new ImageViewSquareItem(this, height, width, baseResponseTitleInfo.getBlockLen(), k, linePos[k], lineNum);
             iv.setTag(i);
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    HashMap<String,String> eventMap = new HashMap<String, String>();
+                    eventMap.put("ViewType", UmlogEngine.ViewType.Click.toString());
+                    //haowen,6.17 数据上报
+                    UmlogEngine.getInstance().onUmlogLogEventMap(ActivitySquare.this, UmlogEngine.LogEvent.ViewStatus,eventMap);
+
                     ActivitySquare.this.hideSelectorView(false);
 
                     if(titleItemLongShortClickFlag==0) {
@@ -558,6 +570,11 @@ public class ActivitySquare extends Activity implements EMEventListener {
             iv.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
+                    HashMap<String,String> eventMap = new HashMap<String, String>();
+                    eventMap.put("ViewType", UmlogEngine.ViewType.LongPress.toString());
+                    //haowen,6.17 数据上报
+                    UmlogEngine.getInstance().onUmlogLogEventMap(ActivitySquare.this, UmlogEngine.LogEvent.ViewStatus,eventMap);
+
                     ActivitySquare.this.hideSelectorView(false);
 
                     int iTag = (int) view.getTag();
@@ -829,7 +846,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
     public void showSelectorView(){
         if (selectorState == true)return;
         selectorState = true;
-        mStatusSelectorLayout.storeLastSelection();
         mStatusSelectorLayout.setVisibility(View.VISIBLE);
         //show up with animation
         float toY = mStatusSelectorLayout.getX();

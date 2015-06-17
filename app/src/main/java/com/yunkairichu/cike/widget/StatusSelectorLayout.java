@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.yunkairichu.cike.main.R;
 import com.yunkairichu.cike.main.ToolLog;
+import com.yunkairichu.cike.utils.UmlogEngine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -175,8 +176,18 @@ public class StatusSelectorLayout extends RelativeLayout{
         });
     }
 
+    @Override
+    public void setVisibility(int visibility) {
+        if (visibility == View.INVISIBLE){
+            this.eventUmlog();
+        }else{
+            this.storeLastSelection();
+        }
+        super.setVisibility(visibility);
+    }
+
     //interface methods to outside
-    public void storeLastSelection(){
+    private void storeLastSelection(){
         tmpGender = selectorGender;
         tmpScale = selectorScale;
         tmpStatus = selectorStatus;
@@ -194,6 +205,16 @@ public class StatusSelectorLayout extends RelativeLayout{
         tmpTV.setTextColor(0xff000000);
         tmpTV.setSelected(true);
 
+    }
+
+    private void eventUmlog(){
+        HashMap<String,String> eventMap = new HashMap<String, String>();
+        eventMap.put("StatusType", statusName[selectorStatus]);
+        eventMap.put("LocationType", UmlogEngine.LocationType.values()[selectorScale].toString());
+        eventMap.put("UserType", UmlogEngine.UserType.values()[selectorGender].toString());
+
+        //haowen,6.17 数据上报
+        UmlogEngine.getInstance().onUmlogLogEventMap(linkContext, UmlogEngine.LogEvent.PickStatus,eventMap);
     }
 
     public String getSelectedStatusWord(){
