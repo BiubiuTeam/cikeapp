@@ -60,12 +60,14 @@ public class ActivitySplash extends BindableActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MobclickAgent.setDebugMode(true);
+        MobclickAgent.updateOnlineConfig(this);
+//        MobclickAgent.setDebugMode(true);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onPageStart(getClass().getName());
         MobclickAgent.onResume(this);
 //        JPushInterface.onResume(this);
     }
@@ -73,6 +75,7 @@ public class ActivitySplash extends BindableActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPageEnd(getClass().getName());
         MobclickAgent.onPause(this);
 //        JPushInterface.onPause(this);
     }

@@ -579,6 +579,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
     protected void onResume() {
         Log.i("ChatActivity", "onResume");
         super.onResume();
+        MobclickAgent.onPageStart(getClass().getName());
         MobclickAgent.onResume(this);
 
         DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper) DemoHXSDKHelper.getInstance();
@@ -592,6 +593,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
     @Override
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPageEnd(getClass().getName());
         MobclickAgent.onPause(this);
     }
 

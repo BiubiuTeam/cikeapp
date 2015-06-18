@@ -15,12 +15,14 @@ public class ActivitySearch extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onPageStart(getClass().getName());
         MobclickAgent.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        MobclickAgent.onPageEnd(getClass().getName());
         MobclickAgent.onPause(this);
     }
 
