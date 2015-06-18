@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.jaf.jcore.Application;
 import com.jaf.jcore.BindableActivity;
+import com.jaf.jcore.DemoHXSDKHelper;
 import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
@@ -15,6 +16,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseUserInfoLoad;
+import com.yunkairichu.cike.utils.HXMessageUtils;
 
 import org.json.JSONObject;
 
@@ -62,6 +64,11 @@ public class ActivitySplash extends BindableActivity {
         super.onCreate(savedInstanceState);
         MobclickAgent.updateOnlineConfig(this);
 //        MobclickAgent.setDebugMode(true);
+
+
+        HXMessageUtils msgUtils = (HXMessageUtils)HXMessageUtils.getInstance();
+        DemoHXSDKHelper sdkHelper = (DemoHXSDKHelper)DemoHXSDKHelper.getInstance();
+        msgUtils.setmContext(sdkHelper.appContext);
     }
 
     @Override

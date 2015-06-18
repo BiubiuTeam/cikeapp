@@ -47,7 +47,7 @@ public abstract class HXSDKHelper {
     /**
      * application context
      */
-    protected Context appContext = null;
+    public Context appContext = null;
 
     /**
      * init flag: test if the sdk has been inited before, we don't need to init again
