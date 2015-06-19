@@ -82,6 +82,7 @@ public class MessageAdapter extends BaseAdapter {
     private Activity activity;
     private View bigImage;
     private BigImageOnTouchListener bigImageOnTouchListener = new BigImageOnTouchListener();
+    private int isShowBigImage = 0;
 
     private static final int HANDLER_MESSAGE_REFRESH_LIST = 0;
     private static final int HANDLER_MESSAGE_SELECT_LAST = 1;
@@ -120,6 +121,7 @@ public class MessageAdapter extends BaseAdapter {
         this.delHolder = 0;
         this.holderHeight = 1;
         this.holderWidth = 1;
+        this.isShowBigImage = 0;
     }
 
     Handler handler = new Handler() {
@@ -1370,6 +1372,7 @@ public class MessageAdapter extends BaseAdapter {
             iv.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
+                    isShowBigImage = 1;
                     System.err.println("image view on click");
                     //Intent intent = new Intent(activity, ActivityShowBigImage.class);
                     File file = new File(localFullSizePath);
@@ -1525,8 +1528,13 @@ public class MessageAdapter extends BaseAdapter {
         public boolean onTouch(View view, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
-                    ToolLog.dbg("hello up");
-                    postLoadBigImage((EMMessage)view.getTag(R.id.tag_message), (int)view.getTag(R.id.tag_position));
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_OUTSIDE:
+                    if(isShowBigImage == 1) {
+                        ToolLog.dbg("hello up");
+                        postLoadBigImage((EMMessage) view.getTag(R.id.tag_message), (int) view.getTag(R.id.tag_position));
+                        isShowBigImage = 0;
+                    }
                     break;
                 default:
                     ToolLog.dbg("hello oth");

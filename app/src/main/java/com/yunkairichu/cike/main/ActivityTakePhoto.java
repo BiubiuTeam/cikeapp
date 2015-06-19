@@ -8,18 +8,19 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -44,11 +45,16 @@ import com.yunkairichu.cike.bean.ResponsePublishTitle;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,7 +89,12 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         Bundle bundle = this.getIntent().getExtras();
         msgTag = bundle.getInt("msgTag", 0);
 
@@ -116,13 +127,25 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         holder.addCallback(this);//添加回调
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);//surfaceview不维护自己的缓冲区，等待屏幕渲染引擎将内容推送到用户面前
         layout_take_photo = (Layout_take_photo) findViewById(R.id.take_photo_layout);
-
         //设置监听
         back.setOnClickListener(listener);
         chanCam.setOnClickListener(listener);
         shutter.setOnClickListener(listener);
         fromFile.setOnClickListener(listener);
-
+        surface.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+//                if(cameraPosition==1) {
+//                    calculateTapArea(motionEvent.getX(), motionEvent.getY(), 1);
+//                    camera.cancelAutoFocus();
+//                    Camera.Parameters parameters = camera.getParameters();
+//                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+//                    camera.setParameters(parameters);
+                    camera.autoFocus(null);
+//                }
+                return false;
+            }
+        });
         picText.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -139,46 +162,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
             }
         });
-
-//        layout_take_photo.setOnkbdStateListener(new Layout_take_photo.onKybdsChangeListener() {
-//
-//            public void onKeyBoardStateChange(int state) {
-//                switch (state) {
-//                    case Layout_take_photo.KEYBOARD_STATE_HIDE:
-//                        picLastText.setVisibility(View.INVISIBLE);
-//                        picText.setGravity(Gravity.CENTER);
-//                        ToolLog.dbg("Hide");
-//                        break;
-//                    case Layout_take_photo.KEYBOARD_STATE_SHOW:
-//                        picLastText.setVisibility(View.VISIBLE);
-//                        picText.setGravity(Gravity.CENTER);
-//                        ToolLog.dbg("Show");
-//                        break;
-//                }
-//            }
-//        });
-//
-//        //给该layout设置监听，监听其布局发生变化事件
-//        layout_take_photo.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
-//
-//            @Override
-//            public void onGlobalLayout(){
-//
-//                //比较Activity根布局与当前布局的大小
-//                int heightDiff = layout_take_photo.getRootView().getHeight()- layout_take_photo.getHeight();
-//                ToolLog.dbg("Diff"+String.valueOf(heightDiff)+" root:"+String.valueOf(layout_take_photo.getRootView().getHeight()));
-//                if(heightDiff >100){
-//                    //大小超过100时，一般为显示虚拟键盘事件
-//                    picLastText.setVisibility(View.INVISIBLE);
-//                    picText.setGravity(Gravity.CENTER);
-//                }else{
-//                    //大小小于100时，为不显示虚拟键盘或虚拟键盘隐藏
-//                    picLastText.setVisibility(View.VISIBLE);
-//                    picText.setGravity(Gravity.CENTER);
-//                }
-//            }
-//        });
-
     }
 
     //响应点击事件
@@ -189,6 +172,10 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             switch (v.getId()) {
                 case R.id.take_photo_cancel_iv:
                     //返回
+                    if(fromFileBitmap!=null && !fromFileBitmap.isRecycled()){
+                        fromFileBitmap.recycle();
+                        fromFileBitmap = null;
+                    }
                     ActivityTakePhoto.this.setResult(RESULT_OK);
                     ActivityTakePhoto.this.finish();
                     ActivityTakePhoto.this.overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
@@ -252,22 +239,44 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
                 case R.id.take_photo_iv:
                     if(captureOrFromFileFlag == 0) {
-                        //快门
-                        camera.autoFocus(new Camera.AutoFocusCallback() {//自动对焦
-                            @Override
-                            public void onAutoFocus(boolean success, Camera camera) {
-                                // TODO Auto-generated method stub
-                                if (success) {
-                                    //设置参数，并拍照
-                                    Camera.Parameters params = camera.getParameters();
-                                    params.setPictureFormat(PixelFormat.JPEG);//图片格式
-                                    params.setPreviewSize(800, 480);//图片大小
-                                    params.setRotation(90);
-                                    camera.setParameters(params);//将参数设置到我的camera
-                                    camera.takePicture(null, null, jpeg);//将拍摄到的照片给自定义的对象
+                        //设置参数，并拍照
+                        Camera.Parameters params = camera.getParameters();
+
+                        List<Camera.Size> supportedPictureSizes
+                                = SupportedSizesReflect.getSupportedPictureSizes(params);
+
+                        if ( supportedPictureSizes != null &&
+                                supportedPictureSizes.size() > 0) {
+
+                            //2.x
+                            Camera.Size pictureSize = supportedPictureSizes.get(0);
+
+                            int maxSize = 800;
+                            int diff = 99999;
+                            for (Camera.Size size : supportedPictureSizes) {
+                                ToolLog.dbg("height1:" + String.valueOf(size.height) + " width:" + String.valueOf(size.width));
+                            }
+                            for (Camera.Size size : supportedPictureSizes) {
+                                if (maxSize <= size.height) {
+                                    if(diff > size.height-maxSize) {
+                                        pictureSize = size;
+                                        diff = size.height-maxSize;
+                                    }
                                 }
                             }
-                        });
+
+                            params.setPictureFormat(PixelFormat.JPEG);//图片格式
+//                                    params.setPreviewSize(800, 480);//图片大小
+                            ToolLog.dbg("height:" + String.valueOf(pictureSize.height) + " width:" + String.valueOf(pictureSize.width));
+                            params.setPictureSize(pictureSize.width, pictureSize.height);
+                            if (cameraPosition != 0) {
+                                params.setRotation(90);
+                            } else {
+                                params.setRotation(270);
+                            }
+                            camera.setParameters(params);//将参数设置到我的camera
+                            camera.takePicture(null, null, jpeg);//将拍摄到的照片给自定义的对象
+                        }
                     }
                     else if(captureOrFromFileFlag == 1){
                         sendPicFromFile();
@@ -290,6 +299,58 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             }
         }
     };
+
+    ////////////////////////事件响应/////////////////////////////////
+    private void calculateTapArea(float x, float y, float coefficient) {
+        float focusAreaSize = 300;
+        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
+        Camera.Parameters parameters = camera.getParameters();
+        int mm = parameters.getMaxNumFocusAreas();
+
+        int centerX = (int) (x / getResolution().width - 1000);
+        int centerY = (int) (y / getResolution().height - 1000);
+
+        int left = clamp(centerX - areaSize / 2, -1000, 1000);
+        int top = clamp(centerY - areaSize / 2, -1000, 1000);
+
+        RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);
+
+        if (mm > 0) {
+            ArrayList<Camera.Area> al = new ArrayList<Camera.Area>();
+            Camera.Area a = new Camera.Area(new Rect(Math.round(rectF.left), Math.round(rectF.top),
+                    Math.round(rectF.right), Math.round(rectF.bottom)), 1000);
+            al.add(a);
+            try
+            {
+                parameters.setFocusAreas(al);
+                camera.setParameters(parameters);
+
+            }catch (Throwable e)
+            {
+
+            }
+            //
+            //
+        }
+
+        return;
+    }
+
+    private int clamp(int x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return x;
+    }
+
+    public Camera.Size getResolution() {
+        Camera.Parameters params = camera.getParameters();
+        Camera.Size s = params.getPreviewSize();
+        return s;
+    }
 
     /**
      * onActivityResult ACT结果回传
@@ -343,6 +404,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 camera = Camera.open();
             }
             try {
+                ToolLog.dbg("here");
                 camera.setPreviewDisplay(holder);//通过surfaceview显示取景画面
                 camera.setDisplayOrientation(90);
                 camera.startPreview();//开始预览
@@ -362,6 +424,10 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             camera.release();
             camera = null;
         }
+        if(fromFileBitmap!=null && !fromFileBitmap.isRecycled()){
+            fromFileBitmap.recycle();
+            fromFileBitmap = null;
+        }
         holder = null;
         if(surface != null) surface = null;
     }
@@ -372,21 +438,40 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         public void onPictureTaken(byte[] data, Camera camera) {
             // TODO Auto-generated method stub
             try {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+                int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+                int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+                ToolLog.dbg("T0");
+                ToolLog.dbg("Max memory is " + maxMemory + "KB");
+                ToolLog.dbg("Free memory is " + freeMemory + "KB");
+                ToolLog.dbg("Total memory is " + totalMemory + "KB");
+                //Bitmap bitmapPre = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Bitmap bitmapPre = scaleCompress(data);
+                maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+                freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+                totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+                ToolLog.dbg("T0.1");
+                ToolLog.dbg("Max memory is " + maxMemory + "KB");
+                ToolLog.dbg("Free memory is " + freeMemory + "KB");
+                ToolLog.dbg("Total memory is " + totalMemory + "KB");
+
+                //ToolLog.dbg("data length:"+String.valueOf(data.length));
                 //自定义文件保存路径  以拍摄时间区分命名
                 File file = new File(PathUtil.getInstance().getImagePath(), Application.getInstance().getUserName()
                     + System.currentTimeMillis() + ".jpg");
                 file.getParentFile().mkdirs();
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, bos);//将图片压缩的流里面
+                int options = massCompress(bitmapPre);
+                bitmapPre.compress(Bitmap.CompressFormat.JPEG, options, bos);//将图片压缩的流里面
+                ToolLog.dbg("bos length2:" + String.valueOf(file.length()));
                 bos.flush();// 刷新此缓冲区的输出流
                 bos.close();// 关闭此输出流并释放与此流有关的所有系统资源
                 camera.stopPreview();//关闭预览 处理数据
                 camera.setDisplayOrientation(90);
                 camera.startPreview();//数据处理完后继续开始预览
-                bitmap.recycle();//回收bitmap空间
+                bitmapPre.recycle();//回收bitmap空间
+                bitmapPre = null;
                 sendPicRes(file);
-
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -405,16 +490,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         Bitmap bm = null;
         ContentResolver resolver = getContentResolver();
         Cursor cursor = getContentResolver().query(selectedImage, null, null, null, null);
-        try {
-            bm = MediaStore.Images.Media.getBitmap(resolver, selectedImage);        //显得到bitmap图片
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(bm != null) {
-            photoFromFile.setVisibility(View.VISIBLE);
-            photoFromFile.setImageBitmap(bm);
-            fromFileBitmap = bm;
-        }
+
         String st8 = getResources().getString(R.string.cant_find_pictures);
         if (cursor != null) {
             cursor.moveToFirst();
@@ -443,6 +519,31 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             sendPicFromFilePath = file.getAbsolutePath();
         }
 
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T0");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+//        try {
+//            bm = BitmapFactory.decodeFile(sendPicFromFilePath,);        //显得到bitmap图片
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        bm = scaleCompress(sendPicFromFilePath);
+        if(bm != null) {
+            maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+            freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+            totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+            ToolLog.dbg("T0.1");
+            ToolLog.dbg("Max memory is " + maxMemory + "KB");
+            ToolLog.dbg("Free memory is " + freeMemory + "KB");
+            ToolLog.dbg("Total memory is " + totalMemory + "KB");
+            photoFromFile.setVisibility(View.VISIBLE);
+            photoFromFile.setImageBitmap(bm);
+            fromFileBitmap = bm;
+        }
     }
 
     /**
@@ -456,12 +557,15 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             file.getParentFile().mkdirs();
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
             if (fromFileBitmap == null) return;
-            fromFileBitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);//将图片压缩的流里面
+            int options = massCompress(fromFileBitmap);
+            fromFileBitmap.compress(Bitmap.CompressFormat.JPEG, options, bos);//将图片压缩的流里面
+            ToolLog.dbg("bos length2:" + String.valueOf(file.length()));
             bos.flush();// 刷新此缓冲区的输出流
             bos.close();// 关闭此输出流并释放与此流有关的所有系统资源
             fromFileBitmap.recycle();//回收bitmap空间
+            fromFileBitmap = null;
             sendPicFromFilePath = "";
-            ToolLog.dbg("fiCompressCnt:" + String.valueOf(fromFileBitmap.getByteCount()));
+
             ToolLog.dbg("fileCnt:" + String.valueOf(getFileSize(file)));
             sendPicRes(file);
         } catch (Exception e) {
@@ -532,6 +636,10 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 setResponsePublishTitle(JacksonWrapper.json2Bean(response, ResponsePublishTitle.class));
                 ToolLog.dbg("Send Finish");
                 if (responsePublishTitle.getStatusCode() == 0) {
+                    if (fromFileBitmap != null && !fromFileBitmap.isRecycled()) {
+                        fromFileBitmap.recycle();
+                        fromFileBitmap = null;
+                    }
                     setResult(RESULT_FORCE_REFLASH);
                     finish();
                     overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
@@ -539,6 +647,10 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                     Toast.makeText(getApplicationContext(),
                             R.string.network_err, Toast.LENGTH_SHORT)
                             .show();
+                    if (fromFileBitmap != null && !fromFileBitmap.isRecycled()) {
+                        fromFileBitmap.recycle();
+                        fromFileBitmap = null;
+                    }
                     setResult(RESULT_FORCE_REFLASH);
                     finish();
                     overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
@@ -550,7 +662,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     /**
      * 获取文件大小
      *
-     * @param f
+     * @para f
      * @return
      * @throws Exception
      */
@@ -565,6 +677,125 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             ToolLog.dbg("文件不存在!");
         }
         return size;
+    }
+
+    //像素缩放
+    private Bitmap scaleCompress(String bitmapPath){
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T1");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        BitmapFactory.Options newOpts = new BitmapFactory.Options();
+        //开始读入图片，此时把options.inJustDecodeBounds 设回true了
+        newOpts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(bitmapPath, newOpts);
+        newOpts.inJustDecodeBounds = false;
+        int w = newOpts.outWidth;
+        int h = newOpts.outHeight;
+        //现在主流手机比较多是800*480分辨率，所以高和宽我们设置为
+        float hh = 800f;//这里设置高度为800f
+        float ww = 480f;//这里设置宽度为480f
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        int be = 1;//be=1表示不缩放
+        if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
+            be = (int) (newOpts.outWidth / ww);
+        } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
+            be = (int) (newOpts.outHeight / hh);
+        }
+        if (be <= 0)
+            be = 1;
+        newOpts.inSampleSize = be;//设置缩放比例
+        //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T2");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        return BitmapFactory.decodeFile(bitmapPath, newOpts);
+    }
+
+    //像素缩放2
+    private Bitmap scaleCompress(byte[] data){
+        ToolLog.dbg("dataLength is " + String.valueOf(data.length));
+
+        BitmapFactory.Options newOpts = new BitmapFactory.Options();
+        //开始读入图片，此时把options.inJustDecodeBounds 设回true了
+        newOpts.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data, 0, data.length, newOpts);
+        newOpts.inJustDecodeBounds = false;
+        int w = newOpts.outWidth;
+        int h = newOpts.outHeight;
+        //现在主流手机比较多是800*480分辨率，所以高和宽我们设置为
+        float hh = 800f;//这里设置高度为800f
+        float ww = 480f;//这里设置宽度为480f
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        int be = 1;//be=1表示不缩放
+        if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
+            be = (int) (newOpts.outWidth / ww);
+        } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
+            be = (int) (newOpts.outHeight / hh);
+        }
+        be += 1;
+        if (be <= 0)
+            be = 1;
+        newOpts.inSampleSize = be;//设置缩放比例
+        ToolLog.dbg("be:"+String.valueOf(be));
+        return BitmapFactory.decodeByteArray(data, 0, data.length, newOpts);
+    }
+
+    //质量压缩
+    private int massCompress(Bitmap bitmap){
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T7");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        ToolLog.dbg("baos length first:" + String.valueOf(baos.toByteArray().length));
+        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T8");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        int options = 50;
+        while ( baos.toByteArray().length / 1024>25) {  //循环判断如果压缩后图片是否大于25kb,大于继续压缩
+            baos.reset();//重置baos即清空baos
+            options -= 5;
+            if(options <= 20){
+                break;
+            }
+            bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
+            maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+            freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+            totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+            ToolLog.dbg("T9");
+            ToolLog.dbg("Max memory is " + maxMemory + "KB");
+            ToolLog.dbg("Free memory is " + freeMemory + "KB");
+            ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        }
+        ToolLog.dbg("options:" + String.valueOf(options));
+        bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);
+        baos.reset();
+        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("T10");
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
+        ToolLog.dbg("compressed size" + String.valueOf(baos.toByteArray().length));
+
+        return options;
     }
 
     ///////////////////////////////////////////////get set 类/////////////////////////////////////
@@ -585,4 +816,70 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         MobclickAgent.onPause(this);
     }
 
+    private class ThreadSendPhoto implements Runnable {
+        private File file;
+
+        public ThreadSendPhoto(File file) {
+            this.file = file;
+        }
+
+        public void run() {
+            sendPicRes(file);
+        }
+    }
+
+    public static class SupportedSizesReflect {
+        private Method Parameters_getSupportedPreviewSizes = null;
+        private static Method Parameters_getSupportedPictureSizes = null;
+
+        static {
+            initCompatibility();
+        }
+
+        private static void initCompatibility() {
+            try {
+                Parameters_getSupportedPictureSizes = Camera.Parameters.class.getMethod(
+                        "getSupportedPictureSizes", new Class[] {});
+
+            } catch (NoSuchMethodException nsme) {
+                nsme.printStackTrace();
+                Parameters_getSupportedPictureSizes = null;
+            }
+        }
+
+        /**
+         * Android 2.1之后有效
+         * @param p
+         * @return Android1.x返回null
+         */
+        public List<Camera.Size> getSupportedPreviewSizes(Camera.Parameters p) {
+            return getSupportedSizes(p, Parameters_getSupportedPreviewSizes);
+        }
+
+        public static List<Camera.Size> getSupportedPictureSizes(Camera.Parameters p){
+            return getSupportedSizes(p, Parameters_getSupportedPictureSizes);
+        }
+
+        @SuppressWarnings("unchecked")
+        private static List<Camera.Size> getSupportedSizes(Camera.Parameters p, Method method){
+            try {
+                if (method != null) {
+                    return (List<Camera.Size>) method.invoke(p);
+                } else {
+                    return null;
+                }
+            } catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                } else if (cause instanceof Error) {
+                    throw (Error) cause;
+                } else {
+                    throw new RuntimeException(ite);
+                }
+            } catch (IllegalAccessException ie) {
+                return null;
+            }
+        }
+    }
 }

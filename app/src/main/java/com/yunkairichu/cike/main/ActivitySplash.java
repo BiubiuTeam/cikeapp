@@ -54,7 +54,12 @@ public class ActivitySplash extends BindableActivity {
 
     private void start() {
         mHandler.removeCallbacks(mDelayStart);
-
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         checkRegist();
 //        overridePendingTransition(android.R.anim.fade_in,0);
     }

@@ -22,4 +22,6 @@ public class Constant {
     public static final int IDTYPE_GETOLD = 1;
     public static final int IDTYPE_GETNEW = 2;
     public static final int MAX_CHAIN_PULL_TIME = 20;
+    public static final int  CWJ_HEAP_SIZE = 6 * 1024 * 1024  ;
+    public static final float  TARGET_HEAP_UTILIZATION = 0.75f;
 }

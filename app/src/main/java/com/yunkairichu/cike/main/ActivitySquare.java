@@ -12,33 +12,22 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.transition.Transition;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -131,11 +120,10 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private HorizontalScrollView squareScrollView;
     private GridLayout squareGridLayout;
 
-    //////////////////////////////////////////初始化//////////////////////////////////////////////////
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_square);
 
         chooseStatusDialog = new MyDialog(this);
@@ -225,6 +213,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 responseSearchTitle = null;
                 searchFlag = 0;
                 clearTitleBitmap();
+                squareGridLayout.removeAllViews();
                 squareScrollView.scrollTo(10, 10);
                 doTitleSearch();
             }
@@ -269,12 +258,10 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 squareScrollView.setVisibility(View.VISIBLE);
 
                 if(responseSearchTitle != null) {
-                    ToolLog.dbg("111");
                     squareNothingDisplay();
                     firReFlashSearchTitle();
                     getTitleBitmap();
                 } else{
-                    ToolLog.dbg("222");
                     if(searchFlag==1) {
                         responseSearchTitle = null;
                         searchFlag = 0;
@@ -283,7 +270,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
                         doTitleSearch();
                     }
                 }
-                ToolLog.dbg("start2");
             }
         } else if(resultCode == RESULT_FORCE_REFLASH){
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_CAMERA){
@@ -296,7 +282,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     squareScrollView.scrollTo(10, 10);
                     doTitleSearch();
                 }
-                ToolLog.dbg("start3");
             }
         }
     }
@@ -361,11 +346,14 @@ public class ActivitySquare extends Activity implements EMEventListener {
             super.handleMessage(msg);
 
             Bundle data = msg.getData();
-            Bitmap bitmap = (Bitmap) data.getParcelable("bitmap");
             int index = data.getInt("index");
             //ToolLog.dbg("OrigCnt" + String.valueOf(bitmap.getByteCount()));
             //titleBitmap[index] = compressImage(bitmap);
-            titleBitmap[index] = bitmap;
+//            if(maxMemory-totalMemory<4000){
+//                titleBitmap[index] = null;
+//            } else {
+                titleBitmap[index] = (Bitmap) data.getParcelable("bitmap");;
+//            }
             secReFlashSearchTitle(index);
         }
     };
@@ -405,23 +393,41 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     }
+                    ToolLog.dbg("111");
                     HttpURLConnection conn = null;
                     try {
                         conn = (HttpURLConnection) url.openConnection();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    ToolLog.dbg("222");
                     conn.setConnectTimeout(5000 * 10);
                     try {
                         conn.setRequestMethod("GET");
                     } catch (ProtocolException e) {
                         e.printStackTrace();
                     }
+                    ToolLog.dbg("333");
                     try {
+                        ToolLog.dbg("111:" + String.valueOf(conn.getResponseCode()));
                         if (conn.getResponseCode() == 200) {
                             InputStream inputStream = conn.getInputStream();
-                            bitmap = BitmapFactory.decodeStream(inputStream);
+
+                            int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+                            if(maxMemory<102400) {
+                                ToolLog.dbg("in small memory");
+                                BitmapFactory.Options newOpts = new BitmapFactory.Options();
+//                                newOpts.inJustDecodeBounds = true;
+//                                BitmapFactory.decodeStream(inputStream, null, newOpts);
+                                newOpts.inJustDecodeBounds = false;
+                                newOpts.inSampleSize = 2;
+//                                inputStream = conn.getInputStream();
+                                bitmap = BitmapFactory.decodeStream(inputStream, null, newOpts); //内存小的，这里缩放1倍再返回
+                            } else {
+                                bitmap = BitmapFactory.decodeStream(inputStream);
+                            }
                             //数据存文件
+                            ToolLog.dbg("123");
                             ToolFileRW.getInstance().saveBitmapToFile(bitmap, picName);
                         }
                     } catch (IOException e) {
@@ -621,8 +627,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
             searchFlag = 1;
         }
 
-        Bitmap tmpBit = titleBitmap[index];//.copy(titleBitmap[index].getConfig(),true);
-        if(((ImageViewSquareItem) squareGridLayout.getChildAt(2*index))!=null && tmpBit!=null)((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(tmpBit);
+        if(((ImageViewSquareItem) squareGridLayout.getChildAt(2*index))!=null && titleBitmap[index]!=null)((ImageViewSquareItem) squareGridLayout.getChildAt(2*index)).setImageBitmap(titleBitmap[index]);
         if(((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1))!=null)((TextViewSquareItem) squareGridLayout.getChildAt(2*index+1)).setVisibility(View.VISIBLE);
     }
 
@@ -785,7 +790,12 @@ public class ActivitySquare extends Activity implements EMEventListener {
         @Override
         protected void onPostExecute(String[] result) {
             // Do some stuff here
-            doTitleSearch();
+            if(searchFlag==1) {
+                responseSearchTitle = null;
+                searchFlag = 0;
+                clearTitleBitmap();
+                doTitleSearch();
+            }
             super.onPostExecute(result);
         }
     }
@@ -841,7 +851,12 @@ public class ActivitySquare extends Activity implements EMEventListener {
         changeImage();
         //search opt
         if(mStatusSelectorLayout.contentChanged()){
-            doTitleSearch();
+            if(searchFlag==1) {
+                responseSearchTitle = null;
+                searchFlag = 0;
+                clearTitleBitmap();
+                doTitleSearch();
+            }
         }
     }
 

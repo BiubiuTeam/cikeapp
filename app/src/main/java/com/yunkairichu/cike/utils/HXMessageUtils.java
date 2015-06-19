@@ -12,18 +12,12 @@ import android.widget.Toast;
 
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
-import com.easemob.chat.CmdMessageBody;
 import com.easemob.chat.EMChat;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMMessage;
 import com.easemob.chat.NotificationCompat;
-import com.easemob.exceptions.EaseMobException;
-import com.easemob.util.EasyUtils;
 import com.jaf.jcore.HXSDKHelper;
 import com.yunkairichu.cike.main.ActivityChatview;
-import com.yunkairichu.cike.main.ToolLog;
-import com.yunkairichu.cike.main.ToolPushNewMsgInfo;
-import com.yunkairichu.cike.widget.FaceConversionUtil;
 
 import java.util.List;
 
@@ -78,7 +72,7 @@ public class HXMessageUtils implements EMEventListener {
             String contentTitle = "Holaween";
             String contentText = "You have a new message!!!";
 
-            // create and send notificaiton
+                       // create and send notificaiton
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mContext)
                     .setSmallIcon(mContext.getApplicationInfo().icon)
                     .setWhen(System.currentTimeMillis())

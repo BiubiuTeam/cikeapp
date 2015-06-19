@@ -32,7 +32,6 @@ import com.jaf.jcore.Http;
 import com.jaf.jcore.HttpCallBack;
 import com.jaf.jcore.JacksonWrapper;
 import com.umeng.analytics.MobclickAgent;
-import com.umeng.analytics.MobclickAgentJSInterface;
 import com.yunkairichu.cike.adapter.ScrollAdapter;
 import com.yunkairichu.cike.bean.BaseResponseUserChainInfo;
 import com.yunkairichu.cike.bean.JsonConstant;
@@ -88,7 +87,12 @@ public class ActivityChatview extends Activity implements EMEventListener {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chatview);
-
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         chatview = (RelativeLayout) findViewById(R.id.chatview);
 
         cancelButton = (Button)findViewById(R.id.chatview_cancel_btn);

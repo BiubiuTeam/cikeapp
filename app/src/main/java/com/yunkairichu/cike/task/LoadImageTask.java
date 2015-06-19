@@ -38,6 +38,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
     BigImageOnTouchListener bigImageOnTouchListener = new BigImageOnTouchListener();
     ToolShowBigImage toolShowBigImage;
     int position;
+    private int isShowBigImage = 0;
 
     @Override
     protected Bitmap doInBackground(Object... args) {
@@ -53,6 +54,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
         message = (EMMessage) args[6];
         conversation = (EMConversation) args[7];
         position = (int) args[8];
+        isShowBigImage = 0;
         File file = new File(thumbnailPath);
         if (file.exists()) {
             return ImageUtils.decodeScaleImage(thumbnailPath, 160, 160);
@@ -83,6 +85,7 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
             iv.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
+                    isShowBigImage = 1;
                     if (thumbnailPath != null) {
 
                         //Intent intent = new Intent(activity, ActivityShowBigImage.class);
@@ -150,8 +153,13 @@ public class LoadImageTask extends AsyncTask<Object, Void, Bitmap> {
         public boolean onTouch(View view, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
-                    ToolLog.dbg("hello up");
-                    postLoadBigImage((EMMessage)view.getTag(R.id.tag_message), (int)view.getTag(R.id.tag_position));
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_OUTSIDE:
+                    if(isShowBigImage==1) {
+                        ToolLog.dbg("hello up");
+                        postLoadBigImage((EMMessage) view.getTag(R.id.tag_message), (int) view.getTag(R.id.tag_position));
+                        isShowBigImage = 0;
+                    }
                     break;
                 default:
                     ToolLog.dbg("hello oth");

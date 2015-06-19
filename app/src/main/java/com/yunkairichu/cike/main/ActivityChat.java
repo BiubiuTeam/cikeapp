@@ -235,7 +235,12 @@ public class ActivityChat extends Activity implements EMEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
+        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
+        ToolLog.dbg("Max memory is " + maxMemory + "KB");
+        ToolLog.dbg("Free memory is " + freeMemory + "KB");
+        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         Bundle bundle = this.getIntent().getExtras();
         baseResponseTitleInfo = (BaseResponseTitleInfo)bundle.getSerializable("titleInfo");
         responseSearchTitle = (ResponseSearchTitle)bundle.getSerializable("resSearchTitle");
