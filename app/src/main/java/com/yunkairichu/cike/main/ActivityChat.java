@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -289,14 +290,25 @@ public class ActivityChat extends Activity implements EMEventListener {
         //进来时的大图
         Intent intent=getIntent();
         byte [] bis=intent.getByteArrayExtra("bitmap");
-        ToolLog.dbg("bitLen:"+String.valueOf(bis.length));
-        bigBitmap = BitmapFactory.decodeByteArray(bis, 0, bis.length);
-        ToolLog.dbg("hehe");
+        if(bis != null && bis.length > 0) {
+            bigBitmap = BitmapFactory.decodeByteArray(bis, 0, bis.length);
+        } else {
+            //从文件获取
+            if(baseResponseTitleInfo.getTitleType() == 3) {
+                String picName = baseResponseTitleInfo.getTitleCont().replace("http://biubiu.co/upload_src/", "");
+                bigBitmap = ToolFileRW.getInstance().loadBitmapFromFile(picName);
+            }
+            if(bigBitmap == null || baseResponseTitleInfo.getTitleType() != 3) {
+                ApplicationInfo appInfo = getApplicationInfo();
+                int resID = getResources().getIdentifier("default_image.png", "drawable", appInfo.packageName);
+                bigBitmap = BitmapFactory.decodeResource(getResources(), resID);
+            }
+        }
         big_image.setImageBitmap(bigBitmap);
         big_image_text.setText(baseResponseTitleInfo.getExtension().getText());
         big_pic_flag = 1;
         //加多个逻辑，从关系链进来不展示大图
-        if(bundle.getString("fromAct")!=null && !bundle.getString("fromAct").isEmpty() && bundle.getString("fromAct").equals("ActivityChatview")){
+        if(bundle.getString("fromAct")!=null && !bundle.getString("fromAct").isEmpty() && (bundle.getString("fromAct").equals("ActivityChatview") || bundle.getString("fromAct").equals("Background"))){
             ViewTreeObserver vto2 = big_image.getViewTreeObserver();
             vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override

@@ -22,7 +22,7 @@ public interface JsonConstant {
         public static final int CHAIN_INSERT = 0x2003;
         public static final int CHAIN_QUERY = 0x2004;
         public static final int PRETITLE_PULL = 0x2005;
-        public static final int ONE_TITLE_PUSH = 0x2006;
+        public static final int ONE_TITLE_PULL = 0x2006;
 
         public static final int IMPEACH = 0x5001;
     }

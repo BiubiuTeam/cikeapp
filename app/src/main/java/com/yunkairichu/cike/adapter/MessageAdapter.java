@@ -459,7 +459,7 @@ public class MessageAdapter extends BaseAdapter {
 //                break;
             case VOICE: // ����
                 handleVoiceMessage(message, holder, position, convertView);
-//                break;
+                break;
 //            case VIDEO: // ��Ƶ
 //                handleVideoMessage(message, holder, position, convertView);
 //                break;
@@ -468,6 +468,7 @@ public class MessageAdapter extends BaseAdapter {
 //                break;
             default:
                 // not supported
+                break;
         }
 
         if (message.direct == EMMessage.Direct.SEND) {

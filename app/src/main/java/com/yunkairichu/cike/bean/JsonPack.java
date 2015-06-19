@@ -105,7 +105,7 @@ public class JsonPack implements JsonConstant{
 
     public static JSONObject buildSingleTitlePull(long titleId, double latitude, double longitude, String city) {
         PostSingleTitlePull pr = new PostSingleTitlePull();
-        pr.setCmd(CMD.CHAIN_INSERT);
+        pr.setCmd(CMD.ONE_TITLE_PULL);
         pr.setAppVersion(VER);
         pr.setPlatform(PLATFORM);
         pr.setDvcId(ToolDevice.getId(Application.getInstance().getApplicationContext()));
