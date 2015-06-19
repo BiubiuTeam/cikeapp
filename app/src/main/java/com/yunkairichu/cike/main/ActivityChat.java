@@ -152,7 +152,7 @@ public class ActivityChat extends Activity implements EMEventListener {
 
     /////////////////////Ui变量//////////////////////////////
     private PasteEditText mEditTextContent;
-    private ImageView btnSend;
+    private TextView btnSend;
     private Button btnPicture;
     private Button buttonSetModeKeyboard;  //语音和键盘切换
     private Button buttonSetModeVoice;   //语音和键盘切换
@@ -255,7 +255,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         timeline_text = (TextView) findViewById(R.id.timeline_text);
         mEditTextContent = (PasteEditText) findViewById(R.id.et_sendmessage);
         btnPicture = (Button) findViewById(R.id.btn_add_picture);
-        btnSend = (ImageView) findViewById(R.id.btn_send);
+        btnSend = (TextView) findViewById(R.id.btn_send);
         buttonSetModeKeyboard = (Button) findViewById(R.id.btn_set_mode_keyboard);
         buttonSetModeVoice = (Button) findViewById(R.id.btn_set_mode_voice);
         buttonPressToSpeak = findViewById(R.id.btn_press_to_speak);

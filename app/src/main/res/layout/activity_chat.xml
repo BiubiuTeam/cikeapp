@@ -219,17 +219,20 @@
             android:background="@drawable/toolbar_picture_selector"
             android:onClick="add_piture" />
 
-        <ImageView
+        <TextView
             android:id="@+id/btn_send"
-            android:layout_width="25dp"
+            android:layout_width="45dp"
             android:layout_height="25dp"
             android:layout_marginRight="10dp"
-            android:src="@drawable/send_message_button"
-            android:scaleType="fitXY"
+            android:background="@drawable/send_message_button"
             android:onClick="onClick"
-            android:textColor="#666666"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:text="发送"
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
             <!--android:text="@string/button_send"-->
                     <!--android:background="@drawable/btn_add_picture_click"-->
     </LinearLayout>
@@ -287,7 +290,8 @@
             android:dividerHeight="5dp"
             android:listSelector="#00000000"
             android:scrollbarStyle="outsideOverlay"
-            android:transcriptMode="normal" />
+            android:transcriptMode="normal"
+            />
 
         <RelativeLayout
             android:id="@+id/recording_container"
