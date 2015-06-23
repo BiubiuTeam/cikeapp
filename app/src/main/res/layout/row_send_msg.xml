@@ -37,6 +37,7 @@
             android:background="@drawable/chatsend_bg"
             android:gravity="left|center"
             android:lineSpacingExtra="2dp"
+            android:textColor="#ff000000"
             android:maxWidth="225.0dip"
             android:textSize="14sp" />
 
