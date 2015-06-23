@@ -69,7 +69,7 @@ public class HXMessageUtils implements EMEventListener {
     }
 
     public void setmContext(Context mContext) {
-        Toast.makeText(mContext,"MessageUtils Init",Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext,"MessageUtils Init",Toast.LENGTH_SHORT).show();
         this.mContext = mContext;
         notificationManager = (NotificationManager)mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
