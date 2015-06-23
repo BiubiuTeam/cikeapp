@@ -111,6 +111,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
     private int titleItemLongShortClickFlag = 0;
 
     //haowenliang
+    private ImageView squareAddImage = null;
     private TextView tvTopic = null;
     private ImageView ivTopic = null;
     private ImageView ivTopic2 = null;
@@ -147,6 +148,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         squareBigPic = (ImageView) findViewById(R.id.square_big_picture);
         squareBigPicBg = (ImageView) findViewById(R.id.square_big_picture_bg);
         squareBigPicText = (TextView) findViewById(R.id.square_big_picture_text);
+        squareAddImage = (ImageView)findViewById(R.id.square_image_add);
         LayoutInflater inflater = getLayoutInflater();
 
         squareNothingAnim = (ImageView) findViewById(R.id.square_nothing_anim);
@@ -235,11 +237,13 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        squareAddImage.setVisibility(View.VISIBLE);
                         chooseStatusDialog.dismiss();
                     }
                 });
         chooseStatusDialog = PopupUtil.makeMyPopup(this, v);
         chooseStatusDialog.show();
+        squareAddImage.setVisibility(View.INVISIBLE);
     }
 
 ///////////////////////////////////////大事件响应/////////////////////////////////////
@@ -255,6 +259,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         if (resultCode == RESULT_OK) {
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_USER_CHAIN || requestCode == REQUEST_CODE_CAMERA){
                 chooseStatusDialog.dismiss();
+                squareAddImage.setVisibility(View.VISIBLE);
                 squareScrollView.setVisibility(View.VISIBLE);
 
                 if(responseSearchTitle != null) {
@@ -274,6 +279,7 @@ public class ActivitySquare extends Activity implements EMEventListener {
         } else if(resultCode == RESULT_FORCE_REFLASH){
             if(requestCode == REQUEST_CODE_SINGLECHAT || requestCode == REQUEST_CODE_CAMERA){
                 chooseStatusDialog.dismiss();
+                squareAddImage.setVisibility(View.VISIBLE);
                 squareScrollView.setVisibility(View.VISIBLE);
                 if(searchFlag==1) {
                     responseSearchTitle = null;

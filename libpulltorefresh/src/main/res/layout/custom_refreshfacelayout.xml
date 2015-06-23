@@ -51,7 +51,7 @@
             android:layout_toRightOf="@id/refreshFace0"
             android:layout_marginLeft="10dp"
             android:layout_centerVertical="true"
-            android:textColor="#4a90e2"
+            android:textColor="#774a90e2"
             android:textSize="48px"
             android:text="松\n手\n换\n一\n批"
             android:layout_width="wrap_content"
