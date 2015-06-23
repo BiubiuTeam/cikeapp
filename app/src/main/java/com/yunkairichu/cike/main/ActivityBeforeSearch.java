@@ -2,12 +2,14 @@ package com.yunkairichu.cike.main;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -33,6 +35,9 @@ public class ActivityBeforeSearch extends Activity {
     private Button button;
     private View searching;
     private ResponseSearchTitle responseSearchTitle = new ResponseSearchTitle();
+    private ImageView cikeLabel;
+    private AnimationDrawable animationDrawable;
+
     private int isLogin=1; //不校验了，每次都发一次登录，但不管是否成功
 
     @Override
@@ -60,6 +65,9 @@ public class ActivityBeforeSearch extends Activity {
         setContentView(R.layout.activity_before_search);
 
         button = (Button) findViewById(R.id.bigbutton);
+        cikeLabel = (ImageView) findViewById(R.id.boringing);
+        animationDrawable=(AnimationDrawable) cikeLabel.getBackground();
+        animationDrawable.start();
 
         ToolPushNewMsgInfo.getInstance().initTitleNewMsg();
         ToolFileRW.getInstance().initTitleNewMsg();

@@ -66,10 +66,11 @@
 
             <ImageView
                 android:id="@+id/unread_voice"
-                android:layout_width="1dp"
-                android:layout_height="wrap_content"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
                 android:layout_marginLeft="10dp"
-                android:layout_toRightOf="@id/length"/>
+                android:layout_toRightOf="@id/length"
+                android:src="@color/color_white" />
                 <!--android:src="@drawable/voice_unread"/>-->
 
             <ProgressBar
