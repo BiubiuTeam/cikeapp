@@ -179,6 +179,6 @@
         </activity>
         <!--haowen umeng-->
         <meta-data android:value="557e453e67e58e56d30029f7" android:name="UMENG_APPKEY"></meta-data>
-        <meta-data android:value="@string/channel_name" android:name="UMENG_CHANNEL"/>
+        <meta-data android:value="${UMENG_CHANNEL_VALUE}" android:name="UMENG_CHANNEL"/>
     </application>
 </manifest>

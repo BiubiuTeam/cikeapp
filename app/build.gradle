@@ -12,6 +12,21 @@ android {
         versionName "1.0"
     }
 
+    productFlavors{
+        wandoujia{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"wandoujia"]
+        }
+        baidu{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"baidu"]
+        }
+        c360{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"c360"]
+        }
+        uc{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"uc"]
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
