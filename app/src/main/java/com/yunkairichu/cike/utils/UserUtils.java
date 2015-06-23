@@ -5,7 +5,7 @@ package com.yunkairichu.cike.utils;
  */
 public class UserUtils {
     /**
-     * ¸ù¾İusername»ñÈ¡ÏàÓ¦user£¬ÓÉÓÚdemoÃ»ÓĞÕæÊµµÄÓÃ»§Êı¾İ£¬ÕâÀï¸øµÄÄ£ÄâµÄÊı¾İ£»
+     * ï¿½ï¿½ï¿½usernameï¿½ï¿½È¡ï¿½ï¿½Ó¦userï¿½ï¿½ï¿½ï¿½ï¿½ï¿½demoÃ»ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½İ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½İ£ï¿½
      * @param username
      * @return
      */
@@ -16,7 +16,7 @@ public class UserUtils {
 //        }
 //
 //        if(user != null){
-//            //demoÃ»ÓĞÕâĞ©Êı¾İ£¬ÁÙÊ±Ìî³ä
+//            //demoÃ»ï¿½ï¿½ï¿½ï¿½Ğ©ï¿½ï¿½İ£ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
 //            user.setNick(username);
 ////            user.setAvatar("http://downloads.easemob.com/downloads/57.png");
 //        }
@@ -24,7 +24,7 @@ public class UserUtils {
 //    }
 
     /**
-     * ÉèÖÃÓÃ»§Í·Ïñ
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Í·ï¿½ï¿½
      * @param username
      */
 //    public static void setUserAvatar(Context context, String username, ImageView imageView){

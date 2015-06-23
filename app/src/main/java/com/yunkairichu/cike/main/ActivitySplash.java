@@ -115,6 +115,9 @@ public class ActivitySplash extends BindableActivity {
                     i = new Intent(ActivitySplash.this, ActivityWelcome.class);
                 }
                 else if(responseUserInfoLoad.getStatusCode() == 0){
+                    int userConfig = responseUserInfoLoad.getReturnData().getUserConfig();
+                    Application.getInstance().myGender = (userConfig>>0)&1;
+                    Application.getInstance().myRole = (userConfig>>1)&1;
                     i = new Intent(ActivitySplash.this, ActivityBeforeSearch.class);
                 }
                 else{

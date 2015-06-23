@@ -271,8 +271,14 @@ public class ActivitySquare extends Activity implements EMEventListener {
                         responseSearchTitle = null;
                         searchFlag = 0;
                         clearTitleBitmap();
+//                        doTitleSearch();
                         squareScrollView.scrollTo(10, 10);
-                        doTitleSearch();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                doTitleSearch();
+                            }
+                        }, 200);
                     }
                 }
             }
@@ -286,7 +292,13 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     searchFlag = 0;
                     clearTitleBitmap();
                     squareScrollView.scrollTo(10, 10);
-                    doTitleSearch();
+                    //doTitleSearch();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            doTitleSearch();
+                        }
+                    }, 200);
                 }
             }
         }
@@ -399,21 +411,18 @@ public class ActivitySquare extends Activity implements EMEventListener {
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     }
-                    ToolLog.dbg("111");
                     HttpURLConnection conn = null;
                     try {
                         conn = (HttpURLConnection) url.openConnection();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    ToolLog.dbg("222");
                     conn.setConnectTimeout(5000 * 10);
                     try {
                         conn.setRequestMethod("GET");
                     } catch (ProtocolException e) {
                         e.printStackTrace();
                     }
-                    ToolLog.dbg("333");
                     try {
                         ToolLog.dbg("111:" + String.valueOf(conn.getResponseCode()));
                         if (conn.getResponseCode() == 200) {
@@ -421,7 +430,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
 
                             int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
                             if(maxMemory<102400) {
-                                ToolLog.dbg("in small memory");
                                 BitmapFactory.Options newOpts = new BitmapFactory.Options();
 //                                newOpts.inJustDecodeBounds = true;
 //                                BitmapFactory.decodeStream(inputStream, null, newOpts);
@@ -433,7 +441,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
                                 bitmap = BitmapFactory.decodeStream(inputStream);
                             }
                             //数据存文件
-                            ToolLog.dbg("123");
                             ToolFileRW.getInstance().saveBitmapToFile(bitmap, picName);
                         }
                     } catch (IOException e) {
@@ -479,7 +486,6 @@ public class ActivitySquare extends Activity implements EMEventListener {
             public void onResponse(JSONObject response) {
                 super.onResponse(response);
                 updatePullRefreshViewOnUiThread(true);
-
                 if (response == null) {
                     ToolLog.dbg("server error");
                     return;

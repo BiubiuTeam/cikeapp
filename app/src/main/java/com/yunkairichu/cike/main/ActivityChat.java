@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -75,6 +76,7 @@ import com.yunkairichu.cike.bean.ResponseSearchTitle;
 import com.yunkairichu.cike.bean.ResponseUserChainInsert;
 import com.yunkairichu.cike.utils.CommonUtils;
 import com.yunkairichu.cike.utils.PopupUtil;
+import com.yunkairichu.cike.utils.UmlogEngine;
 import com.yunkairichu.cike.widget.ChatEmoji;
 import com.yunkairichu.cike.widget.FaceConversionUtil;
 import com.yunkairichu.cike.widget.FaceRelativeLayout;
@@ -878,7 +880,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         if(big_pic_flag == 1 && scaleBig || big_pic_flag == 0 && scaleBig == false){
             return;
         }
-ToolLog.dbg("scale:"+String.valueOf(scaleBig));
+//        ToolLog.dbg("scale:"+String.valueOf(scaleBig));
         View v = big_image;
         int height, width;
         if (scaleBig == false) {
@@ -903,9 +905,14 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
 //            set.setFillAfter(true);
 //            big_image.startAnimation(set);
 
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-            layoutParams.setMargins(width * 2, 0, 0, 0);
+            //RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int)ToolDevice.dp2px(80), (int)ToolDevice.dp2px(80));
+            //layoutParams.setMargins(width * 2, 0, 0, 0);
+            layoutParams.setMargins((int) ToolDevice.dp2px(270), (int) ToolDevice.dp2px(10), (int) ToolDevice.dp2px(10), 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
             v.setLayoutParams(layoutParams);
+            ((ImageView)v).setScaleType(ImageView.ScaleType.FIT_XY);
+            v.setAlpha(0.4f);
             big_image_text.setVisibility(View.GONE);
             big_pic_flag = 0;
         } else {
@@ -928,6 +935,7 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
 //            big_image.startAnimation(set);
 
             v.setLayoutParams(layoutParams);
+            v.setAlpha(1);
             RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(width, height);
             layoutParams2.setMargins((int) ToolDevice.dp2px(70.0f), 0, (int) ToolDevice.dp2px(70.0f), 0);
             big_image_text.setVisibility(View.VISIBLE);
@@ -955,8 +963,8 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
             }
         }
         if(flag==1){
-            ToolLog.dbg("addUserChain");
             addUserChain();
+            UmlogEngine.getInstance().onUmlogLogEvent(ActivityChat.this, UmlogEngine.LogEvent.StartChat);
         }
 
         if (content.length() > 0) {
@@ -1019,6 +1027,7 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
         }
         if(flag==1){
             addUserChain();
+            UmlogEngine.getInstance().onUmlogLogEvent(ActivityChat.this, UmlogEngine.LogEvent.StartChat);
         }
 
         if (!(new File(filePath).exists())) {
@@ -1062,6 +1071,7 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
         }
         if(flag==1){
             addUserChain();
+            UmlogEngine.getInstance().onUmlogLogEvent(ActivityChat.this, UmlogEngine.LogEvent.StartChat);
         }
 
         String to = toChatUsername;
@@ -1196,6 +1206,17 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
     }
 
 /////////////////////////////////////接收侦听相关///////////////////////////////////////////
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK )
+        {
+            forceQuit(0);
+        }
+
+        return true;
+    }
 
     /**
      * 消息广播接收者（第一种接收方式）
@@ -1706,7 +1727,8 @@ ToolLog.dbg("scale:"+String.valueOf(scaleBig));
     /************************************事件响应 完*************************************************/
 
 ///////////////////////////////////////get set类函数/////////////////////////////////////
-
+    public BaseResponseTitleInfo getBaseResponseTitleInfo(){return baseResponseTitleInfo;}
+    public void setBaseResponseTitleInfo(BaseResponseTitleInfo baseResponseTitleInfo){this.baseResponseTitleInfo = baseResponseTitleInfo;}
     public ResponseSearchTitle getResponseSearchTitle(){return responseSearchTitle;}
     public void setResponseSearchTitle(ResponseSearchTitle responseSearchTitle){this.responseSearchTitle = responseSearchTitle;}
     public ResponseUserChainInsert getResponseUserChainInsert(){return responseUserChainInsert;}

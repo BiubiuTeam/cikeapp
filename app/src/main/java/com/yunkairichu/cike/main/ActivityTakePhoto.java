@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -28,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.androidquery.AQuery;
 import com.androidquery.callback.AjaxCallback;
 import com.androidquery.callback.AjaxStatus;
@@ -41,6 +43,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponsePublishTitle;
+import com.yunkairichu.cike.utils.UmlogEngine;
 
 import org.json.JSONObject;
 
@@ -86,6 +89,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     private int captureOrFromFileFlag = 0;
     private Bitmap fromFileBitmap = null;
     private Layout_take_photo layout_take_photo;
+    private String[] choosedStatus = {"全部", "失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "其他", "健身", "吃大餐", "在自拍"};
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -432,28 +436,32 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         if(surface != null) surface = null;
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK )
+        {
+            //返回
+            if(fromFileBitmap!=null && !fromFileBitmap.isRecycled()){
+                fromFileBitmap.recycle();
+                fromFileBitmap = null;
+            }
+            ActivityTakePhoto.this.setResult(RESULT_OK);
+            ActivityTakePhoto.this.finish();
+            ActivityTakePhoto.this.overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+        }
+
+        return false;
+    }
+
     //创建jpeg图片回调数据对象
     Camera.PictureCallback jpeg = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             // TODO Auto-generated method stub
             try {
-                int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-                int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-                int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-                ToolLog.dbg("T0");
-                ToolLog.dbg("Max memory is " + maxMemory + "KB");
-                ToolLog.dbg("Free memory is " + freeMemory + "KB");
-                ToolLog.dbg("Total memory is " + totalMemory + "KB");
                 //Bitmap bitmapPre = BitmapFactory.decodeByteArray(data, 0, data.length);
                 Bitmap bitmapPre = scaleCompress(data);
-                maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-                freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-                totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-                ToolLog.dbg("T0.1");
-                ToolLog.dbg("Max memory is " + maxMemory + "KB");
-                ToolLog.dbg("Free memory is " + freeMemory + "KB");
-                ToolLog.dbg("Total memory is " + totalMemory + "KB");
 
                 //ToolLog.dbg("data length:"+String.valueOf(data.length));
                 //自定义文件保存路径  以拍摄时间区分命名
@@ -467,8 +475,8 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 bos.flush();// 刷新此缓冲区的输出流
                 bos.close();// 关闭此输出流并释放与此流有关的所有系统资源
                 camera.stopPreview();//关闭预览 处理数据
-                camera.setDisplayOrientation(90);
-                camera.startPreview();//数据处理完后继续开始预览
+//                camera.setDisplayOrientation(90);
+//                camera.startPreview();//数据处理完后继续开始预览
                 bitmapPre.recycle();//回收bitmap空间
                 bitmapPre = null;
                 sendPicRes(file);
@@ -519,13 +527,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             sendPicFromFilePath = file.getAbsolutePath();
         }
 
-        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T0");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
 //        try {
 //            bm = BitmapFactory.decodeFile(sendPicFromFilePath,);        //显得到bitmap图片
 //        } catch (IOException e) {
@@ -533,13 +534,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //        }
         bm = scaleCompress(sendPicFromFilePath);
         if(bm != null) {
-            maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-            freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-            totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-            ToolLog.dbg("T0.1");
-            ToolLog.dbg("Max memory is " + maxMemory + "KB");
-            ToolLog.dbg("Free memory is " + freeMemory + "KB");
-            ToolLog.dbg("Total memory is " + totalMemory + "KB");
             photoFromFile.setVisibility(View.VISIBLE);
             photoFromFile.setImageBitmap(bm);
             fromFileBitmap = bm;
@@ -595,8 +589,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                         ToolLog.dbg("SendPicFinish");
                         if (status.getCode() == 200) {
                             try {
-                                sendTitle(msgTag,(int)getFileSize(mImageFile), object);
-                                msgTag = -1;
+                                sendTitle(msgTag, (int) getFileSize(mImageFile), object);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -604,11 +597,11 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                             Toast.makeText(getApplicationContext(),
                                     R.string.network_err, Toast.LENGTH_SHORT)
                                     .show();
+                            finishTakePhoto();
                         }
                     }
                 });
-        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
-        setResult(RESULT_FORCE_REFLASH);
+        finishTakePhoto();
     }
 
     private void sendTitle(int msgTag, int picSize, String titleCont) {
@@ -620,6 +613,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         }
         if(ToolGetLocationInfo.getInstance().getFailFlag()==1){
             Toast.makeText(ActivityTakePhoto.this, "网络不太好，请稍后再试", Toast.LENGTH_SHORT);
+            finishTakePhoto();
             return;
         }
         JSONObject jo = JsonPack.buildPublishTitle(msgTag, TITLE_TYPE_PICTURE, titleCont, 1, picSize, Text,
@@ -630,33 +624,57 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 super.onResponse(response);
                 if (response == null) {
                     ToolLog.dbg("server error");
+                    finishTakePhoto();
                     return;
                 }
 
                 setResponsePublishTitle(JacksonWrapper.json2Bean(response, ResponsePublishTitle.class));
                 ToolLog.dbg("Send Finish");
                 if (responsePublishTitle.getStatusCode() == 0) {
-                    if (fromFileBitmap != null && !fromFileBitmap.isRecycled()) {
-                        fromFileBitmap.recycle();
-                        fromFileBitmap = null;
-                    }
-                    setResult(RESULT_FORCE_REFLASH);
-                    finish();
-                    overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+                    sendUmeng();
+                    finishTakePhoto();
                 } else {
-                    Toast.makeText(getApplicationContext(),
+                    Toast.makeText(ActivityTakePhoto.this,
                             R.string.network_err, Toast.LENGTH_SHORT)
                             .show();
-                    if (fromFileBitmap != null && !fromFileBitmap.isRecycled()) {
-                        fromFileBitmap.recycle();
-                        fromFileBitmap = null;
-                    }
-                    setResult(RESULT_FORCE_REFLASH);
-                    finish();
-                    overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+                    finishTakePhoto();
                 }
             }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(ActivityTakePhoto.this, R.string.network_err, Toast.LENGTH_SHORT).show();
+                finishTakePhoto();
+            }
         });
+    }
+
+    private void finishTakePhoto(){
+        if (fromFileBitmap != null && !fromFileBitmap.isRecycled()) {
+            fromFileBitmap.recycle();
+            fromFileBitmap = null;
+        }
+        setResult(RESULT_FORCE_REFLASH);
+        finish();
+        overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+    }
+
+    private void sendUmeng(){
+        HashMap<String,String> eventMap = new HashMap<String, String>();
+
+        eventMap.put("StatusType", choosedStatus[msgTag]);
+//        eventMap.put("LocationType", UmlogEngine.LocationType.values()[selectorScale].toString());
+        String userType = "{";
+        userType += (Application.getInstance().myRole==1?"female":"male");
+        userType += ",";
+        userType += (Application.getInstance().myGender==1?"worker":"student");
+        userType += "}";
+        eventMap.put("UserType", userType);
+
+        //haowen,6.17 数据上报
+        UmlogEngine.getInstance().onUmlogLogEventMap(ActivityTakePhoto.this, UmlogEngine.LogEvent.PublishStatus,eventMap);
+
+        msgTag = -1;
     }
 
     /**
@@ -681,13 +699,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
     //像素缩放
     private Bitmap scaleCompress(String bitmapPath){
-        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T1");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;
@@ -709,13 +720,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             be = 1;
         newOpts.inSampleSize = be;//设置缩放比例
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
-        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T2");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         return BitmapFactory.decodeFile(bitmapPath, newOpts);
     }
 
@@ -750,23 +754,9 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
     //质量压缩
     private int massCompress(Bitmap bitmap){
-        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        int freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        int totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T7");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         ToolLog.dbg("baos length first:" + String.valueOf(baos.toByteArray().length));
-        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T8");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         int options = 50;
         while ( baos.toByteArray().length / 1024>25) {  //循环判断如果压缩后图片是否大于25kb,大于继续压缩
             baos.reset();//重置baos即清空baos
@@ -775,31 +765,18 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                 break;
             }
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
-            maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-            freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-            totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-            ToolLog.dbg("T9");
-            ToolLog.dbg("Max memory is " + maxMemory + "KB");
-            ToolLog.dbg("Free memory is " + freeMemory + "KB");
-            ToolLog.dbg("Total memory is " + totalMemory + "KB");
         }
         ToolLog.dbg("options:" + String.valueOf(options));
         bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);
         baos.reset();
-        maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1024);
-        totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1024);
-        ToolLog.dbg("T10");
-        ToolLog.dbg("Max memory is " + maxMemory + "KB");
-        ToolLog.dbg("Free memory is " + freeMemory + "KB");
-        ToolLog.dbg("Total memory is " + totalMemory + "KB");
         ToolLog.dbg("compressed size" + String.valueOf(baos.toByteArray().length));
 
         return options;
     }
 
     ///////////////////////////////////////////////get set 类/////////////////////////////////////
-    public ResponsePublishTitle getResponsePublishTitle(){return responsePublishTitle;}
+    public ResponsePublishTitle getResponsePublishTitle() {
+        return responsePublishTitle;}
     public void setResponsePublishTitle(ResponsePublishTitle responsePublishTitle){this.responsePublishTitle = responsePublishTitle;}
 
     @Override

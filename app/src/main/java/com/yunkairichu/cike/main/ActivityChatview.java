@@ -2,7 +2,6 @@ package com.yunkairichu.cike.main;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -10,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -229,8 +229,10 @@ public class ActivityChatview extends Activity implements EMEventListener {
     }
 
     /////////////////////////////////////////////////////事件响应 及 逻辑//////////////////////////////
-    public void clickAvatarAtIndex(ChatListItemModel model,int index){
+    public void clickAvatarAtIndex(ChatListItemModel model, final int index){
+//        ToolLog.dbg("clickAvatarAtIndex");
         if (model == null || model.isLocalTmp){
+//            ToolLog.dbg("111");
             return;
         }
         //get the model, and show up the image
@@ -239,6 +241,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
         detailImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Application.getInstance().chatViewCentralItemIndex = index;
                 Intent i = new Intent(ActivityChatview.this, ActivityChat.class);
                 Bundle bundle = new Bundle();
                 detailImage.dataContent.baseResponseUserChainInfo.getTitleInfo().setSortId(detailImage.dataContent.baseResponseUserChainInfo.getTitleInfo().getTitleId());
@@ -261,7 +264,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
         });
 
         //show up the image base on data content you set
-        Resources res = getResources();
+        //Resources res = getResources();
         if(model.isLocalTmp == false) {
             if(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleType() == 3){
                 getBitmap(listOfModels.get(index).baseResponseUserChainInfo.getTitleInfo().getTitleCont(), index);
@@ -272,8 +275,9 @@ public class ActivityChatview extends Activity implements EMEventListener {
     }
 
     public void centeralListViewAtIndex(int index){
-        ChatListItemModel model = scrollAdapter.getItem(index + VISIBLE_LIST_CELL_COUNT/2);
-        this.clickAvatarAtIndex(model, index + VISIBLE_LIST_CELL_COUNT/2);
+        ChatListItemModel model = scrollAdapter.getItem(index + VISIBLE_LIST_CELL_COUNT / 2);
+        ToolLog.dbg("VISIBLE_LIST_CELL_COUNT:"+String.valueOf(index + VISIBLE_LIST_CELL_COUNT / 2));
+        this.clickAvatarAtIndex(model, index + VISIBLE_LIST_CELL_COUNT / 2);
     }
 
     public void setEmptyViewHidden(boolean hidden){
@@ -285,6 +289,19 @@ public class ActivityChatview extends Activity implements EMEventListener {
             emptyView.setVisibility(View.VISIBLE);
             chatview.bringChildToFront(emptyView);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK )
+        {
+            setResult(RESULT_OK);
+            finish();
+            overridePendingTransition(R.anim.alpha_in, R.anim.alpha_out);
+        }
+
+        return true;
     }
 
     ///////////////////////////////////////大事件响应/////////////////////////////////////
@@ -300,7 +317,14 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 lastPostion = 0;
                 userChainPullTime = 0;
                 userChainPull(Constant.IDTYPE_GETOLD, 0);
-                ToolLog.dbg("back chain");
+                ToolLog.dbg("chatViewCentralItemIndex:" + String.valueOf(Application.getInstance().chatViewCentralItemIndex));
+                centeralListViewAtIndex(Application.getInstance().chatViewCentralItemIndex - 3);
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        centeralListViewAtIndex(Application.getInstance().chatViewCentralItemIndex-3);
+//                    }
+//                }, 500);
             }
         } else if (resultCode == RESULT_FORCE_REFLASH) {
             if(requestCode == REQUEST_CODE_CHAIN_TO_SCHAT){
@@ -308,7 +332,14 @@ public class ActivityChatview extends Activity implements EMEventListener {
                 lastPostion = 0;
                 userChainPullTime = 0;
                 userChainPull(Constant.IDTYPE_GETOLD, 0);
-                ToolLog.dbg("back chain");
+                ToolLog.dbg("chatViewCentralItemIndex:" + String.valueOf(Application.getInstance().chatViewCentralItemIndex));
+                centeralListViewAtIndex(Application.getInstance().chatViewCentralItemIndex - 3);
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        centeralListViewAtIndex(Application.getInstance().chatViewCentralItemIndex-3);
+//                    }
+//                }, 500);
             }
         }
     }
@@ -542,6 +573,7 @@ public class ActivityChatview extends Activity implements EMEventListener {
         userChainPullTime = 0;
         lastPostion = 0;
         listOfModelsBack.clear();
+        ToolLog.dbg("notifyDataSetChanged");
         scrollAdapter.notifyDataSetChanged();
     }
 

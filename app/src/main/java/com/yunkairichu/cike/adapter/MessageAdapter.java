@@ -2,16 +2,13 @@ package com.yunkairichu.cike.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.text.Spannable;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +32,7 @@ import com.easemob.chat.TextMessageBody;
 import com.easemob.chat.VoiceMessageBody;
 import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.DateUtils;
+import com.jaf.jcore.Application;
 import com.yunkairichu.cike.main.ActivityChat;
 import com.yunkairichu.cike.main.Constant;
 import com.yunkairichu.cike.main.R;
@@ -42,6 +41,7 @@ import com.yunkairichu.cike.main.ToolShowBigImage;
 import com.yunkairichu.cike.utils.ImageCache;
 import com.yunkairichu.cike.utils.ImageUtils;
 import com.yunkairichu.cike.utils.SmileUtils;
+import com.yunkairichu.cike.utils.UserUtils;
 
 import java.io.File;
 import java.util.Date;
@@ -333,6 +333,8 @@ public class MessageAdapter extends BaseAdapter {
             } else if (message.getType() == EMMessage.Type.VOICE) {
                 try {
                     holder.iv = ((ImageView) convertView.findViewById(R.id.voice_play));
+                    holder.rl_bg = ((RelativeLayout) convertView.findViewById(R.id.voice));
+//                    holder.iv = ((ImageView) convertView.findViewById(R.id.voice_content));
                     holder.iv_avatar = (ImageView) convertView.findViewById(R.id.userhead);
                     holder.tv = (TextView) convertView.findViewById(R.id.length);
                     holder.pb = (ProgressBar) convertView.findViewById(R.id.sending);
@@ -439,7 +441,7 @@ public class MessageAdapter extends BaseAdapter {
         }
 
         //�����û�ͷ��
-        // setUserAvatar(message, holder.iv_avatar);
+        setUserAvatar(message, holder.iv_avatar);
         switch (message.getType()) {
             // �����Ϣtype��ʾitem
             case IMAGE: // ͼƬ
@@ -601,9 +603,21 @@ public class MessageAdapter extends BaseAdapter {
             //��ʾ�Լ�ͷ��
             //���ǵĳ���û���û��Լ���ͷ���������
             //UserUtils.setUserAvatar(context, EMChatManager.getInstance().getCurrentUser(), imageView);
+            if(Application.getInstance().myGender == 0){
+                imageView.setImageResource(R.drawable.male_avatar);
+            } else {
+                imageView.setImageResource(R.drawable.female_avatar);
+            }
         }else{
             //UserUtils.setUserAvatar(context, message.getFrom(), imageView);
+            int gender = (((ActivityChat)activity).getBaseResponseTitleInfo().getUserConfig()>>0)&1;
+            if(gender==0){
+                imageView.setImageResource(R.drawable.male_avatar);
+            } else {
+                imageView.setImageResource(R.drawable.female_avatar);
+            }
         }
+
     }
 
     /**
@@ -905,15 +919,16 @@ public class MessageAdapter extends BaseAdapter {
         VoiceMessageBody voiceBody = (VoiceMessageBody) message.getBody();
         holder.tv.setText(voiceBody.getLength() + "\"");
         holder.iv.setOnClickListener(new VoicePlayClickListener(message, holder.iv, holder.iv_read_status, this, activity, username));
-        holder.iv.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                activity.startActivityForResult(
-                        (new Intent(activity, ContextMenu.class)).putExtra("position", position).putExtra("type",
-                                EMMessage.Type.VOICE.ordinal()), ActivityChat.REQUEST_CODE_CONTEXT_MENU);
-                return true;
-            }
-        });
+//        holder.iv.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                activity.startActivityForResult(
+//                        (new Intent(activity, ContextMenu.class)).putExtra("position", position).putExtra("type",
+//                                EMMessage.Type.VOICE.ordinal()), ActivityChat.REQUEST_CODE_CONTEXT_MENU);
+//                return true;
+//            }
+//        });
+        holder.rl_bg.setOnClickListener(new VoicePlayClickListener(message, holder.iv, holder.iv_read_status, this, activity, username));
         if (((ActivityChat)activity).playMsgId != null
                 && ((ActivityChat)activity).playMsgId.equals(message
                 .getMsgId())&&VoicePlayClickListener.isPlaying) {
@@ -1478,6 +1493,7 @@ public class MessageAdapter extends BaseAdapter {
         TextView size;
         LinearLayout container_status_btn;
         LinearLayout ll_container;
+        RelativeLayout rl_bg;
         ImageView iv_read_status;
         // ��ʾ�Ѷ���ִ״̬
         TextView tv_ack;

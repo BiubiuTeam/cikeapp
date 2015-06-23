@@ -80,8 +80,9 @@ public class ScrollAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        //ToolLog.dbg("userChain itemnum:"+String.valueOf(i));
+        ToolLog.dbg("userChain itemnum:"+String.valueOf(i));
         if (view == null) {
+            ToolLog.dbg("bbc");
             view = new MyHalfItem(viewGroup.getContext());
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -92,6 +93,7 @@ public class ScrollAdapter extends BaseAdapter {
                     if (model.isLocalTmp){
                         return;
                     }
+                    ToolLog.dbg("before clickAvatarAtIndex");
                     activity.clickAvatarAtIndex(model,clickView.position);
                 }
             });

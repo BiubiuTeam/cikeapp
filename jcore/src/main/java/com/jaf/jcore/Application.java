@@ -30,6 +30,9 @@ public class Application extends android.app.Application {
     public MyLocationListener mMyLocationListener;
     public JSONObject titleNewMsgFlag = new JSONObject();
     public int splashConectTime = 0;
+    public int myGender = 0;
+    public int myRole = 0;
+    public int chatViewCentralItemIndex = 0;
 
     @Override
     public void onCreate() {
