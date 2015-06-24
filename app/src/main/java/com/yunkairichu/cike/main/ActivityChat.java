@@ -358,6 +358,7 @@ public class ActivityChat extends Activity implements EMEventListener {
             iv_emoticons_normal.setVisibility(View.GONE);
             iv_emoticons_checked.setVisibility(View.GONE);
             btnPicture.setVisibility(View.GONE);
+            reportTV.setVisibility(View.GONE);
         }
 
         roleTV.setText(roleText);
