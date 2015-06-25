@@ -42,13 +42,13 @@ public class StatusSelectorLayout extends RelativeLayout{
     private int tmpScale = 0;
     private int tmpGender = 0;
 
-    private String[] statusName = new String[]{"全部","失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "健身", "吃大餐", "自拍"};
-    private String[] scale = new String[]{"全球","同城"};
-    private String[] gender = new String[]{"所有人","男生","女生"};
+    public static final String[] statusName = new String[]{"全部","失恋中", "无聊", "思考人生", "上自习", "在路上", "上班ing", "健身", "吃大餐", "自拍"};
+    public static final String[] scale = new String[]{"全球","同城"};
+    public static final String[] gender = new String[]{"所有人","男生","女生"};
 
-    private int[] statusNameNum = {0,1,2,3,4,5,6,8,9,10};
-    private int[] scaleNum = {0,1};
-    private int[] genderNum ={0,1,2};
+    public static final int[] statusNameNum = {0,1,2,3,4,5,6,8,9,10};
+    public static final int[] scaleNum = {0,1};
+    public static final int[] genderNum ={0,1,2};
 
     public StatusSelectorLayout(Context context) {
         super(context);
@@ -214,7 +214,7 @@ public class StatusSelectorLayout extends RelativeLayout{
         eventMap.put("UserType", UmlogEngine.UserType.values()[selectorGender].toString());
 
         //haowen,6.17 数据上报
-        UmlogEngine.getInstance().onUmlogLogEventMap(linkContext, UmlogEngine.LogEvent.PickStatus,eventMap);
+        UmlogEngine.getInstance().onUmlogLogEventMap(linkContext, UmlogEngine.LogEvent.PickStatus, eventMap);
     }
 
     public String getSelectedStatusWord(){
@@ -234,7 +234,31 @@ public class StatusSelectorLayout extends RelativeLayout{
         return statusNameNum[selectorStatus];
     }
 
-    public boolean contentChanged(){
+    public void setSelectorStatus(int selectorStatus){
+        this.selectorStatus = selectorStatus;
+    }
+
+    public void setSelectorGender(int selectorGender){
+        this.selectorGender = selectorGender;
+    }
+
+    public void setSelectorScale(int selectorScale){
+        this.selectorScale = selectorScale;
+    }
+
+    public int getSelectorGender(){
+        return selectorGender;
+    }
+
+    public int getSelectorScale(){
+        return selectorScale;
+    }
+
+    public int getSelectorStatus() {
+        return selectorStatus;
+    }
+
+        public boolean contentChanged(){
         if(tmpGender != selectorGender || tmpStatus != selectorStatus || tmpScale != selectorScale)
             return true;
         return false;

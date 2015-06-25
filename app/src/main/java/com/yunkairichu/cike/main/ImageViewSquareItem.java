@@ -1,9 +1,9 @@
 package com.yunkairichu.cike.main;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.view.Gravity;
 import android.widget.GridLayout;
-import android.widget.ImageView;
 
 import com.flaviofaria.kenburnsview.KenBurnsView;
 
@@ -31,4 +31,12 @@ public class ImageViewSquareItem extends KenBurnsView {
         this.setLayoutParams(params);
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        try {
+            super.onDraw(canvas);
+        } catch (Exception e) {
+//            ToolLog.dbg("trying to use a recycled bitmap");
+        }
+    }
 }

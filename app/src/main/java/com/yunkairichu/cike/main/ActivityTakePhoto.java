@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -26,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -102,7 +104,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         Bundle bundle = this.getIntent().getExtras();
         msgTag = bundle.getInt("msgTag", 0);
 
-        if(msgTag==9) cameraPosition = 0;
+        if(msgTag==10) cameraPosition = 0;
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);//没有标题
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
@@ -211,8 +213,50 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
                                 }
+
                                 camera.setDisplayOrientation(90);
                                 camera.startPreview();//开始预览
+
+//                                //设置参数，并拍照
+//                                Camera.Parameters params = camera.getParameters();
+//
+//                                List<Camera.Size> supportedPreviewSizes
+//                                        = SupportedSizesReflect.getSupportedPreviewSizes(params);
+//
+//                                ToolLog.dbg("getSupportedPreviewSizes:" + String.valueOf(supportedPreviewSizes.size()));
+//                                if ( supportedPreviewSizes != null &&
+//                                        supportedPreviewSizes.size() > 0) {
+//
+//                                    //2.x
+//                                    Camera.Size pictureSize = supportedPreviewSizes.get(0);
+//
+//                                    int diff = 0;
+//                                    for (Camera.Size size : supportedPreviewSizes) {
+//                                        ToolLog.dbg("height1:" + String.valueOf(size.height) + " width:" + String.valueOf(size.width));
+//                                    }
+//                                    for (Camera.Size size : supportedPreviewSizes) {
+//                                        if (diff < size.width) {
+//                                                pictureSize = size;
+//                                                diff = size.width;
+//                                        }
+//                                    }
+//
+//                                    ToolLog.dbg("height:" + String.valueOf(pictureSize.height) + " width:" + String.valueOf(pictureSize.width));
+////                                    params.setPreviewSize(pictureSize.width, pictureSize.height);//图片大小
+////                                    camera.setParameters(params);//将参数设置到我的camera
+//                                    DisplayMetrics metrics = new DisplayMetrics();
+//                                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//                                    float heightRate = (float)(metrics.heightPixels)/(float)(pictureSize.height);
+//                                    int targetWidth = (int)(metrics.widthPixels * heightRate);
+//
+//                                    surface.setLayoutParams(new RelativeLayout.LayoutParams(targetWidth, metrics.heightPixels));
+//                                }
+                                DisplayMetrics metrics = new DisplayMetrics();
+                                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                int x = metrics.widthPixels;//获取了屏幕的宽度
+                                int y = (int)(x*4/3);
+                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+                                surface.setLayoutParams(layoutParams);
                                 cameraPosition = 0;
                                 break;
                             }
@@ -233,6 +277,12 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                                 }
                                 camera.setDisplayOrientation(90);
                                 camera.startPreview();//开始预览
+                                DisplayMetrics metrics = new DisplayMetrics();
+                                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                                int x = metrics.widthPixels;//获取了屏幕的宽度
+                                int y = metrics.heightPixels;
+                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+                                surface.setLayoutParams(layoutParams);
                                 cameraPosition = 1;
                                 break;
                             }
@@ -368,7 +418,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                     captureOrFromFileFlag = 1;
                     cameraPosition = 0;//把摄像头设置为前置，方便一会还原回后置
                     if(photoFromFile != null) photoFromFile.setVisibility(View.VISIBLE);
-                    photoFromFile.setBackgroundColor(0xFFFFD600);
+//                    photoFromFile.setBackgroundColor(0xFFFFD600);
 
                     Uri selectedImage = data.getData();
                     if (selectedImage != null) {
@@ -386,7 +436,6 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -394,7 +443,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         // TODO Auto-generated method stub
         //当surfaceview创建时开启相机
         if(camera == null) {
-            if(msgTag==9){
+            if(msgTag==10){
                 Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                 int cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
 
@@ -403,12 +452,17 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                     //现在是后置，变更为前置
                     if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) camera = Camera.open(i);
                 }
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                int x = metrics.widthPixels;//获取了屏幕的宽度
+                int y = (int)(x*4/3);
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+                surface.setLayoutParams(layoutParams);
             }
             else{
                 camera = Camera.open();
             }
             try {
-                ToolLog.dbg("here");
                 camera.setPreviewDisplay(holder);//通过surfaceview显示取景画面
                 camera.setDisplayOrientation(90);
                 camera.startPreview();//开始预览
@@ -716,9 +770,11 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
             be = (int) (newOpts.outHeight / hh);
         }
+        be += 1;
         if (be <= 0)
             be = 1;
         newOpts.inSampleSize = be;//设置缩放比例
+        ToolLog.dbg("be:"+be);
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         return BitmapFactory.decodeFile(bitmapPath, newOpts);
     }
@@ -806,7 +862,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
     }
 
     public static class SupportedSizesReflect {
-        private Method Parameters_getSupportedPreviewSizes = null;
+        private static Method Parameters_getSupportedPreviewSizes = null;
         private static Method Parameters_getSupportedPictureSizes = null;
 
         static {
@@ -817,10 +873,12 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
             try {
                 Parameters_getSupportedPictureSizes = Camera.Parameters.class.getMethod(
                         "getSupportedPictureSizes", new Class[] {});
-
+                Parameters_getSupportedPreviewSizes = Camera.Parameters.class.getMethod(
+                        "getSupportedPreviewSizes", new Class[] {});
             } catch (NoSuchMethodException nsme) {
                 nsme.printStackTrace();
                 Parameters_getSupportedPictureSizes = null;
+                Parameters_getSupportedPreviewSizes = null;
             }
         }
 
@@ -829,7 +887,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
          * @param p
          * @return Android1.x返回null
          */
-        public List<Camera.Size> getSupportedPreviewSizes(Camera.Parameters p) {
+        public static List<Camera.Size> getSupportedPreviewSizes(Camera.Parameters p) {
             return getSupportedSizes(p, Parameters_getSupportedPreviewSizes);
         }
 

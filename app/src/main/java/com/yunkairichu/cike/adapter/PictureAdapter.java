@@ -12,10 +12,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jaf.jcore.Application;
 import com.yunkairichu.cike.main.ActivitySquare;
 import com.yunkairichu.cike.main.ActivityTakePhoto;
 import com.yunkairichu.cike.main.R;
 import com.yunkairichu.cike.utils.CommonUtils;
+import com.yunkairichu.cike.widget.StatusSelectorLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,9 +158,12 @@ public class PictureAdapter extends BaseAdapter {
 //                    REQUEST_CODE_CAMERA);
 
             sendMsgTag = (int)view.getTag(R.id.tag_msg_tag);
+            Application.getInstance().squareGender = 0;
+            Application.getInstance().squareStatus = sendMsgTag;
+            Application.getInstance().squareLoc = 0;
             Intent i = new Intent((ActivitySquare)activity, ActivityTakePhoto.class);
             Bundle bundle = new Bundle();
-            bundle.putInt("msgTag", sendMsgTag);
+            bundle.putInt("msgTag", StatusSelectorLayout.statusNameNum[sendMsgTag]);
             i.putExtras(bundle);
             ((ActivitySquare)activity).clearTitleBitmap();
             //((ActivitySquare)activity).getSquareScrollView().removeAllViews();

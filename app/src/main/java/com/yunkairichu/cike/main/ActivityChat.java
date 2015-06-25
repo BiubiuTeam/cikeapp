@@ -172,7 +172,7 @@ public class ActivityChat extends Activity implements EMEventListener {
     private TextView tvSelfChat;             //自己和自己聊的提示
     private TextView big_image_text;      //聊天开始时那个大图的文字
     private ListView listView;
-    private ImageView big_image;           //聊天开始时那个大图
+    private ImageViewNeedRecycle big_image;           //聊天开始时那个大图
     private ImageView ivToUserStatus;     //对方用户状态图标
     private ImageView iv_emoticons_normal;
     private ImageView iv_emoticons_checked;
@@ -266,7 +266,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         timeline = (ProgressBar) findViewById(R.id.timeline);
         iv_emoticons_normal = (ImageView) findViewById(R.id.iv_emoticons_normal);
         iv_emoticons_checked = (ImageView) findViewById(R.id.iv_emoticons_checked);
-        big_image = (ImageView) findViewById(R.id.big_image);
+        big_image = (ImageViewNeedRecycle) findViewById(R.id.big_image);
         big_image_text = (TextView) findViewById(R.id.big_image_text);
         tvSelfChat = (TextView) findViewById(R.id.self_chat_tv);
         emojiIconContainer = (LinearLayout) findViewById(R.id.ll_face_container);
@@ -335,11 +335,9 @@ public class ActivityChat extends Activity implements EMEventListener {
         //设置时间线
         long startTime = (long)baseResponseTitleInfo.getPubTime();
         long time=System.currentTimeMillis();
-        ToolLog.dbg("startTime:"+String.valueOf(startTime)+"time:"+String.valueOf(time));
         int diffTime = (int) ((time/1000)-startTime);
         int lastTime = diffTime*100/86400;
         lastTime = 0 - lastTime;
-        ToolLog.dbg("diffTime:" + String.valueOf(diffTime) + "lastTime:" + String.valueOf(lastTime));
         final Calendar mCalendar=Calendar.getInstance();
         mCalendar.setTimeInMillis(diffTime);
         int mHour=(86400-diffTime)/3600;
@@ -352,6 +350,7 @@ public class ActivityChat extends Activity implements EMEventListener {
         }
 
         if(baseResponseTitleInfo.getDvcId().equals(ToolDevice.getId(Application.getInstance().getApplicationContext()))){
+            regionText = "发布于"+baseResponseTitleInfo.getCity();
             tvSelfChat.setVisibility(View.VISIBLE);
             buttonSetModeVoice.setVisibility(View.GONE);
             mEditTextContent.setVisibility(View.GONE);
@@ -912,7 +911,7 @@ public class ActivityChat extends Activity implements EMEventListener {
             layoutParams.setMargins((int) ToolDevice.dp2px(270), (int) ToolDevice.dp2px(10), (int) ToolDevice.dp2px(10), 0);
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
             v.setLayoutParams(layoutParams);
-            ((ImageView)v).setScaleType(ImageView.ScaleType.FIT_XY);
+//            ((ImageView)v).setScaleType(ImageView.ScaleType.FIT_XY);
             v.setAlpha(0.4f);
             big_image_text.setVisibility(View.GONE);
             big_pic_flag = 0;

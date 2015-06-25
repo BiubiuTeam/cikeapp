@@ -287,7 +287,16 @@ public class ActivitySquare extends Activity implements EMEventListener {
                 chooseStatusDialog.dismiss();
                 squareAddImage.setVisibility(View.VISIBLE);
                 squareScrollView.setVisibility(View.VISIBLE);
+
+                if(requestCode == REQUEST_CODE_CAMERA) {
+                    mStatusSelectorLayout.setSelectorGender(Application.getInstance().squareGender);
+                    mStatusSelectorLayout.setSelectorScale(Application.getInstance().squareLoc);
+                    mStatusSelectorLayout.setSelectorStatus(Application.getInstance().squareStatus);
+                }
+
                 if(searchFlag==1) {
+                    tvTopic.setText(mStatusSelectorLayout.getSelectedStatusWord());
+
                     responseSearchTitle = null;
                     searchFlag = 0;
                     clearTitleBitmap();
@@ -740,6 +749,8 @@ public class ActivitySquare extends Activity implements EMEventListener {
     public HorizontalScrollView getSquareScrollView(){
         return squareScrollView;
     }
+
+    public StatusSelectorLayout getMStatusSelectorLayout(){ return mStatusSelectorLayout;}
 
     /////////////////////////////////////////工具类///////////////////////////////////////////////
     //图像压缩

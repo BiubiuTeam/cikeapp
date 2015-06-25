@@ -9,8 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.chat.EMChat;
@@ -26,6 +26,7 @@ import com.jaf.jcore.JacksonWrapper;
 import com.yunkairichu.cike.bean.JsonConstant;
 import com.yunkairichu.cike.bean.JsonPack;
 import com.yunkairichu.cike.bean.ResponseSingleTitlePull;
+import com.yunkairichu.cike.main.ActivityBeforeSearch;
 import com.yunkairichu.cike.main.ActivityChat;
 import com.yunkairichu.cike.main.ToolLog;
 
@@ -168,6 +169,19 @@ public class HXMessageUtils implements EMEventListener {
                 bundle.putString("fromAct", "Background");
                 msgIntent.putExtra("bitmap", (byte[]) null);
                 msgIntent.putExtras(bundle);
+                PendingIntent pendingIntent = PendingIntent.getActivity(mContext, notifyID, msgIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+
+                mBuilder.setContentIntent(pendingIntent);
+
+                Notification notification = mBuilder.build();
+                notificationManager.notify(notifyID, notification);
+
+                notifyID++;
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Intent msgIntent = new Intent(mContext, ActivityBeforeSearch.class);
                 PendingIntent pendingIntent = PendingIntent.getActivity(mContext, notifyID, msgIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 
                 mBuilder.setContentIntent(pendingIntent);

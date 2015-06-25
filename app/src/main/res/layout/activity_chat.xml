@@ -330,11 +330,12 @@
         android:layout_height="match_parent"
         android:layout_above="@id/bar_bottom"
         android:layout_below="@id/chat_top_bar" >
-        <ImageView
+        <com.yunkairichu.cike.main.ImageViewNeedRecycle
             android:id="@+id/big_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:scaleType="fitXY" />
 
         <TextView
             android:id="@+id/big_image_text"

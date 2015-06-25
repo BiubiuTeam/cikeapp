@@ -33,6 +33,9 @@ public class Application extends android.app.Application {
     public int myGender = 0;
     public int myRole = 0;
     public int chatViewCentralItemIndex = 0;
+    public int squareGender = 0;
+    public int squareLoc = 0;
+    public int squareStatus = 0;
 
     @Override
     public void onCreate() {

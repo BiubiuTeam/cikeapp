@@ -9,4 +9,5 @@
     <color name="tagRed">#d0021b</color>
     <color name="color_none">#60000000</color>
     <color name="color_white">#FFFFFFFF</color>
+    <color name="color_black">#FF000000</color>
 </resources>
