@@ -284,9 +284,11 @@ public class ActivityChatview extends Activity implements EMEventListener {
         if (hidden){
             emptyView.setVisibility(View.INVISIBLE);
             chatview.bringChildToFront(listView);
+            detailImage.setVisibility(View.VISIBLE);
             chatview.bringChildToFront(detailImage);
         }else {
             emptyView.setVisibility(View.VISIBLE);
+            detailImage.setVisibility(View.INVISIBLE);
             chatview.bringChildToFront(emptyView);
         }
     }

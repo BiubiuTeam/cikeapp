@@ -31,30 +31,31 @@
             android:maxWidth="225.0dip"
             android:background="@drawable/chatsend_bg_voice"
             android:id="@+id/voice"
+            android:layout_centerVertical="true"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_marginRight="1dp"
+            android:layout_height="@dimen/chat_voice_bubble_height"
+            android:layout_marginRight="@dimen/avatar_bubble_inset"
             android:layout_toLeftOf="@id/userhead"
             android:clickable="true">
-
 
             <ImageView
                 android:id="@+id/voice_play"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
-
+                android:layout_height="@dimen/chat_voice_image_height"
                 android:layout_marginLeft="80dp"
+                android:layout_centerVertical="true"
                 android:src="@drawable/voice_send_play_3"
-                android:scaleType="center"
+                android:scaleType="centerInside"
                 />
             <ImageView
                 android:id="@+id/voice_content"
                 android:minWidth="20dp"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_centerVertical="true"
+                android:layout_height="@dimen/chat_voice_image_height"
                 android:layout_toLeftOf="@id/voice_play"
                 android:background="#ffd600"
-                android:scaleType="center"
+                android:scaleType="centerInside"
                 />
             <TextView
                 android:id="@+id/length"

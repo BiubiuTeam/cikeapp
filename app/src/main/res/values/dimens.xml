@@ -18,4 +18,10 @@
     <dimen name="size_btn_chatlist">53dp</dimen>
     <dimen name="stdPadding">30dp</dimen>
     <dimen name="midPadding">32dp</dimen>
+
+    <dimen name="chat_voice_bubble_height">38dp</dimen>
+    <dimen name="chat_voice_image_height">22dp</dimen>
+    <dimen name="avatar_bubble_inset">5dp</dimen>
+
+    <dimen name="send_textsize">24sp</dimen>
 </resources>
