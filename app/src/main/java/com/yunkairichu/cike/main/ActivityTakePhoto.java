@@ -443,7 +443,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
         // TODO Auto-generated method stub
         //当surfaceview创建时开启相机
         if(camera == null) {
-            if(msgTag==10){
+            if(msgTag==10 && surface != null){
                 Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                 int cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
 
