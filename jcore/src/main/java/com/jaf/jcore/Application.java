@@ -1,6 +1,7 @@
 package com.jaf.jcore;
 
 import android.content.Context;
+import android.view.SurfaceView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
@@ -36,6 +37,7 @@ public class Application extends android.app.Application {
     public int squareGender = 0;
     public int squareLoc = 0;
     public int squareStatus = 0;
+    public SurfaceView sfv = null;
 
     @Override
     public void onCreate() {

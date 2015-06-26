@@ -25,6 +25,12 @@ android {
         uc{
             manifestPlaceholders=[UMENG_CHANNEL_VALUE:"uc"]
         }
+        all{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"all"]
+        }
+        abc{
+            manifestPlaceholders=[UMENG_CHANNEL_VALUE:"abc"]
+        }
     }
 
     buildTypes {

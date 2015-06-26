@@ -14,6 +14,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -189,7 +190,7 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
                 case R.id.take_photo_change_canmera_iv:
                     captureOrFromFileFlag = 0;
-                    if(surface != null)surface.setVisibility(View.VISIBLE);
+                    if(surface != null){surface.setVisibility(View.VISIBLE);ToolLog.dbg("hehe");}
                     if(photoFromFile != null)photoFromFile.setVisibility(View.GONE);
                     //切换前后摄像头
                     int cameraCount = 0;
@@ -251,12 +252,22 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 //
 //                                    surface.setLayoutParams(new RelativeLayout.LayoutParams(targetWidth, metrics.heightPixels));
 //                                }
+
                                 DisplayMetrics metrics = new DisplayMetrics();
                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
                                 int x = metrics.widthPixels;//获取了屏幕的宽度
                                 int y = (int)(x*4/3);
-                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
-                                surface.setLayoutParams(layoutParams);
+                                ToolLog.dbg("widthPixels:" + String.valueOf(x) + " heightPixels:" + String.valueOf(y));
+                                final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+                                if(surface!=null){surface.setLayoutParams(layoutParams);}
+                                else{
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if(surface!=null)surface.setLayoutParams(layoutParams);
+                                        }
+                                    }, 200);
+                                }
                                 cameraPosition = 0;
                                 break;
                             }
@@ -277,12 +288,22 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                                 }
                                 camera.setDisplayOrientation(90);
                                 camera.startPreview();//开始预览
+
                                 DisplayMetrics metrics = new DisplayMetrics();
                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
                                 int x = metrics.widthPixels;//获取了屏幕的宽度
                                 int y = metrics.heightPixels;
-                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
-                                surface.setLayoutParams(layoutParams);
+                                ToolLog.dbg("widthPixels:" + String.valueOf(x) + " heightPixels:" + String.valueOf(y));
+                                final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+                                if(surface!=null){surface.setLayoutParams(layoutParams);}
+                                else{
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if(surface!=null)surface.setLayoutParams(layoutParams);
+                                        }
+                                    }, 200);
+                                }
                                 cameraPosition = 1;
                                 break;
                             }
@@ -338,6 +359,14 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
                     break;
 
                 case R.id.take_photo_from_file_iv:
+                    Application.getInstance().sfv = surface;
+//                    DisplayMetrics metrics = new DisplayMetrics();
+//                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//                    int x = metrics.widthPixels;//获取了屏幕的宽度
+//                    int y = metrics.heightPixels;
+//                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(x, y);
+//                    if(surface!=null)surface.setLayoutParams(layoutParams);//把屏幕也设置为后置状态
+
                     //返回
                     Intent intent;
                     if (Build.VERSION.SDK_INT < 19) {
@@ -414,9 +443,11 @@ public class ActivityTakePhoto extends Activity implements SurfaceHolder.Callbac
 
         if (resultCode == RESULT_OK) { // �����Ϣ
             if (requestCode == REQUEST_CODE_LOCAL) { // ������Ƭ
+                surface = Application.getInstance().sfv;
                 if (data != null) {
                     captureOrFromFileFlag = 1;
                     cameraPosition = 0;//把摄像头设置为前置，方便一会还原回后置
+
                     if(photoFromFile != null) photoFromFile.setVisibility(View.VISIBLE);
 //                    photoFromFile.setBackgroundColor(0xFFFFD600);
 
